@@ -4,13 +4,35 @@
   "min_redeem": 100,
   "min_redeem_label": "100 积分币起兑",
   "claimer_window_hours": 24,
-  "platforms": ["github.com"],
+  "platforms": [
+    "github.com"
+  ],
   "pricing": {
     "tiers": [
-      {"max_usd": 200, "winner_share": 0.70, "platform_share": 0.30, "label": "≤ $200"},
-      {"max_usd": 500, "winner_share": 0.60, "platform_share": 0.40, "label": "$200-$500"},
-      {"max_usd": 1500, "winner_share": 0.55, "platform_share": 0.45, "label": "$500-$1500"},
-      {"max_usd": 999999, "winner_share": 0.50, "platform_share": 0.50, "label": "$1500+"}
+      {
+        "max_usd": 200,
+        "winner_share": 0.7,
+        "platform_share": 0.3,
+        "label": "≤ $200"
+      },
+      {
+        "max_usd": 500,
+        "winner_share": 0.65,
+        "platform_share": 0.35,
+        "label": "$200-$500"
+      },
+      {
+        "max_usd": 1000,
+        "winner_share": 0.6,
+        "platform_share": 0.4,
+        "label": "$500-$1000"
+      },
+      {
+        "max_usd": 999999,
+        "winner_share": 0.55,
+        "platform_share": 0.45,
+        "label": "$1000+"
+      }
     ]
   },
   "payout_conditions": [
