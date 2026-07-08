@@ -1,0 +1,39 @@
+name: Payout on Merge
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  payout:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == true }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Process payout
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGED_AT: ${{ github.event.pull_request.merged_at }}
+        run: |
+          echo "PR #${PR_NUMBER} merged: ${PR_TITLE}"
+          echo "Author: ${PR_AUTHOR}"
+          echo "Merged at: ${MERGED_AT}"
+          echo ""
+          echo "✅ Payout would trigger here:"
+          echo "   1. Look up bounty from PR title"
+          echo "   2. Calculate final payout"
+          echo "   3. Send notification to contributor"
+          echo ""
+          echo "Manual step required:"
+          echo "   python scripts/coin.py approve --id <redeem_id>"
