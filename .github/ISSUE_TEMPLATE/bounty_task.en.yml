@@ -1,0 +1,55 @@
+name: 🎯 Bounty Task
+description: Post a real GitHub bounty task
+title: "[Bounty] "
+labels: ["bounty", "real"]
+body:
+  - type: input
+    id: source_url
+    attributes:
+      label: Bounty URL
+      description: Link to the original bounty issue
+      placeholder: https://github.com/...
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Vulnerability Description
+      description: Describe the vulnerability and fix requirements
+    validations:
+      required: true
+  - type: input
+    id: reward
+    attributes:
+      label: Token Reward
+      description: How many tokens you earn for completing this task
+      placeholder: e.g. 50000
+    validations:
+      required: true
+  - type: input
+    id: real_reward
+    attributes:
+      label: Real Bounty (USD)
+      description: The actual bounty amount from the platform
+      placeholder: e.g. $5000
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - Easy
+        - Medium
+        - Hard
+        - Expert
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## How to Claim
+        Comment `/claim` to lock priority (24h exclusive window)
+
+        ## Redemption
+        See [REWARD_POLICY.en.md](REWARD_POLICY.en.md) to calculate your cash payout
