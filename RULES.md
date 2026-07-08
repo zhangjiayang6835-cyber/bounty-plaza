@@ -1,46 +1,69 @@
-# Bounty Plaza Rules
+# Bounty Plaza Rules — 质量竞速制
 
-## Task Lifecycle
+## 核心原则
 
-1. Admin discovers a real bug bounty on an external platform
-2. Admin creates an Issue with:
-   - Vulnerability description
-   - Link to the original bounty
-   - HONEY reward (at 100 HONEY = $0.01)
-3. Contributors reply `/claim` to lock priority (24h exclusive window)
-4. After 24h, anyone can submit
-5. Submit via PR with the fix code
-6. Admin reviews all submissions and submits the best one to the bounty platform
-7. When paid: best submitter gets full HONEY, others get participation bonus
-8. Contributors can redeem HONEY for cash at 100 HONEY = $0.01
+> **代码质量优先，同质量先到先得。**
+> 谁的代码质量好就用谁的；质量一样好时，谁先提交谁赢。
 
-## Claim Rules
+---
 
-- `/claim` locks the task for 24h
-- Must submit a WIP within 12h or claim is released
-- No claiming more than 3 tasks simultaneously
-- First-time contributors have 48h instead of 24h
+## 任务生命周期
 
-## Submission Rules
+1. 管理员发现外部真实赏金任务 → 创建 Issue
+2. 社区成员查看 Issue → 编写修复代码 → 提 PR
+3. 管理员审核 PR 代码质量 → 从所有提交中选最优
+4. 如有多份同等质量的提交 → 选最先提交的
+5. 管理员将最优代码提交到赏金平台
+6. 到账后发放 HONEY 积分
 
-- All fixes must be submitted as Pull Requests
-- Each fix must include:
-  - Working code that addresses the vulnerability
-  - Brief explanation of the fix
-  - Test cases (if applicable)
-- Admin selects the best submission to forward to the bounty platform
+## 提交规则
 
-## HONEY Redemption
+- 所有修复必须通过 **Pull Request** 提交
+- 每个 PR 必须包含：
+  - ✅ 能工作的修复代码
+  - ✅ 修复说明（做了什么、为什么这么修）
+  - ✅ 测试用例（如果适用）
+- PR 提交后管理员会进行代码审查
 
-- Rate: **100 HONEY = $0.01**
-- Minimum redemption: **10,000 HONEY** (= $1.00)
-- Create a Redeem Request Issue using the template
-- Payment via PayPal / USDT
-- Processing time: within 7 days of request
+## 评审标准（质量分）
 
-## Prohibited
+管理员根据以下维度评估代码质量：
 
-- Plagiarizing others' submissions
-- Submitting malicious code
-- Claiming tasks without intent to complete
-- Multiple accounts
+| 维度 | 权重 | 考察点 |
+|------|:----:|--------|
+| 🧪 功能正确性 | 40% | 代码是否真正修复了漏洞 |
+| 🔒 安全性 | 35% | 修复本身是否引入新漏洞 |
+| 📐 代码质量 | 25% | 可读性、简洁性、最佳实践 |
+
+## 判定规则
+
+1. 管理员审查所有已提交的 PR
+2. 按质量分从高到低排序
+3. **质量最高者获胜** —— 拿走全额 HONEY 赏金
+4. 若多人质量分相同 → **先提交的获胜**
+5. 获胜者确定后关闭 Issue，其他 PR 标记为已过期
+
+## 时间窗口
+
+- 任务发布后**立即开放**提交
+- 获胜者产生后**立即停止**接收新提交
+- 若 **72 小时**无人提交达标 → 标记为 `unclaimed`
+
+## HONEY 兑换
+
+- 汇率：**100 HONEY = $0.01**
+- 最低兑换：**10,000 HONEY**（=$1.00）
+- 提交换取申请 Issue 即可
+- 打款方式：PayPal / USDT
+- 处理时间：申请后 7 个工作日内
+
+## 禁止行为
+
+- ❌ 抄袭他人提交
+- ❌ 提交恶意代码
+- ❌ 多个账号参与同一任务
+- ❌ 提交不相关的代码
+
+---
+
+> 💡 质量优先，速度加成。修得好 + 修得快 = 赢家。
