@@ -51,9 +51,8 @@
   "platform_fee_pct": 0.1,
   "platform_fee_label": "扣除贡献者应得的 10%",
   "treasury": {
-    "name": "Bounty Plaza Treasury",
-    "usdt_trc20": "待填写 - TRC-20 USDT 收款地址",
-    "paypal_business": "待填写 - PayPal 商业账户邮箱",
-    "note": "收到赏金转入此地址，贡献者兑换从此地址出金"
+    "usdt_bep20": "0x321984374e41e1c8ba3e2b87ab050828cffd25c2",
+    "network": "BSC (BEP-20)",
+    "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
   }
 }
