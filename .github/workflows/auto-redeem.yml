@@ -1,0 +1,72 @@
+name: Auto Redeem
+
+on:
+  issues:
+    types: [opened, edited]
+    
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  redeem:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'redeem')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Extract redeem info
+        id: parse
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          USERNAME=$(echo "$BODY" | grep -i "用户名\|username" | sed 's/.*: *\(.*\)/\1/' | head -1)
+          AMOUNT=$(echo "$BODY" | grep -i "数量\|amount" | grep -oP '\d+' | head -1)
+          ADDRESS=$(echo "$BODY" | grep -i "地址\|address\|paypal\|usdt" | sed 's/.*: *\(.*\)/\1/' | head -1)
+          echo "username=$USERNAME" >> $GITHUB_OUTPUT
+          echo "amount=$AMOUNT" >> $GITHUB_OUTPUT
+          echo "address=$ADDRESS" >> $GITHUB_OUTPUT
+
+      - name: Process redemption
+        id: process
+        run: |
+          USERNAME="${{ steps.parse.outputs.username }}"
+          AMOUNT="${{ steps.parse.outputs.amount }}"
+          ADDRESS="${{ steps.parse.outputs.address }}"
+
+          echo "Processing redeem for $USERNAME: $AMOUNT coins -> $ADDRESS"
+
+          # Run coin.py redeem --auto
+          OUTPUT=$(python scripts/coin.py redeem --user "$USERNAME" --amount "$AMOUNT" --address "$ADDRESS" --auto 2>&1) || true
+          echo "$OUTPUT"
+
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "result=fail" >> $GITHUB_OUTPUT
+          else
+            echo "result=success" >> $GITHUB_OUTPUT
+          fi
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = `${{ steps.process.outputs.result }}`;
+            const output = `${{ steps.process.outputs.output }}`;
+            let body;
+            if (result === 'success') {
+              body = `✅ 兑换已自动批准！\n\n\`\`\`\n${output}\n\`\`\`\n\n管理员后续会安排打款。`;
+            } else {
+              body = `❌ 兑换失败\n\n\`\`\`\n${output}\n\`\`\`\n\n请检查余额或最低兑换额后重新提交。`;
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
