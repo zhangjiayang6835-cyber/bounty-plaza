@@ -58,3 +58,6 @@ body:
       value: |
         ## 认领方式
         评论 `/claim` 锁定任务 24h 优先权
+
+        ## 兑换说明
+        > 查看 [REWARD_POLICY.md](REWARD_POLICY.md) 了解你能拿到多少现金
