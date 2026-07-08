@@ -26,7 +26,7 @@ DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(DB_DIR, "coins.db")
 
 RATE = 0.72          # 100 积分币 = $0.01
-MIN_REDEEM = 100     # 最低兑换 10,000 积分币
+MIN_REDEEM = 100       # 最低兑换 100 积分
 
 
 def get_db():
