@@ -1,0 +1,27 @@
+name: 💰 兑换申请 / Redeem Request
+description: 申请将 HONEY 积分兑换为现金
+title: "[Redeem] "
+labels: ["redeem"]
+body:
+  - type: input
+    id: honey_amount
+    attributes:
+      label: HONEY 数量
+      description: 你想兑换多少 HONEY？
+      placeholder: e.g. 10000
+    validations:
+      required: true
+  - type: input
+    id: payment_method
+    attributes:
+      label: 收款方式
+      description: PayPal / USDT 地址
+      placeholder: e.g. PayPal: user@example.com
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## 兑换率
+        100 HONEY = $0.01
+        最低兑换：10,000 HONEY
