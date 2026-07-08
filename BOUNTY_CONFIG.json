@@ -4,37 +4,31 @@
     "github.com"
   ],
   "pricing": {
-    "min_bounty_usd": 25,
-    "description": "标价汇率 1 USD = 1.25 积分，贡献者实得标价的 90%，兑换 1 积分 = 0.72 USD",
+    "description": "阶梯制：标价汇率 1 USD = 1.25 积分，兑换汇率 1 积分 = 0.72 USD，R 按阶梯浮动",
     "tiers": [
       {
         "max_usd": 50,
-        "winner_share": 1.0,
-        "platform_share": 0.0,
-        "label": "$25-$50"
+        "R": 0.95,
+        "label": "< $50"
       },
       {
         "max_usd": 200,
-        "winner_share": 1.0,
-        "platform_share": 0.0,
+        "R": 0.92,
         "label": "$50-$200"
       },
       {
         "max_usd": 500,
-        "winner_share": 1.0,
-        "platform_share": 0.0,
+        "R": 0.9,
         "label": "$200-$500"
       },
       {
         "max_usd": 1000,
-        "winner_share": 1.0,
-        "platform_share": 0.0,
+        "R": 0.87,
         "label": "$500-$1000"
       },
       {
         "max_usd": 999999,
-        "winner_share": 1.0,
-        "platform_share": 0.0,
+        "R": 0.85,
         "label": "$1000+"
       }
     ]
