@@ -1,0 +1,33 @@
+name: Update Leaderboard
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate leaderboard
+        run: |
+          python scripts/redeem.py --ledger > LEADERBOARD.md 2>/dev/null || echo "No leaderboard data" > LEADERBOARD.md
+
+      - name: Commit
+        run: |
+          git config user.name "bounty-bot"
+          git config user.email "bot@bounty-plaza.dev"
+          git add LEADERBOARD.md
+          git commit -m "chore: auto-update leaderboard" || echo "Nothing to commit"
+          git push
