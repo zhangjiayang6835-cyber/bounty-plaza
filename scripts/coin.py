@@ -167,14 +167,32 @@ def cmd_redeem(args):
 
         cash_value = args.amount * RATE
         ensure_account(conn, args.user)
-        conn.execute(
+        cur = conn.execute(
             "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?,'pending')",
             (args.user, args.amount, cash_value, args.address)
         )
-        conn.commit()
-        print(f"✅ 兑换申请已提交: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
-        print(f"   收款地址: {args.address}")
-        print(f"   等待管理员审核（ID: {conn.execute('SELECT last_insert_rowid()').fetchone()[0]}）")
+        req_id = cur.lastrowid
+
+        if args.auto:
+            prev_hash = get_last_hash(conn)
+            tx_data = {"tx_type": "redeem", "from_user": args.user, "to_user": None,
+                       "amount": args.amount, "reason": f"自助兑换 #{req_id}", "prev_hash": prev_hash}
+            tx_data["hash"] = compute_hash(tx_data)
+            conn.execute(
+                "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
+                ("redeem", args.user, args.amount, f"自助兑换 #{req_id}", tx_data["prev_hash"], tx_data["hash"])
+            )
+            conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (args.amount, args.user))
+            conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
+            conn.commit()
+            print(f"✅ 自助兑换成功: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
+            print(f"   收款地址: {args.address}")
+            print(f"   兑换号: #{req_id}，已自动批准")
+        else:
+            conn.commit()
+            print(f"✅ 兑换申请已提交: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
+            print(f"   收款地址: {args.address}")
+            print(f"   等待管理员审核（ID: {req_id}）")
     except Exception as e:
         conn.rollback()
         print(f"ERROR: {e}")
@@ -182,7 +200,6 @@ def cmd_redeem(args):
     finally:
         conn.close()
     return 0
-
 
 def cmd_approve(args):
     conn = get_db()
@@ -322,6 +339,7 @@ def main():
     p.add_argument("--user", required=True)
     p.add_argument("--amount", type=int, required=True)
     p.add_argument("--address", required=True, help="PayPal 邮箱或 USDT 地址")
+    p.add_argument("--auto", action="store_true", help="自助模式：自动批准兑换")
 
     p = sub.add_parser("approve", help="批准兑换")
     p.add_argument("--id", type=int, required=True)
