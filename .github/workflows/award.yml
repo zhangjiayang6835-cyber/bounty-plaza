@@ -1,0 +1,43 @@
+name: Award Coins on Pass
+
+on:
+  workflow_run:
+    workflows: ["Evaluate Submission"]
+    types: [completed]
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  award:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Select winner
+        id: winner
+        run: |
+          python scripts/select_winner.py --json > winner.json
+          cat winner.json
+
+      - name: Award coins
+        run: |
+          WINNER=$(python3 -c "import json; d=json.load(open('winner.json')); print(d.get('winner',{}).get('submitter',''))")
+          SCORE=$(python3 -c "import json; d=json.load(open('winner.json')); print(d.get('winner',{}).get('score',0))")
+          if [ -z "$WINNER" ]; then
+            echo "No winner yet, skipping"
+            exit 0
+          fi
+          echo "Awarding $WINNER for score $SCORE"
+          python scripts/coin.py transfer --from admin --to "$WINNER" --amount 100 --reason "Task completed with score $SCORE"
+
+      - name: Update leaderboard
+        run: |
+          python scripts/coin.py ledger
