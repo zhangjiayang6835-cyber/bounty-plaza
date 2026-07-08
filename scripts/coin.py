@@ -185,9 +185,13 @@ def cmd_redeem(args):
             conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (args.amount, args.user))
             conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
             conn.commit()
-            print(f"✅ 自助兑换成功: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
-            print(f"   收款地址: {args.address}")
-            print(f"   兑换号: #{req_id}，已自动批准")
+            if args.json:
+                import json as _json
+                print(_json.dumps({"ok": True, "id": req_id, "username": args.user, "amount": args.amount, "cash_value": round(cash_value, 2), "address": args.address, "status": "approved", "balance_remaining": balance - args.amount}))
+            else:
+                print(f"✅ 自助兑换成功: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
+                print(f"   收款地址: {args.address}")
+                print(f"   {"兑换号: #" + str(req_id)}，已自动批准，管理员请尽快打款")
         else:
             conn.commit()
             print(f"✅ 兑换申请已提交: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
@@ -246,7 +250,39 @@ def cmd_approve(args):
     return 0
 
 
+
 def cmd_pay(args):
+    conn = get_db()
+    try:
+        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status IN ('approved','pending')", (args.id,))
+        req = cur.fetchone()
+        if not req:
+            if getattr(args, 'json', False):
+                import json as _json
+                print(_json.dumps({"ok": False, "error": "not_found", "id": args.id}))
+            else:
+                print(f"ERROR: 兑换请求 #{args.id} 不存在或已处理")
+            return 1
+
+        conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
+        cur2 = conn.execute("SELECT * FROM transactions WHERE from_user = ? AND amount = ? AND status = 'approved' ORDER BY id DESC LIMIT 1", (req["username"], req["amount"]))
+        tx = cur2.fetchone()
+        if tx:
+            conn.execute("UPDATE transactions SET status = 'completed' WHERE id = ?", (tx["id"],))
+        conn.commit()
+
+        if getattr(args, 'json', False):
+            import json as _json
+            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(req.get("coin_value", req["amount"] * 0.72), 2), "status": "paid"}))
+        else:
+            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${req.get('coin_value', req['amount'] * 0.72):.2f}")
+    except Exception as e:
+        conn.rollback()
+        print(f"ERROR: {e}")
+        return 1
+    finally:
+        conn.close()
+    return 0
     conn = get_db()
     cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
     req = cur.fetchone()
@@ -340,12 +376,14 @@ def main():
     p.add_argument("--amount", type=int, required=True)
     p.add_argument("--address", required=True, help="PayPal 邮箱或 USDT 地址")
     p.add_argument("--auto", action="store_true", help="自助模式：自动批准兑换")
+    p.add_argument("--json", action="store_true", help="JSON 格式输出")
 
     p = sub.add_parser("approve", help="批准兑换")
     p.add_argument("--id", type=int, required=True)
 
     p = sub.add_parser("pay", help="标记已打款")
     p.add_argument("--id", type=int, required=True)
+    p.add_argument("--json", action="store_true", help="JSON 格式输出")
 
     p = sub.add_parser("reject", help="拒绝兑换")
     p.add_argument("--id", type=int, required=True)
