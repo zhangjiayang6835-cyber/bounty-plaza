@@ -1,3 +1,5 @@
+🌐 [English](RULES.en.md) | [中文](RULES.md)
+
 # Bounty Plaza Rules — 质量竞速制
 
 ## 核心原则
