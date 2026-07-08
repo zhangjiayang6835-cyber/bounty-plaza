@@ -1,0 +1,54 @@
+name: Paid Command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  paid:
+    if: startsWith(github.event.comment.body, '/paid')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Mark as Paid
+        id: pay
+        run: |
+          REDEEM_ID=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+          echo "Marking redeem #${REDEEM_ID} as paid"
+          python scripts/coin.py pay --id "$REDEEM_ID" --json > pay_result.json 2>&1 || true
+          cat pay_result.json
+
+      - name: Confirm on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let result;
+            try {
+              result = JSON.parse(fs.readFileSync('pay_result.json', 'utf8').trim());
+            } catch(e) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `❌ 处理失败，请手动执行: \`python scripts/coin.py pay --id <编号>\``
+              });
+              return;
+            }
+            if (result.ok) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## ✅ 已完成打款\n\n兑换 **#${result.id}** | **${result.username}** | 金额 **$${result.cash_value}**\n\n> 资金池: \`0x321984374e41e1c8ba3e2b87ab050828cffd25c2\` (BSC BEP-20)`
+              });
+            }
