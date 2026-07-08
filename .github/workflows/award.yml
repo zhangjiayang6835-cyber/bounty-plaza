@@ -1,9 +1,18 @@
-name: Award Coins on Pass
+name: Award Coins
 
 on:
-  workflow_run:
-    workflows: ["Evaluate Submission"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      submitter:
+        description: "Contributor GitHub username"
+        required: true
+      score:
+        description: "Quality score (0-100)"
+        required: true
+        default: "90"
+      task:
+        description: "Task ID or description"
+        required: true
 
 permissions:
   issues: write
@@ -12,32 +21,20 @@ permissions:
 jobs:
   award:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Select winner
-        id: winner
-        run: |
-          python scripts/select_winner.py --json > winner.json
-          cat winner.json
-
       - name: Award coins
         run: |
-          WINNER=$(python3 -c "import json; d=json.load(open('winner.json')); print(d.get('winner',{}).get('submitter',''))")
-          SCORE=$(python3 -c "import json; d=json.load(open('winner.json')); print(d.get('winner',{}).get('score',0))")
-          if [ -z "$WINNER" ]; then
-            echo "No winner yet, skipping"
-            exit 0
-          fi
-          echo "Awarding $WINNER for score $SCORE"
-          python scripts/coin.py transfer --from admin --to "$WINNER" --amount 100 --reason "Task completed with score $SCORE"
+          echo "Awarding ${{ github.event.inputs.submitter }}"
+          echo "Score: ${{ github.event.inputs.score }}"
+          echo "Task: ${{ github.event.inputs.task }}"
+
+          COINS=$(( ${{ github.event.inputs.score }} * 10 ))
+          python scripts/coin.py transfer --from admin --to "${{ github.event.inputs.submitter }}" --amount $COINS --reason "Task: ${{ github.event.inputs.task }} (score ${{ github.event.inputs.score }})"
 
       - name: Update leaderboard
-        run: |
-          python scripts/coin.py ledger
+        run: python scripts/coin.py ledger
