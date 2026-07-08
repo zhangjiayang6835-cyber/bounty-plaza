@@ -1,0 +1,60 @@
+name: 🎯 赏金任务 / Bounty Task
+description: 发布一个真实外部赏金任务
+title: "[Bounty] "
+labels: ["bounty", "real"]
+body:
+  - type: input
+    id: platform
+    attributes:
+      label: 赏金平台
+      description: 任务来自哪个平台？
+      placeholder: e.g. Immunefi / Code4rena / HackerOne
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: 原始链接
+      description: 赏金任务的原始 URL
+      placeholder: https://immunefi.com/...
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 漏洞描述
+      description: 描述漏洞详情和修复要求
+    validations:
+      required: true
+  - type: input
+    id: reward
+    attributes:
+      label: HONEY 赏金
+      description: 完成此任务可获得多少 HONEY（100 HONEY = $0.01）
+      placeholder: e.g. 50000
+    validations:
+      required: true
+  - type: input
+    id: real_reward
+    attributes:
+      label: 真实赏金（USD）
+      description: 外部平台标明的赏金金额
+      placeholder: e.g. $5000
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: 难度
+      options:
+        - Easy
+        - Medium
+        - Hard
+        - Expert
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## 认领方式
+        评论 `/claim` 锁定任务 24h 优先权
