@@ -10,10 +10,16 @@
   "pricing": {
     "tiers": [
       {
+        "max_usd": 50,
+        "winner_share": 0.8,
+        "platform_share": 0.2,
+        "label": "$25-$50"
+      },
+      {
         "max_usd": 200,
         "winner_share": 0.7,
         "platform_share": 0.3,
-        "label": "≤ $200"
+        "label": "$50-$200"
       },
       {
         "max_usd": 500,
@@ -41,5 +47,7 @@
     "管理员已向上游提 PR",
     "上游已合并 PR",
     "赏金已到管理员账户"
-  ]
+  ],
+  "min_bounty_usd": 25,
+  "min_bounty_label": "$25 以下不接"
 }
