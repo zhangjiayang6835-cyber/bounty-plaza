@@ -1,15 +1,23 @@
 {
-  "rate": 0.0001,
-  "rate_label": "100 HONEY = $0.01",
-  "min_redeem": 10000,
-  "min_redeem_label": "10,000 HONEY = $1.00",
+  "rate": 7.2,
+  "rate_label": "1 积分币 ≈ 1 元人民币",
+  "min_redeem": 100,
+  "min_redeem_label": "100 积分币起兑",
   "claimer_window_hours": 24,
-  "platforms": [
-    "immunefi.com",
-    "code4rena.com",
-    "hackerone.com",
-    "cantina.xyz",
-    "sherlock.xyz",
-    "hackenproof.com"
+  "platforms": ["github.com"],
+  "pricing": {
+    "tiers": [
+      {"max_usd": 200, "winner_share": 0.70, "platform_share": 0.30, "label": "≤ $200"},
+      {"max_usd": 500, "winner_share": 0.60, "platform_share": 0.40, "label": "$200-$500"},
+      {"max_usd": 1500, "winner_share": 0.55, "platform_share": 0.45, "label": "$500-$1500"},
+      {"max_usd": 999999, "winner_share": 0.50, "platform_share": 0.50, "label": "$1500+"}
+    ]
+  },
+  "payout_conditions": [
+    "代码评分 ≥ 90 分",
+    "被判定为获胜者",
+    "管理员已向上游提 PR",
+    "上游已合并 PR",
+    "赏金已到管理员账户"
   ]
 }
