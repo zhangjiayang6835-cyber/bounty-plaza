@@ -49,5 +49,11 @@
   "coin_to_cash_rate": 0.72,
   "coin_to_cash_label": "1 积分 = 0.72 USD (推导值: 0.9/1.25)",
   "platform_fee_pct": 0.1,
-  "platform_fee_label": "扣除贡献者应得的 10%"
+  "platform_fee_label": "扣除贡献者应得的 10%",
+  "treasury": {
+    "name": "Bounty Plaza Treasury",
+    "usdt_trc20": "待填写 - TRC-20 USDT 收款地址",
+    "paypal_business": "待填写 - PayPal 商业账户邮箱",
+    "note": "收到赏金转入此地址，贡献者兑换从此地址出金"
+  }
 }
