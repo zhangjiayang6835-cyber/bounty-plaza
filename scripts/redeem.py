@@ -36,7 +36,7 @@ def save_ledger(ledger: dict):
 
 def load_config() -> dict:
     if not os.path.isfile(CONFIG_PATH):
-        return {"rate": 0.0001, "min_redeem": 10000}
+        return {"rate": 0.72, "min_redeem": 100}
     with open(CONFIG_PATH, encoding="utf-8") as f:
         return json.load(f)
 
