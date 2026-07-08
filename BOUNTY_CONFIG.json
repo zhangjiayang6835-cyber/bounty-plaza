@@ -4,12 +4,12 @@
     "github.com"
   ],
   "pricing": {
-    "description": "阶梯制：标价汇率 1 USD = 1.25 积分，兑换汇率 1 积分 = 0.72 USD，R 按阶梯浮动",
+    "formula": "C实得美元 = A × P × (1 - 10%). 汇率 0.72 = 0.9/1.25 恒成立 (A和P约掉)",
     "tiers": [
       {
         "max_usd": 50,
         "R": 0.95,
-        "label": "< $50"
+        "label": "< 0"
       },
       {
         "max_usd": 200,
@@ -47,5 +47,7 @@
   "winner_payout_ratio": 0.9,
   "winner_payout_label": "贡献者实得 90%",
   "coin_to_cash_rate": 0.72,
-  "coin_to_cash_label": "1 积分 = 0.72 USD"
+  "coin_to_cash_label": "1 积分 = 0.72 USD (推导值: 0.9/1.25)",
+  "platform_fee_pct": 0.1,
+  "platform_fee_label": "扣除贡献者应得的 10%"
 }
