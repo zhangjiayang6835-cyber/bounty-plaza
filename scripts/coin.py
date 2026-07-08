@@ -25,8 +25,8 @@ from datetime import datetime, timezone
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 DB_PATH = os.path.join(DB_DIR, "coins.db")
 
-RATE = 0.0001          # 100 积分币 = $0.01
-MIN_REDEEM = 10000     # 最低兑换 10,000 积分币
+RATE = 0.72          # 100 积分币 = $0.01
+MIN_REDEEM = 100     # 最低兑换 10,000 积分币
 
 
 def get_db():
