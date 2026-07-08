@@ -1,3 +1,5 @@
+🌐 [English](README.en.md) | [中文](README.md)
+
 # 🏆 赏金广场 / Bounty Plaza
 
 > 外部真实赏金任务聚合与分发平台
