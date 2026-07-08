@@ -1,0 +1,28 @@
+name: 💰 Redeem Request
+description: Request to redeem your tokens for cash
+title: "[Redeem] "
+labels: ["redeem"]
+body:
+  - type: input
+    id: token_amount
+    attributes:
+      label: Token Amount
+      description: How many tokens do you want to redeem?
+      placeholder: e.g. 10000
+    validations:
+      required: true
+  - type: input
+    id: payment_method
+    attributes:
+      label: Payment Method
+      description: PayPal email or USDT address
+      placeholder: e.g. PayPal: user@example.com
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## Rate
+        1 coin = 0.72 USD
+        Min redemption: 100 coins
+        See [REWARD_POLICY.en.md](REWARD_POLICY.en.md) for details
