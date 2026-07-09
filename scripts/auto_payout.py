@@ -111,7 +111,7 @@ def call_binance_withdraw(address: str, amount: float) -> dict:
         "X-MBX-APIKEY": BINANCE_API_KEY,
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    body = "&".join(f"{k}={v}" for k, v in params.items())
+    body = __import__("urllib.parse").urlencode(params)
 
     req = urllib.request.Request(url, data=body.encode(), headers=headers, method="POST")
     try:
