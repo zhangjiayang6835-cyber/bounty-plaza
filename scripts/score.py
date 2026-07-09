@@ -176,7 +176,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", code_file],
+            ["python", "-c", code],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
@@ -194,14 +194,18 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
 
 def evaluate(code_file: str, test_dir: str = None) -> dict:
     """完整评测流程，返回评分结果"""
-    # 防路径遍历：只允许在指定目录下读取文件
+    # 防路径遍历
     real_path = os.path.realpath(code_file)
     allowed_dir = os.path.realpath(os.getenv("SUBMISSION_DIR", os.path.dirname(code_file)))
     if not real_path.startswith(allowed_dir):
         raise ValueError(f"代码文件不在允许的目录中: {code_file}")
-    code_file = real_path
-    with open(code_file, encoding="utf-8") as f:
-        code = f.read()
+
+    # 预先读入内存，避免 TOCTOU
+    with open(real_path, encoding="utf-8") as f:
+        code = f.read(10_000_000)  # 限制 10MB
+
+    # 使用内存中的代码进行分析和执行，避免文件被替换
+    code_file_in_mem = real_path
 
     result = {
         "score": 0,
