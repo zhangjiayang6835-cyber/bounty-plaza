@@ -73,8 +73,7 @@ def apply_and_pr(fork: str, upstream: str, branch: str, code_file: str, message:
     """在 fork 上创建分支、提交代码、提 PR"""
     with tempfile.TemporaryDirectory() as tmpdir:
         # Clone fork
-        clone_url = f"https://x-access-token:{os.environ['GH_TOKEN']}@github.com/{fork}.git"
-        subprocess.run(["git", "clone", clone_url, tmpdir], capture_output=True, check=True)
+        subprocess.run(["git", "clone", f"https://github.com/{fork}.git", tmpdir], capture_output=True, check=True)
 
         # Create branch
         subprocess.run(["git", "-C", tmpdir, "checkout", "-b", branch], capture_output=True, check=True)
