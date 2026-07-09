@@ -194,6 +194,12 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
 
 def evaluate(code_file: str, test_dir: str = None) -> dict:
     """完整评测流程，返回评分结果"""
+    # 防路径遍历：只允许在指定目录下读取文件
+    real_path = os.path.realpath(code_file)
+    allowed_dir = os.path.realpath(os.getenv("SUBMISSION_DIR", os.path.dirname(code_file)))
+    if not real_path.startswith(allowed_dir):
+        raise ValueError(f"代码文件不在允许的目录中: {code_file}")
+    code_file = real_path
     with open(code_file, encoding="utf-8") as f:
         code = f.read()
 
