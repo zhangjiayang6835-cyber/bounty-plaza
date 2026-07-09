@@ -1,1 +1,1 @@
-No leaderboard data
+暂无数据
