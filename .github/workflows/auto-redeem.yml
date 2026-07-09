@@ -63,7 +63,7 @@ else:
         run: |
           python3 -c "
 import json
-with open('payout_result.json') as f:
+with open(f'payout_result_{os.environ["ISSUE_NUM"]}.json') as f:
     p = json.load(f)
 if p.get('ok') or p.get('withdraw_id'):
     with open('redeem_result.json') as f:
@@ -80,8 +80,8 @@ else:
         with:
           script: |
             const fs = require('fs');
-            const result = JSON.parse(fs.readFileSync('redeem_result.json', 'utf8'));
-            const payout = fs.existsSync('payout_result.json') ? JSON.parse(fs.readFileSync('payout_result.json', 'utf8')) : null;
+            const result = JSON.parse(fs.readFileSync(`redeem_result_${context.issue.number}.json`, 'utf8'));
+            const payout = fs.existsSync(`payout_result_${context.issue.number}.json`) ? JSON.parse(fs.readFileSync(`payout_result_${context.issue.number}.json`, 'utf8')) : null;
             const payoutSuccess = payout && (payout.ok || payout.withdraw_id);
 
             let body;
