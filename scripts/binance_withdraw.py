@@ -26,7 +26,7 @@ def withdraw(address: str, amount: float, coin: str = "USDT", network: str = "BS
         "timestamp": timestamp,
     }
 
-    query = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+    query = __import__("urllib.parse").urlencode(sorted(params.items()))
     signature = hmac.new(SECRET_KEY.encode(), query.encode(), hashlib.sha256).hexdigest()
     params["signature"] = signature
 
