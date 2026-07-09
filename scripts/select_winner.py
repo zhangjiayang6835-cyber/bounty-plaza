@@ -40,8 +40,12 @@ def load_results(results_dir: str) -> list[dict]:
 
         # Extract score (support both format 1 and format 2)
         score = 0
-        if "score" in data and "total_score" in data["score"]:
-            score = data["score"]["total_score"]
+        if "score" in data and "total_score" in data.get("score", {}):
+            try:
+                score = int(data["score"]["total_score"])
+                score = max(0, min(100, score))  # 限制 0-100
+            except (ValueError, TypeError):
+                score = 0
         elif "results" in data and "metrics" in data.get("results", {}):
             metrics = data["results"]["metrics"]
             if metrics:
