@@ -29,8 +29,8 @@ body:
   - type: input
     id: reward
     attributes:
-      label: HONEY 赏金
-      description: 完成此任务可获得多少 HONEY（100 HONEY = $0.01）
+      label: 积分币 赏金
+      description: 完成此任务可获得多少 积分币（1 积分 = 0.72 USD）
       placeholder: e.g. 50000
     validations:
       required: true
