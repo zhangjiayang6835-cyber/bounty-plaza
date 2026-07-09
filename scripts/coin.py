@@ -187,7 +187,7 @@ def cmd_redeem(args):
                 "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
                 ("redeem", args.user, args.amount, f"自助兑换 #{req_id}", tx_data["prev_hash"], tx_data["hash"])
             )
-            conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (args.amount, args.user))
+            conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ? AND balance >= ?", (args.amount, args.user, args.amount))
             conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
             conn.commit()
             if args.json:
