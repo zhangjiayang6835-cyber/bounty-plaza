@@ -19,6 +19,12 @@ auto_payout.py — 本地自动打款守护脚本
 import argparse
 import json
 import os
+import dotenv
+
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+if os.path.isfile(_env_path):
+    dotenv.load_dotenv(_env_path)
+
 import sqlite3
 import subprocess
 import sys
