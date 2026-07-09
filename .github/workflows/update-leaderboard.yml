@@ -22,7 +22,7 @@ jobs:
 
       - name: Generate leaderboard
         run: |
-          python scripts/redeem.py --ledger > LEADERBOARD.md 2>/dev/null || echo "No leaderboard data" > LEADERBOARD.md
+          python scripts/coin.py ledger > LEADERBOARD.md 2>/dev/null || echo "No leaderboard data" > LEADERBOARD.md
 
       - name: Commit
         run: |
