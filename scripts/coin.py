@@ -87,7 +87,7 @@ def init_db():
 
 
 def compute_hash(row: dict) -> str:
-    raw = f"{row.get('prev_hash','')}|{row.get('tx_type','')}|{row.get('from_user','')}|{row.get('to_user','')}|{row.get('amount',0)}|{row.get('reason','')}"
+    raw = f"{str(row.get('prev_hash') or '')}|{str(row.get('tx_type') or '')}|{str(row.get('from_user') or '')}|{str(row.get('to_user') or '')}|{row.get('amount',0)}|{str(row.get('reason') or '')}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
