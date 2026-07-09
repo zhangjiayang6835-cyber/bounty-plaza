@@ -248,7 +248,6 @@ def cmd_approve(args):
             "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
             ("redeem", username, amount, f"兑换请求 #{args.id}", tx_data["prev_hash"], tx_data["hash"])
         )
-        conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (amount, username))
         conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (args.id,))
         conn.commit()
 
