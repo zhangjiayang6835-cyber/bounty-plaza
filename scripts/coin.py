@@ -213,18 +213,28 @@ def cmd_redeem(args):
 def cmd_approve(args):
     conn = get_db()
     try:
-        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'pending'", (args.id,))
-        req = cur.fetchone()
-        if not req:
-            print(f"ERROR: 兑换请求 #{args.id} 不存在或已处理")
+        # 原子锁定：只有 pending 状态的才能被批准，防止重复扣款
+        conn.execute(
+            "UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ? AND status = 'pending'",
+            (args.id,)
+        )
+        if conn.execute("SELECT changes()").fetchone()[0] == 0:
+            print(f"ERROR: 兑换请求 #{args.id} 不存在或已被处理")
             return 1
 
+        cur = conn.execute("SELECT username, amount, coin_value FROM redeem_requests WHERE id = ?", (args.id,))
+        req = cur.fetchone()
         username = req["username"]
         amount = req["amount"]
 
-        balance = get_balance(conn, username)
-        if balance < amount:
-            print(f"ERROR: {username} 余额不足（{balance} < {amount}）")
+        # 原子扣款
+        cur2 = conn.execute(
+            "UPDATE accounts SET balance = balance - ? WHERE username = ? AND balance >= ?",
+            (amount, username, amount)
+        )
+        if cur2.rowcount == 0:
+            print(f"ERROR: {username} 余额不足（并发冲突）")
+            conn.execute("UPDATE redeem_requests SET status = 'pending', updated_at = datetime('now') WHERE id = ?", (args.id,))
             return 1
 
         prev_hash = get_last_hash(conn)
