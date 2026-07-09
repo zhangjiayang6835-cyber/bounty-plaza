@@ -79,6 +79,8 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_tx_user ON transactions(from_user, to_user);
         CREATE INDEX IF NOT EXISTS idx_redeem_user ON redeem_requests(username);
         CREATE INDEX IF NOT EXISTS idx_redeem_status ON redeem_requests(status);
+        CREATE INDEX IF NOT EXISTS idx_tx_status ON transactions(status);
+        CREATE INDEX IF NOT EXISTS idx_tx_created ON transactions(created_at);
     """)
     conn.commit()
     conn.close()
