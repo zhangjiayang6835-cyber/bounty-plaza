@@ -377,6 +377,7 @@ def main():
     p.add_argument("--address", required=True, help="PayPal 邮箱或 USDT 地址")
     p.add_argument("--auto", action="store_true", help="自助模式：自动批准兑换")
     p.add_argument("--json", action="store_true", help="JSON 格式输出")
+    p.add_argument("--note", default="", help="备注")
 
     p = sub.add_parser("approve", help="批准兑换")
     p.add_argument("--id", type=int, required=True)
@@ -384,6 +385,7 @@ def main():
     p = sub.add_parser("pay", help="标记已打款")
     p.add_argument("--id", type=int, required=True)
     p.add_argument("--json", action="store_true", help="JSON 格式输出")
+    p.add_argument("--note", default="", help="备注")
 
     p = sub.add_parser("reject", help="拒绝兑换")
     p.add_argument("--id", type=int, required=True)
