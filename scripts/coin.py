@@ -26,7 +26,7 @@ DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(DB_DIR, "coins.db")
 
 RATE = 0.72          # 100 积分币 = $0.01
-MIN_REDEEM = 100       # 最低兑换 100 积分
+MIN_REDEEM = 1          # 无最低限制（1积分即可兑换）
 
 
 def get_db():
@@ -161,8 +161,8 @@ def cmd_redeem(args):
         if balance < args.amount:
             print(f"ERROR: {args.user} 余额不足（{balance} < {args.amount}）")
             return 1
-        if args.amount < MIN_REDEEM:
-            print(f"ERROR: 最低兑换 {MIN_REDEEM} 积分币")
+        if args.amount < 1:  # 无最低限制
+            print(f"ERROR: 金额必须大于 0")
             return 1
 
         cash_value = args.amount * RATE
