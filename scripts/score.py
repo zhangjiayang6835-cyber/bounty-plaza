@@ -27,6 +27,7 @@ import json
 import os
 import subprocess
 import sys
+import re
 import tempfile
 import time
 from pathlib import Path
@@ -110,7 +111,7 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
         return violations
     for f in Path(test_dir).glob("test_*.py"):
         content = f.read_text()
-        current_hash = str(hash(content))
+        current_hash = __import__("hashlib").md5(content.encode()).hexdigest()[:16]
         # 简单校验：文件行数
         with open(f) as fh:
             lines = len(fh.readlines())
@@ -161,14 +162,13 @@ def score_quality(code_file: str) -> tuple:
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
                 # "Your code has been rated at 8.50/10"
-                import re
                 m = re.search(r"([\d.]+)/10", line)
                 if m:
                     score = float(m.group(1))
                     return round(score / 10 * 15), f"pylint: {score}/10"
-        return 10, "pylint 未输出评分（可能有语法问题）"
+        return 0, "pylint 未输出评分（无法评分）"
     except (FileNotFoundError, subprocess.TimeoutExpired):
-        return 10, "pylint 未安装，默认 10/15"
+        return 0, "pylint 未安装或执行失败"
 
 
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
