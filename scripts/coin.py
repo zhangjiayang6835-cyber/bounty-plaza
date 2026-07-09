@@ -269,7 +269,7 @@ def cmd_approve(args):
 def cmd_pay(args):
     conn = get_db()
     try:
-        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status IN ('approved','pending')", (args.id,))
+        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
         req = cur.fetchone()
         if not req:
             if getattr(args, 'json', False):
