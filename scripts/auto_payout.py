@@ -26,6 +26,15 @@ if os.path.isfile(_env_path):
     dotenv.load_dotenv(_env_path)
 
 import sqlite3
+
+try:
+    import dotenv
+    _env = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+    if os.path.isfile(_env):
+        dotenv.load_dotenv(_env)
+except ImportError:
+    pass
+
 import subprocess
 import sys
 import time
