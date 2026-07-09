@@ -49,6 +49,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: `## ✅ 已完成打款\n\n兑换 **#${result.id}** | **${result.username}** | 金额 **$${result.cash_value}**\n\n> 资金池: \`0x321984374e41e1c8ba3e2b87ab050828cffd25c2\` (BSC BEP-20)`
+                body: `## ✅ 已完成打款\n\n兑换 **#${result.id}** | **${result.username}** | 金额 **$${result.cash_value}**\n\n> 资金池: \`${process.env.TREASURY_ADDRESS || "参考BOUNTY_CONFIG.json"}\` (BSC BEP-20)`
               });
             }
