@@ -127,7 +127,7 @@ def score_correctness(test_dir: str) -> tuple:
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", "--json-report"],
+            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
             capture_output=True, text=True, timeout=120
         )
         # 从 stdout 解析测试结果
