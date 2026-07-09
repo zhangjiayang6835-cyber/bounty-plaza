@@ -80,7 +80,10 @@ def apply_and_pr(fork: str, upstream: str, branch: str, code_file: str, message:
 
         # Copy winning code to target file
         import shutil
-        dest = os.path.join(tmpdir, target_file)
+        dest = os.path.realpath(os.path.join(tmpdir, target_file))
+        allowed = os.path.realpath(tmpdir)
+        if not dest.startswith(allowed):
+            raise ValueError(f"目标文件路径不在允许的目录中: {target_file}")
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         shutil.copy2(code_file, dest)
 
