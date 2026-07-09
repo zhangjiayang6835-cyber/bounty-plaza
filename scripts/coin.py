@@ -191,7 +191,7 @@ def cmd_redeem(args):
             else:
                 print(f"✅ 自助兑换成功: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
                 print(f"   收款地址: {args.address}")
-                print(f"   {"兑换号: #" + str(req_id)}，已自动批准，管理员请尽快打款")
+                rid_label = f"兑换号: #{req_id}"; print(f"   {rid_label}，已自动批准，管理员请尽快打款")
         else:
             conn.commit()
             print(f"✅ 兑换申请已提交: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
