@@ -124,9 +124,13 @@ def cmd_transfer(args):
         ensure_account(conn, args.from_user)
         ensure_account(conn, args.to_user)
 
-        from_bal = get_balance(conn, args.from_user)
-        if from_bal < args.amount:
-            print(f"ERROR: {args.from_user} 余额不足（{from_bal} < {args.amount}）")
+        # 原子扣款：balance >= amount 时才扣，避免竞态双花
+        cur = conn.execute(
+            "UPDATE accounts SET balance = balance - ? WHERE username = ? AND balance >= ?",
+            (args.amount, args.from_user, args.amount)
+        )
+        if cur.rowcount == 0:
+            print(f"ERROR: {args.from_user} 余额不足或并发冲突")
             return 1
 
         prev_hash = get_last_hash(conn)
@@ -142,7 +146,6 @@ def cmd_transfer(args):
             (tx_data["tx_type"], tx_data["from_user"], tx_data["to_user"],
              tx_data["amount"], tx_data["reason"], tx_data["prev_hash"], tx_data["hash"])
         )
-        conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (args.amount, args.from_user))
         conn.execute("UPDATE accounts SET balance = balance + ? WHERE username = ?", (args.amount, args.to_user))
         conn.commit()
         print(f"✅ 转账成功: {args.from_user} → {args.to_user} 共 {args.amount} 积分币")
