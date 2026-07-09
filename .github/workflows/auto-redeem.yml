@@ -2,71 +2,82 @@ name: Auto Redeem
 
 on:
   issues:
-    types: [opened, edited]
-    
+    types: [opened]
+
 permissions:
   issues: write
   contents: write
 
 jobs:
   redeem:
-    runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'redeem')
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Extract redeem info
-        id: parse
+      - name: Extract and process
+        id: process
         env:
           BODY: ${{ github.event.issue.body }}
         run: |
-          USERNAME=$(echo "$BODY" | grep -i "用户名\|username" | sed 's/.*: *\(.*\)/\1/' | head -1)
-          AMOUNT=$(echo "$BODY" | grep -i "数量\|amount" | grep -oP '\d+' | head -1)
-          ADDRESS=$(echo "$BODY" | grep -i "地址\|address\|paypal\|usdt" | sed 's/.*: *\(.*\)/\1/' | head -1)
-          echo "username=$USERNAME" >> $GITHUB_OUTPUT
-          echo "amount=$AMOUNT" >> $GITHUB_OUTPUT
-          echo "address=$ADDRESS" >> $GITHUB_OUTPUT
+          # Extract fields using Python for reliability
+          python3 << 'PYEOF'
+import os, json, subprocess, sys
+body = os.environ.get('BODY', '')
+lines = body.split('\n')
+username = ''
+amount = ''
+address = ''
+for i, line in enumerate(lines):
+    if '用户名' in line and i + 1 < len(lines):
+        username = lines[i + 1].strip()
+    if '兑换数量' in line and i + 1 < len(lines):
+        amt = lines[i + 1].strip()
+        amount = ''.join(c for c in amt if c.isdigit())
+    if '收款地址' in line and i + 1 < len(lines):
+        address = lines[i + 1].strip()
 
-      - name: Process redemption
-        id: process
-        run: |
-          USERNAME="${{ steps.parse.outputs.username }}"
-          AMOUNT="${{ steps.parse.outputs.amount }}"
-          ADDRESS="${{ steps.parse.outputs.address }}"
+print(f"USERNAME={username}")
+print(f"AMOUNT={amount}")
+print(f"ADDRESS={address}")
 
-          echo "Processing redeem for $USERNAME: $AMOUNT coins -> $ADDRESS"
-
-          # Run coin.py redeem --auto
-          OUTPUT=$(python scripts/coin.py redeem --user "$USERNAME" --amount "$AMOUNT" --address "$ADDRESS" --auto 2>&1) || true
-          echo "$OUTPUT"
-
-          if echo "$OUTPUT" | grep -q "ERROR"; then
-            echo "result=fail" >> $GITHUB_OUTPUT
-          else
-            echo "result=success" >> $GITHUB_OUTPUT
-          fi
-          echo "output<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+# Run coin.py
+result = subprocess.run(
+    [sys.executable, 'scripts/coin.py', 'redeem', '--auto', '--json',
+     '--user', username, '--amount', amount, '--address', address,
+     '--note', f'GitHub Issue'],
+    capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__)) + '/..'
+)
+out = result.stdout.strip()
+try:
+    parsed = json.loads(out)
+    print(f"RESULT_OK={parsed.get('ok', False)}")
+    print(f"RESULT_DATA={out}")
+except:
+    print(f"RESULT_OK=False")
+    print(f"RESULT_ERROR={result.stderr[:200] or out[:200]}")
+PYEOF
 
       - name: Comment result
         uses: actions/github-script@v7
         with:
           script: |
-            const result = `${{ steps.process.outputs.result }}`;
-            const output = `${{ steps.process.outputs.output }}`;
+            const fs = require('fs');
+            const output = `${{ steps.process.outputs.stdout }}`;
+            const lines = output.split('\n').filter(l => l.startsWith('RESULT_'));
+            const resultOk = lines.find(l => l.startsWith('RESULT_OK='))?.split('=')[1] === 'True';
+            const resultData = lines.find(l => l.startsWith('RESULT_DATA='))?.split('=').slice(1).join('=') || '{}';
+            
             let body;
-            if (result === 'success') {
-              body = `✅ 兑换已自动批准！\n\n\`\`\`\n${output}\n\`\`\`\n\n管理员后续会安排打款。`;
+            if (resultOk) {
+              body = `## ✅ 兑换已自动批准\n\n\`\`\`\n${resultData}\n\`\`\`\n\n💰 管理员请从资金池地址 \`0x321984374e41e1c8ba3e2b87ab050828cffd25c2\`（BSC BEP-20）打款。打款后回复 \`/paid\` 完成结算。`;
             } else {
-              body = `❌ 兑换失败\n\n\`\`\`\n${output}\n\`\`\`\n\n请检查余额或最低兑换额后重新提交。`;
+              body = `## ❌ 兑换失败\n\n\`\`\`\n${resultData || '未知错误'}\n\`\`\`\n\n请检查余额后重新提交。`;
             }
             await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, body: body
             });
