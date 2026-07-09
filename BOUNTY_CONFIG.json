@@ -54,5 +54,7 @@
     "usdt_bep20": "0x321984374e41e1c8ba3e2b87ab050828cffd25c2",
     "network": "BSC (BEP-20)",
     "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
-  }
+  },
+  "min_redeem": 1,
+  "min_redeem_label": "无最低兑换限制"
 }
