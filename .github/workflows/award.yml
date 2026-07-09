@@ -28,13 +28,17 @@ jobs:
           python-version: "3.11"
 
       - name: Award coins
+        env:
+          SUBMITTER: ${{ github.event.inputs.submitter }}
+          SCORE: ${{ github.event.inputs.score }}
+          TASK: ${{ github.event.inputs.task }}
         run: |
-          echo "Awarding ${{ github.event.inputs.submitter }}"
-          echo "Score: ${{ github.event.inputs.score }}"
-          echo "Task: ${{ github.event.inputs.task }}"
+          echo "Awarding $SUBMITTER"
+          echo "Score: $SCORE"
+          echo "Task: $TASK"
 
-          COINS=$(( ${{ github.event.inputs.score }} * 10 ))
-          python scripts/coin.py transfer --from admin --to "${{ github.event.inputs.submitter }}" --amount $COINS --reason "Task: ${{ github.event.inputs.task }} (score ${{ github.event.inputs.score }})"
+          COINS=$(( SCORE * 10 ))
+          python scripts/coin.py transfer --from admin --to "$SUBMITTER" --amount $COINS --reason "Task: $TASK (score $SCORE)"
 
       - name: Update leaderboard
         run: python scripts/coin.py ledger
