@@ -72,7 +72,7 @@ def check_ast_cheating(code: str) -> list[str]:
                 violations.append(f"禁止使用 {node.func.id}()")
             if isinstance(node.func, ast.Attribute):
                 if node.func.attr in ("system", "popen", "call", "run") and isinstance(node.func.value, ast.Name) and node.func.value.id in ("os", "subprocess"):
-                    if node.func.attr != "run" or True:  # 所有危险系统调用
+                    if True:  # 所有危险系统调用
                         violations.append(f"危险系统调用: {node.func.value.id}.{node.func.attr}()")
 
         # 检测 import 白名单违规
@@ -130,21 +130,15 @@ def score_correctness(test_dir: str) -> tuple:
             ["python", "-m", "pytest", test_dir, "-v", "--tb=short", "--json-report"],
             capture_output=True, text=True, timeout=120
         )
-        # 尝试从 json-report 读取
-        report_path = os.path.join(test_dir, ".pytest_cache", ".report.json")
-        if os.path.exists(".report.json"):
-            with open(".report.json") as f:
-                report = json.load(f)
-        else:
-            # 从 stdout 解析
-            passed = result.stdout.count("PASSED")
-            failed = result.stdout.count("FAILED") + result.stdout.count("ERROR")
-            total = passed + failed
-            if total == 0:
-                return 0, "无测试用例"
-            rate = passed / total
-            score = round(40 * rate)
-            return score, f"{passed}/{total} 通过"
+        # 从 stdout 解析测试结果
+        passed = result.stdout.count("PASSED")
+        failed = result.stdout.count("FAILED") + result.stdout.count("ERROR") + result.stdout.count("ERRORS")
+        total = passed + failed
+        if total == 0:
+            return 0, "无测试用例"
+        rate = passed / total if total > 0 else 0
+        score = round(40 * rate)
+        return score, f"{passed}/{total} 通过"
     except (FileNotFoundError, subprocess.TimeoutExpired) as e:
         return 0, f"测试执行失败: {e}"
 
