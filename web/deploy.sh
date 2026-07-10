@@ -4,9 +4,9 @@
 
 set -e
 
-SERVER="8.218.245.58"
+SERVER="${DEPLOY_SERVER:-}"
 PORT="9000"
-USER="root"
+USER="${DEPLOY_USER:-}"
 
 echo "🚀 部署 Bounty Plaza 兑换系统到 $SERVER:$PORT"
 
