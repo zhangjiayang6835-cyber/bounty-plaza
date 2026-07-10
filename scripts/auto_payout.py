@@ -156,7 +156,7 @@ def process_one(req: dict) -> bool:
     username = req["username"]
     amount = req["amount"]
     address = req.get("address", "")
-    cash_value = req.get("coin_value", amount * 0.72)
+    cash_value = req.get("coin_value", amount * coin.RATE)
 
     print(f"\n  处理兑换 #{rid}: {username} ${cash_value:.2f} -> {address[:16]}...")
 
@@ -216,7 +216,7 @@ def process_pending():
     for req in pending:
         username = req["username"]
         amount = req["amount"]
-        cash = req.get("coin_value", amount * 0.72)
+        cash = req.get("coin_value", amount * coin.RATE)
         address = req.get("address", "?")[:20]
         print(f"  #{req['id']} | {username} | ${cash:.2f} | {address}...")
 
