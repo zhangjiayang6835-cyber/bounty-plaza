@@ -100,7 +100,7 @@ def check_bandit(code_file: str) -> list[str]:
                 if issue.get("issue_severity") in ("HIGH", "MEDIUM"):
                     violations.append(f"[bandit] {issue.get('test_name')}: {issue.get('issue_text')}")
     except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError):
-        pass
+        violations.append("[安全扫描] bandit 未安装或执行失败，无法评分")
     return violations
 
 
