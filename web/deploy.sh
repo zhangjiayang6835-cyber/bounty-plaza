@@ -1,8 +1,13 @@
 #!/bin/bash
 # deploy.sh — 一键部署自助兑换 Web 服务到服务器
 # 用法: bash web/deploy.sh
+# 注意: 需要设置 DEPLOY_SERVER 和 DEPLOY_USER 环境变量
 
 set -e
+
+SERVER="${DEPLOY_SERVER:?请设置 DEPLOY_SERVER 环境变量（IP 地址）}"
+PORT="${DEPLOY_PORT:-9000}"
+USER="${DEPLOY_USER:?请设置 DEPLOY_USER 环境变量（SSH 用户名）}"
 
 SERVER="${DEPLOY_SERVER:-}"
 PORT="9000"
