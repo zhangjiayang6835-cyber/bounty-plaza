@@ -37,7 +37,7 @@ jobs:
           echo "Score: $SCORE"
           echo "Task: $TASK"
 
-          COINS=$(( SCORE * 10 ))
+          COINS=$(( ${{ fromJSON(github.event.inputs.score) }} * 10 ))
           python scripts/coin.py transfer --from admin --to "$SUBMITTER" --amount $COINS --reason "Task: $TASK (score $SCORE)"
 
       - name: Update leaderboard
