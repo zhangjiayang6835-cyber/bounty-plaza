@@ -2,7 +2,7 @@ name: Auto Redeem
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened, labeled]
 
 permissions:
   issues: write
