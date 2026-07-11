@@ -1,8 +1,5 @@
-# 本地密钥文件，不上传
-.env
-# 本地数据库
-coins.db.bak
-# Python 缓存
-__pycache__/
+data/coins.db.bak
+data/coin*.db.bak
 *.pyc
-
+__pycache__/
+.env
