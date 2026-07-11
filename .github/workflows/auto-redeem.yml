@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Initialize database
+        run: python scripts/seed.py
+
       - name: Approve redemption
         id: approve
         env:
