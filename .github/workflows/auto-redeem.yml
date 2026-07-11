@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   redeem:
-    if: contains(github.event.issue.labels.*.name, 'redeem')
+    if: github.event_name == "issues" && contains(github.event.issue.labels.*.name, "redeem") || github.event_name == "workflow_dispatch"')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
