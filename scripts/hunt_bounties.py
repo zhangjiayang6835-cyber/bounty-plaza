@@ -133,7 +133,8 @@ def main():
 
         body = item.get("body") or ""
         title = item.get("title", "")
-        amounts = [int(m.replace(",","")) for m in REAL_MONEY.findall(title + "\n" + body)]
+        amounts = extract_amounts(title + "
+" + body)
         amount = max(amounts) if amounts else 0
 
         num = create_issue(item, amount)
