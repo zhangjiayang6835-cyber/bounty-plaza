@@ -111,6 +111,17 @@ def ensure_account(conn, username: str):
 
 def cmd_balance(args):
     conn = get_db()
+    if args.init:
+        ensure_account(conn, "admin")
+        cur = conn.execute("SELECT balance FROM accounts WHERE username = 'admin'")
+        bal = cur.fetchone()[0]
+        if bal == 0:
+            conn.execute("UPDATE accounts SET balance = 100000, updated_at = datetime('now') WHERE username = 'admin'")
+            conn.commit()
+            bal = 100000
+            print("✅ Admin account initialized with 100,000 coins")
+        else:
+            print(f"Admin account ready (balance: {bal} coins)")
     balance = get_balance(conn, args.user)
     conn.close()
     cash = balance * RATE
@@ -378,6 +389,7 @@ def main():
 
     p = sub.add_parser("balance", help="查询余额")
     p.add_argument("user")
+    p.add_argument("--init", action="store_true", help="初始化 Admin 账户并注入初始积分")
 
     p = sub.add_parser("transfer", help="转账")
     p.add_argument("--from", dest="from_user", required=True)
