@@ -1,30 +1,48 @@
 @echo off
-REM install-service.bat — 注册 Windows 计划任务，每5分钟自动打款
-REM 以管理员身份运行
+chcp 65001 >/dev/null
+echo ===== Bounty Plaza 本地打款守护 =====
+echo.
 
-set TASK_NAME=BountyPlazaAutoPay
-set SCRIPTS_DIR=%~dp0..\scripts
+:: 设置路径
+set BPAZA=C:\bounty-plaza
 set PYTHON=python
 
-echo Installing Windows scheduled task: %TASK_NAME%
-echo Script: %SCRIPTS_DIR%\auto_payout.py
+:: 创建目录
+if not exist %BPAZA% mkdir %BPAZA%
+if not exist %BPAZA%\data mkdir %BPAZA%\data
+if not exist %BPAZA%\logs mkdir %BPAZA%\logs
 
-schtasks /create /tn "%TASK_NAME%" /tr "%PYTHON% %SCRIPTS_DIR%\auto_payout.py --daemon --interval 300" /sc minute /mo 1 /ru "%USERNAME%" /f
+:: 复制文件
+copy /Y scripts\coin.py %BPAZA%\
+copy /Y scripts\auto_payout.py %BPAZA%\
+copy /Y BOUNTY_CONFIG.json %BPAZA%\
+copy /Y data\seed_users.json %BPAZA%\data\ 2>/dev/null
 
-if %ERRORLEVEL% equ 0 (
-    echo.
-    echo ✅ 计划任务已创建！
-    echo    每 1 分钟运行一次 auto_payout.py
-    echo.
-    echo 查看运行日志:
-    echo   schtasks /run /tn "%TASK_NAME%"
-    echo.
-    echo 手动停止:
-    echo   schtasks /end /tn "%TASK_NAME%"
-    echo.
-    echo 卸载:
-    echo   schtasks /delete /tn "%TASK_NAME%" /f
-) else (
-    echo ❌ 创建失败，请以管理员身份运行此脚本
-    pause
+:: 安装依赖
+pip install python-dotenv requests -q
+
+:: 创建 .env 模板
+if not exist %BPAZA%\.env (
+    echo BINANCE_API_KEY=你的_API_KEY > %BPAZA%\.env
+    echo BINANCE_SECRET_KEY=你的_SECRET_KEY >> %BPAZA%\.env
+    echo GH_TOKEN=你的_GITHUB_TOKEN >> %BPAZA%\.env
+    echo 请编辑 %BPAZA%\.env 填入你的密钥
 )
+
+:: 创建启动脚本
+echo @echo off > %BPAZA%\start.bat
+echo cd /d %BPAZA% >> %BPAZA%\start.bat
+echo python auto_payout.py --daemon --interval 300 >> %BPAZA%\start.bat
+echo echo 打款守护已启动，日志: %BPAZA%\logs\payout.log >> %BPAZA%\start.bat
+
+:: 加到开机启动
+set STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+copy /Y %BPAZA%\start.bat "%STARTUP%\bounty-payout.bat"
+
+echo.
+echo ✅ 安装完成！
+echo 1. 编辑 %BPAZA%\.env 填入你的密钥
+echo 2. 双击 %BPAZA%\start.bat 启动
+echo 3. 如需取消开机启动，删除 "%STARTUP%\bounty-payout.bat"
+echo.
+pause
