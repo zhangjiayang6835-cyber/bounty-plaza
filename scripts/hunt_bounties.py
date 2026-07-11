@@ -134,8 +134,6 @@ def main():
         body = item.get("body") or ""
         title = item.get("title", "")
         amounts = extract_amounts(title + chr(92) + "n" + body)
-" + body)
-" + body)
         amount = max(amounts) if amounts else 0
 
         num = create_issue(item, amount)
