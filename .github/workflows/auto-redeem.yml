@@ -3,56 +3,50 @@ name: Auto Redeem
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch:
-    inputs:
-      issue_num:
-        description: "Issue number"
-        required: true
-        default: "11"
+  issues:
+    types: [opened, reopened, labeled]
+
+permissions:
+  issues: write
+  contents: write
+
 jobs:
   redeem:
-    if: github.event_name == 'issue_comment' && contains(github.event.issue.labels.*.name, 'redeem') && contains(github.event.comment.body, '/redeem')
+    if: (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'redeem')) || (github.event_name == 'issue_comment' && contains(github.event.issue.labels.*.name, 'redeem') && contains(github.event.comment.body, '/redeem'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Init DB
-        run: |
-          python scripts/coin.py balance admin --init
-          # 从持久化账本导入用户
-          if [ -f data/seed_users.json ]; then
-            python3 -c "
-import json, sys
-sys.path.insert(0, 'scripts')
-import coin
-conn = coin.get_db()
-coin.init_db(conn)
-with open('data/seed_users.json') as f:
-    users = json.load(f)
-for name, data in users.items():
-    coin.ensure_account(conn, name)
-    honey = data.get('total', 500)
-    coin.ensure_account(conn, 'admin')
-    admin_bal = coin.get_balance(conn, 'admin')
-    if admin_bal >= honey and coin.get_balance(conn, name) == 0:
-        tx_id = coin.transfer(conn, 'admin', name, honey, 'seed')
-        print(f"  Seeded {name}: {honey} coins (tx #{tx_id})")
-conn.close()
-"
-          fi
+        run: python scripts/coin.py balance admin --init
 
-      - name: Post redeem approval for local daemon
-        if: success()
-        env:
-          ISSUE_NUM: ${{ github.event.issue.number }}
-        run: |
-          gh issue comment $ISSUE_NUM --repo ${{ github.repository }} --body "![redeem-approve] Local daemon will process this redemption."
-          echo "已提交兑换请求，本地守护进程将处理打款"
-
-      - name: Approve
+      - name: Approve redemption
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUM: ${{ github.event.issue.number }}
         run: python scripts/redeem_issue.py
+
+      - name: Auto payout via Binance
+        if: success()
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_SECRET_KEY: ${{ secrets.BINANCE_SECRET_KEY }}
+        run: python3 scripts/auto_payout.py
+
+      - name: Mark as paid
+        if: success()
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment $ISSUE_NUM --repo ${{ github.repository }} --body "✅ 兑换已完成并打款。"
+          gh issue close $ISSUE_NUM --repo ${{ github.repository }} --comment "已打款，关闭"
+
+      - name: Comment result
+        if: always()
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number }}
+        run: |
+          cat redeem_result_*.json 2>/dev/null || echo "已处理"
