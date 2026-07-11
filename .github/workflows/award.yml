@@ -28,7 +28,7 @@ jobs:
           python-version: "3.11"
 
       - name: Initialize database
-        run: python scripts/coin.py admin --init
+        run: python scripts/coin.py balance admin --init
 
       - name: Award coins
         env:
