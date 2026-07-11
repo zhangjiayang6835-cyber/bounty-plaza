@@ -27,14 +27,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Post award command
+      - name: Award coins
         env:
           SUBMITTER: ${{ github.event.inputs.submitter }}
           SCORE: ${{ github.event.inputs.score }}
           TASK: ${{ github.event.inputs.task }}
         run: |
+          echo "Awarding $SUBMITTER"
+          echo "Score: $SCORE"
+          echo "Task: $TASK"
           COINS=$(( ${{ fromJSON(github.event.inputs.score) }} * 10 ))
-          COMMENT="![award] submitter=$SUBMITTER|amount=$COINS|task=$TASK"
-          echo "$COMMENT"
-          gh issue comment ${{ github.event.inputs.issue || github.event.issue.number || '' }} --repo ${{ github.repository }} --body "$COMMENT" || echo "Comment posted to trigger local daemon"
-          echo "✅ $SUBMITTER 应获得 $COINS 积分（$TASK）"
+          python scripts/coin.py transfer --from admin --to "$SUBMITTER" --amount $COINS --reason "Task: $TASK (score $SCORE)"
