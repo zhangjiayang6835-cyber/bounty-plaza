@@ -1,0 +1,19 @@
+name: Hunt Bounties
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Hunt real bounties
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: python scripts/hunt_bounties.py
