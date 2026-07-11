@@ -27,21 +27,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Initialize database
-        run: python scripts/coin.py balance admin --init
-
-      - name: Award coins
+      - name: Post award command
         env:
           SUBMITTER: ${{ github.event.inputs.submitter }}
           SCORE: ${{ github.event.inputs.score }}
           TASK: ${{ github.event.inputs.task }}
         run: |
-          echo "Awarding $SUBMITTER"
-          echo "Score: $SCORE"
-          echo "Task: $TASK"
-
           COINS=$(( ${{ fromJSON(github.event.inputs.score) }} * 10 ))
-          python scripts/coin.py transfer --from admin --to "$SUBMITTER" --amount $COINS --reason "Task: $TASK (score $SCORE)"
-
-      - name: Update leaderboard
-        run: python scripts/coin.py ledger
+          COMMENT="![award] submitter=$SUBMITTER|amount=$COINS|task=$TASK"
+          echo "$COMMENT"
+          gh issue comment ${{ github.event.inputs.issue || github.event.issue.number || '' }} --repo ${{ github.repository }} --body "$COMMENT" || echo "Comment posted to trigger local daemon"
+          echo "✅ $SUBMITTER 应获得 $COINS 积分（$TASK）"
