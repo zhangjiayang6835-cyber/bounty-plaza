@@ -13,6 +13,26 @@ REAL_MONEY = re.compile(r"""\$\s?[\d,]+(?:\.\d{1,2})?|
     \d+[\s,]*(?:USDT|USDC|DAI|ETH|BTC|USD|BUSD)|
     bounty\s*(?::|of)?\s*\$\s*\d+""", re.I | re.X)
 
+def extract_amounts(text):
+    """从文本中提取所有符合条件的最低金额"""
+    amounts = []
+    for m in re.finditer(r'\$\s?(\d[\d,]*)', text):
+        try:
+            amounts.append(int(m.group(1).replace(',', '')))
+        except ValueError:
+            pass
+    for m in re.finditer(r'(\d+)\s*(USDT|USDC|DAI|ETH|BTC|USD|BUSD)', text, re.I):
+        try:
+            amounts.append(int(m.group(1)))
+        except ValueError:
+            pass
+    for m in re.finditer(r'bounty\s*(?::|of)?\s*\$\s*(\d[\d,]*)', text, re.I):
+        try:
+            amounts.append(int(m.group(1).replace(',', '')))
+        except ValueError:
+            pass
+    return amounts
+
 # 虚拟代币关键词 — 匹配标题+正文后 150 字内无真实金额则排除
 VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|badge|achievement", re.I)
 
@@ -34,8 +54,8 @@ def is_real_money(item):
     if VIRTUAL_KEYWORDS.search(body) and not REAL_MONEY.search(body[:200]):
         return False
     # 提取金额
-    amounts = [int(m.replace(",","")) for m in REAL_MONEY.findall(body) if m.strip()]
-    if not amounts:
+    amounts = extract_amounts(body)
+    if not amounts or all(a == 0 for a in amounts):
         return False
     return max(amounts) >= 25
 
