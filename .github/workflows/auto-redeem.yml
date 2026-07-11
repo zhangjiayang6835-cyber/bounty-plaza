@@ -19,7 +19,7 @@ jobs:
           python-version: "3.11"
 
       - name: Initialize database
-        run: python scripts/seed.py
+        run: python scripts/coin.py balance admin --init
 
       - name: Approve redemption
         id: approve
