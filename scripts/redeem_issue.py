@@ -25,6 +25,9 @@ def main():
         if '兑换数量' in stripped and i + 1 < len(lines):
             raw_amt = lines[i + 1].strip()
             amount = ''.join(c for c in raw_amt if c.isdigit())
+    if '收款地址' in stripped and i + 1 < len(lines):
+            address = lines[i + 1].strip()
+
     if amount:
         amount_int = int(amount)
         if amount_int <= 0 or amount_int > 10**9:
@@ -35,8 +38,6 @@ def main():
         result = {'ok': False, 'error': '无法解析金额'}
         write_result(result, issue_num)
         return 1
-        if '收款地址' in stripped and i + 1 < len(lines):
-            address = lines[i + 1].strip()
 
     if not username or not amount or not address:
         result = {"ok": False, "error": f"字段解析失败: user={username} amt={amount} addr={address}"}
