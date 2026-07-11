@@ -27,6 +27,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Initialize database
+        run: python scripts/coin.py admin --init
+
       - name: Award coins
         env:
           SUBMITTER: ${{ github.event.inputs.submitter }}
