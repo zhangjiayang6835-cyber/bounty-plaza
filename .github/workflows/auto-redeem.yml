@@ -18,7 +18,29 @@ jobs:
         with:
           python-version: "3.11"
       - name: Init DB
-        run: python scripts/coin.py balance admin --init
+        run: |
+          python scripts/coin.py balance admin --init
+          # 从持久化账本导入用户
+          if [ -f data/seed_users.json ]; then
+            python3 -c "
+import json, sys
+sys.path.insert(0, 'scripts')
+import coin
+conn = coin.get_db()
+coin.init_db(conn)
+with open('data/seed_users.json') as f:
+    users = json.load(f)
+for name, data in users.items():
+    coin.ensure_account(conn, name)
+    honey = data.get('total', 500)
+    coin.ensure_account(conn, 'admin')
+    admin_bal = coin.get_balance(conn, 'admin')
+    if admin_bal >= honey and coin.get_balance(conn, name) == 0:
+        tx_id = coin.transfer(conn, 'admin', name, honey, 'seed')
+        print(f"  Seeded {name}: {honey} coins (tx #{tx_id})")
+conn.close()
+"
+          fi
       - name: Approve
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
