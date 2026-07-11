@@ -25,7 +25,7 @@ def main():
         if '兑换数量' in stripped and i + 1 < len(lines):
             raw_amt = lines[i + 1].strip()
             amount = ''.join(c for c in raw_amt if c.isdigit())
-    if '收款地址' in stripped and i + 1 < len(lines):
+        if '收款地址' in stripped and i + 1 < len(lines):
             address = lines[i + 1].strip()
 
     if amount:
