@@ -1,6 +1,12 @@
 name: Auto Redeem
 
 on:
+  workflow_dispatch:
+    inputs:
+      issue_num:
+        description: "Issue number"
+        required: true
+        default: "10"
   issues:
     types: [opened, reopened, labeled]
 
