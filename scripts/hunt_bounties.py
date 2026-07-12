@@ -111,6 +111,14 @@ Medium
     result = json.loads(urllib.request.urlopen(req).read())
     return result.get("number", "?")
 
+def is_real_external(item):
+    """排除我们自己的仓库（虚拟任务）"""
+    url = item.get("html_url", "")
+    for owner in ["zhangjiayang6835-cyber", "zhangjiayang6835"]:
+        if f"github.com/{owner}/" in url:
+            return False
+    return True
+
 def main():
     if not GH_TOKEN:
         print("ERROR: GH_TOKEN 未设置")
@@ -127,6 +135,8 @@ def main():
     for item in items:
         url = item["html_url"].rstrip("/")
         if url in existing:
+            continue
+        if not is_real_external(item):
             continue
         if not is_real_money(item):
             continue
