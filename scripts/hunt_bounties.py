@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
 REPO = "zhangjiayang6835-cyber/bounty-plaza"
-SEARCH_QUERY = "label:bounty state:open is:issue sort:created"
+SEARCH_QUERY = "label:bounty state:open is:issue sort:created -user:zhangjiayang6835-cyber"
 
 # 真实货币正则
 REAL_MONEY = re.compile(r"""\$\s?[\d,]+(?:\.\d{1,2})?|
@@ -112,6 +112,13 @@ Medium
     return result.get("number", "?")
 
 def is_real_external(item):
+    """排除自己的仓库 + 防止循环重复创建"""
+    title = item.get("title", "")
+    if title.count("[Bounty]") > 1:  # 防止嵌套重复 [Bounty] [Bounty] [Bounty]...
+        return False
+    return is_not_own_repo(item)
+
+def is_not_own_repo(item):
     """排除我们自己的仓库（虚拟任务）"""
     url = item.get("html_url", "")
     for owner in ["zhangjiayang6835-cyber", "zhangjiayang6835"]:
