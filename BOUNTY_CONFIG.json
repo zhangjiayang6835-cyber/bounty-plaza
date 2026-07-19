@@ -56,5 +56,13 @@
     "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
   },
   "min_redeem": 1,
-  "min_redeem_label": "无最低兑换限制"
+  "min_redeem_label": "无最低兑换限制",
+  "child_bounties": [
+    {
+      "id": 482,
+      "title": "Seed a distribution child bounty that attracts a new participant",
+      "reward": 1.00,
+      "status": "active"
+    }
+  ]
 }
