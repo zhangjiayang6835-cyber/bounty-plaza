@@ -1,0 +1,106 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "cronExpression": "0 17 * * 5"
+      },
+      "name": "Cron",
+      "type": "ncron",
+      "typeVersion": 1,
+      "position": [100, 100]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/OWNER/REPO/events",
+        "options": {},
+        "headers": {
+          "Authorization": "=Bearer {{process.env.GITHUB_TOKEN}}"
+        }
+      },
+      "name": "GitHub API",
+      "type": "nhttp",
+      "typeVersion": 1,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {
+        "functionCode": "/* Your code to process GitHub data */"
+      },
+      "name": "Process Data",
+      "type": "nfunction",
+      "typeVersion": 1,
+      "position": [500, 100]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.claude.ai/v1/generate-summary",
+        "options": {},
+        "headers": {
+          "Authorization": "=Bearer {{process.env.CLAUDE_API_KEY}}"
+        },
+        "body": "={{JSON.stringify($node[\"Process Data\"].json)}}"
+      },
+      "name": "Claude API",
+      "type": "nhttp",
+      "typeVersion": 1,
+      "position": [700, 100]
+    },
+    {
+      "parameters": {
+        "to": "recipient@example.com",
+        "subject": "Weekly GitHub Repo Summary",
+        "text": "={{$node[\"Claude API\"].json.summary}}"
+      },
+      "name": "Send Email",
+      "type": "nemail",
+      "typeVersion": 1,
+      "position": [900, 100]
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "GitHub API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub API": {
+      "main": [
+        [
+          {
+            "node": "Process Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Data": {
+      "main": [
+        [
+          {
+            "node": "Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude API": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
