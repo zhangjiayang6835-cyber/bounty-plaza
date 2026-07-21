@@ -1,0 +1,33 @@
+{
+  "home": {
+    "title": "Bosh sahifa",
+    "description": "Haqiqiy mukofot vazifalarini yig'ish platformasi"
+  },
+  "bounty": {
+    "title": "Mukofotlar",
+    "description": "Barcha mavjud mukofotlar ro'yxati",
+    "claim": "Mukofotni olish",
+    "claimed": "Mukofot olindi"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Sizning profil ma'lumotlaringiz",
+    "points": "Jami ballar",
+    "cash": "Jami pul"
+  },
+  "rules": {
+    "title": "Qoidalar",
+    "description": "Platforma qoidalarini o'rganing"
+  },
+  "reward_policy": {
+    "title": "Mukofot siyosati",
+    "description": "Mukofotlarni qanday olish haqida ma'lumot"
+  },
+  "common": {
+    "submit": "Yuborish",
+    "cancel": "Bekor qilish",
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik yuz berdi",
+    "success": "Muvaffaqiyatli"
+  }
+}
