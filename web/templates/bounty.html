@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bounty-container">
+    <h1>{{ bounty.title }}</h1>
+    <div class="bounty-details">
+        <p><strong>Description:</strong> {{ bounty.description }}</p>
+        <p><strong>Reward:</strong> ${{ bounty.reward }}</p>
+        <p><strong>Difficulty:</strong> {{ bounty.difficulty }}</p>
+        <p><strong>Status:</strong> {{ bounty.status }}</p>
+    </div>
+
+    {% if bounty.status == 'open' %}
+    <div class="bounty-actions">
+        <form method="post" action="{% url 'claim_bounty' bounty.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Claim Bounty</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
