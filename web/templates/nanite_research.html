@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Nanite Research</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Available Nanite Types</h2>
+            <ul class="list-group">
+                {% for nanite_type in nanite_types %}
+                <li class="list-group-item">
+                    <h3>{{ nanite_type.name }}</h3>
+                    <p>{{ nanite_type.description }}</p>
+                    <p>Research Points Required: {{ nanite_type.research_points_required }}</p>
+                    <a href="{% url 'implant_nanite' nanite_type.id %}" class="btn btn-primary">Implant</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <h2>Your Nanites</h2>
+            <ul class="list-group">
+                {% for user_nanite in user_nanites %}
+                <li class="list-group-item">
+                    <h3>{{ user_nanite.nanite_type.name }}</h3>
+                    <p>Cloud ID: {{ user_nanite.cloud_id }}</p>
+                    <p>Safety Threshold: {{ user_nanite.safety_threshold }}</p>
+                    <p>Research Points: {{ user_nanite.research_points }}</p>
+                    <a href="{% url 'program_nanite' user_nanite.id %}" class="btn btn-primary">Program</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
