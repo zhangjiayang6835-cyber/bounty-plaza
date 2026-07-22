@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "description": "Ensure the armory guns are clean",
+        "difficulty": "easy",
+        "reward": 100
+    },
+    {
+        "id": 2,
+        "description": "Harmbaton the mime",
+        "difficulty": "moderate",
+        "reward": 250
+    },
+    {
+        "id": 3,
+        "description": "Talk to the prisoners in brig",
+        "difficulty": "hard",
+        "reward": 500
+    },
+    {
+        "id": 4,
+        "description": "Stop the Research Director building ten ais and shoving them in combat mechs",
+        "difficulty": "mythical",
+        "reward": 1000
+    }
+]

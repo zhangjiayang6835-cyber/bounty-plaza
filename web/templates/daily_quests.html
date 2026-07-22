@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Quests</title>
+</head>
+<body>
+    <h1>Daily Quests</h1>
+    {% if quest %}
+        <div class="quest">
+            <h2>{{ quest.quest.description }}</h2>
+            <p>Difficulty: {{ quest.quest.difficulty }}</p>
+            <p>Reward: {{ quest.quest.reward }} credits</p>
+            {% if not quest.completed %}
+                <form action="/complete_quest" method="post">
+                    <input type="hidden" name="quest_id" value="{{ quest.quest.id }}">
+                    <button type="submit">Complete Quest</button>
+                </form>
+            {% else %}
+                <p>Quest completed!</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No quest available today.</p>
+    {% endif %}
+</body>
+</html>
