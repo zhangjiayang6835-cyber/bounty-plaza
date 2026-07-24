@@ -1,0 +1,30 @@
+clans:
+  - name: ThunderClan
+    roles:
+      leader: "Leader"
+      deputy: "Deputy"
+      senior_medicine_cat: "Senior Medicine Cat"
+      medicine_cat: "Medicine Cat"
+      warrior: "Warrior"
+      apprentice: "Apprentice"
+  - name: RiverClan
+    roles:
+      leader: "Leader"
+      deputy: "Deputy"
+      senior_medicine_cat: "Senior Medicine Cat"
+      medicine_cat: "Medicine Cat"
+      warrior: "Warrior"
+      apprentice: "Apprentice"
+  - name: WindClan
+    roles:
+      leader: "Leader"
+      deputy: "Deputy"
+      senior_medicine_cat: "Senior Medicine Cat"
+      medicine_cat: "Medicine Cat"
+      warrior: "Warrior"
+      apprentice: "Apprentice"
+  - name: ShadowClan
+    roles:
+      leader: "Leader"
+      deputy: "Deputy"
+      senior_medicine_cat: "Senior Medicine Cat"
