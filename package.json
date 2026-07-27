@@ -1,0 +1,25 @@
+{
+  "name": "dodge-roll-system",
+  "version": "1.0.0",
+  "description": "Production-ready dodge rolling mechanic for games",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "dodge",
+    "roll",
+    "game",
+    "mechanic",
+    "evasion"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "eslint": "^8.0.0"
+  }
+}
