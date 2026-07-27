@@ -1,0 +1,105 @@
+.dodge-ui {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 200px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+}
+
+.dodge-status {
+  font-size: 14px;
+  color: #00ff00;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dodge-status.active {
+  color: #ffff00;
+  animation: pulse 0.3s ease-in-out;
+}
+
+.dodge-status.ready {
+  color: #00ff00;
+  animation: glow 1s ease-in-out infinite;
+}
+
+.dodge-cooldown-bar-container {
+  width: 100%;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.dodge-cooldown-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00, #00aa00);
+  width: 100%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.dodge-ui.invulnerable .dodge-cooldown-bar {
+  background: linear-gradient(90deg, #ffff00, #ffaa00);
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
+}
+
+.dodge-ui.dodge-effect {
+  animation: dodge-flash 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    text-shadow: 0 0 5px #ffff00;
+  }
+  50% {
+    text-shadow: 0 0 20px #ffff00;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 5px #00ff00;
+  }
+  50% {
+    text-shadow: 0 0 15px #00ff00;
+  }
+}
+
+@keyframes dodge-flash {
+  0% {
+    background: rgba(255, 255, 0, 0.3);
+    border-color: #ffff00;
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: #00ff00;
+  }
+}
+
+@media (max-width: 768px) {
+  .dodge-ui {
+    bottom: 10px;
+    right: 10px;
+    width: 150px;
+    padding: 10px;
+  }
+
+  .dodge-status {
+    font-size: 12px;
+  }
+
+  .dodge-cooldown-bar-container {
+    height: 15px;
+  }
+}
