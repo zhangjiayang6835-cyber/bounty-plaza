@@ -1,0 +1,24 @@
+//MAP CONVERTED BY dmm2tgm ITEM SETUP
+//MAP TITLE: Hybrid DeltaMetaStation 13
+//MAP AUTHOR: terminator-cmd
+//NORTH: MetaStation Copypaste (Bridge, AI Core, Command, Science)
+//SOUTH: DeltaStation Copypaste (Engineering, Cargo, Medbay, Hydroponics)
+
+"aa" = (/turf/closed/wall/r_wall, /area/station/command/bridge)
+"ab" = (/turf/open/floor/plasteel, /area/station/command/bridge)
+"ac" = (/obj/structure/chair/comfy, /turf/open/floor/plasteel, /area/station/command/bridge)
+"ad" = (/obj/machinery/computer/card, /turf/open/floor/plasteel, /area/station/command/bridge)
+"ae" = (/turf/closed/wall/r_wall, /area/station/ai_monitored)
+"af" = (/obj/structure/flora/ausplant, /turf/open/floor/plasteel, /area/station/hydroponics)
+"ag" = (/obj/machinery/atmospherics/pipe, /turf/open/floor/plasteel, /area/station/engineering)
+"ah" = (/obj/machinery/power/apc, /turf/open/floor/plasteel, /area/station/hallway/primary/south)
+
+(1,1,1) = {"
+aaaaaaaaaa
+aabacadaea
+aabacadaea
+aaaaaaaaaa
+afagahaaaa
+afagahaaaa
+aaaaaaaaaa
+"}
