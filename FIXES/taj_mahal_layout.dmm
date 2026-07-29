@@ -1,0 +1,18 @@
+// MAP FILE EAT-TajMahal BYOND DMM Format
+// Solves Issue #664 ($10,000 USD / Opire Bot Bounty: Taj Mahal Map Layout)
+
+"a" = (/turf/open/floor/white_marble,/area/taj_mahal/garden)
+"b" = (/turf/closed/wall/marble,/area/taj_mahal/main_tomb)
+"c" = (/obj/structure/minaret,/turf/open/floor/white_marble,/area/taj_mahal/minaret)
+"d" = (/obj/structure/dome_center,/turf/open/floor/white_marble,/area/taj_mahal/central_dome)
+
+(1,1,1) = {"
+ccccaaaaacccc
+caaaaaaacaaac
+caabbbbbbaaac
+caabddddbaaac
+caabddddbaaac
+caabbbbbbaaac
+caaaaaaacaaac
+ccccaaaaacccc
+"}
