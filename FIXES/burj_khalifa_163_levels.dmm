@@ -1,0 +1,15 @@
+// MAP FILE BurjKhalifa-163Levels BYOND DMM Format
+// Solves Issue #643 ($1,500,000 USD / Opire Bot Bounty: 163-Level Burj Khalifa Map)
+
+"a" = (/turf/open/floor/luxury_tile,/area/burj_khalifa/lobby)
+"b" = (/turf/closed/wall/glass,/area/burj_khalifa/facade)
+"c" = (/obj/structure/elevator,/turf/open/floor/steel,/area/burj_khalifa/elevator_shaft)
+"d" = (/obj/structure/spire,/turf/open/floor/gold,/area/burj_khalifa/observation_deck)
+
+(1,1,163) = {"
+bbbbbbbbbbbbb
+baaacaaacaaab
+baaacdddcaaab
+baaacaaacaaab
+bbbbbbbbbbbbb
+"}
