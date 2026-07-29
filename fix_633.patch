@@ -1,0 +1,91 @@
+## Root-Cause Analysis
+
+In BYOND / SS13 (`tgstation` base architectures), `SSinput` (Subsystem Input) deadlocks typically stem from **blocking execution inside non-yielding loop structures during input subsystem processing**.
+
+The primary failure mode occurs in `code/controllers/subsystem/input.dm` during client key/macro initialization or queue flush operations:
+
+1. **Unchecked Re-entrancy / Mutex Lockup**: `SSinput.fire()` or key event listeners attempt to process incoming client key packets while an active queue flush is suspended due to `MC_TICK_CHECK` or a `sleep()` call.
+2. **Infinite Lock Wait on Client Initializations**: When a client connects or reconnects while `SSinput` is executing macro generation or key-binding setup, calling blocking BYOND verbs or `winset()` synchronously inside the subsystem iteration blocks the Master Controller thread.
+3. **Queue Mutex Contention**: Concurrent input buffer processing between `client/Topic()`, keydown handlers, and `SSinput.fire()` without a clear lock release strategy or timeout mechanism causes execution flow to stall waiting for lock state release that never occurs.
+
+---
+
+## Boundary Conditions & Risk Mitigation
+
+* **Client Disconnections Mid-Processing**: If a client disconnects while held in the active input queue, references to `null` clients must be gracefully pruned without throwing unhandled run-time errors or abandoning mutex locks.
+* **Extreme Tick Rate Drops (Lag Spikes)**: During high tick usage where `MC_TICK_CHECK` yields execution mid-loop, internal flags (`processing = TRUE`) must remain consistent so subsequent ticks recover or resume cleanly rather than deadlocking.
+* **Backward Compatibility**: Interface macros and client key-binding hooks rely on `SSinput` state properties. Custom client inputs and existing macro setups must remain fully functional.
+
+---
+
+## Proposed Fix
+
+Below is the structured patch to prevent deadlocking by implementing **non-blocking queue processing**, **safe yield mechanics**, and **re-entrancy protection with atomic state guarantees**.
+
+```dm filepath: code/controllers/subsystem/input.dm
+/datum/controller/subsystem/input
+	name = "Input"
+	wait = 1
+	priority = FIRE_PRIORITY_INPUT
+	flags = SS_NO_INIT
+
+	/// Active input queue array to process
+	var/list/current_run = list()
+	/// Lock flag to prevent recursive deadlocks during processing
+	var/locked = FALSE
+
+/datum/controller/subsystem/input/fire(resumed = FALSE)
+	if(locked)
+		return
+
+	if(!resumed)
+		if(!length(GLOB.keybindings))
+			return
+		// Clone queue atomically to avoid mid-iteration mutation locks
+		current_run = GLOB.input_queue.Copy()
+		GLOB.input_queue.Cut()
+
+	locked = TRUE
+	var/list/curr = current_run
+
+	while(length(curr))
+		var/datum/input_event/E = curr[length(curr)]
+		curr.len--
+
+		if(QDELETED(E) || !E.owner)
+			continue
+
+		// Execute event non-blockingly with panic protection
+		try
+			E.execute()
+		catch(var/exception/e)
+			log_game("SSinput exception during execution: [e.name] - [e.desc]")
+
+		if(MC_TICK_CHECK)
+			locked = FALSE
+			return
+
+	locked = FALSE
+```
+
+```dm filepath: code/modules/client/keybindings/input_handler.dm
+/client/proc/process_key_input(key_code, is_down)
+	if(!key_code)
+		return
+
+	// Non-blocking queue push prevents client network threads from locking SSinput
+	var/datum/input_event/E = new(src, key_code, is_down)
+	GLOB.input_queue += E
+
+	// Trigger immediate tick wake if subsystem is dormant
+	if(SSinput.can_fire && !SSinput.locked)
+		SSinput.post_queue_check()
+```
+
+---
+
+## Technical Verification
+
+1. **Re-entrancy Safety**: The `locked` boolean guard prevents nested calls from `fire()` when user events trigger secondary subsystem notifications.
+2. **Atomic Queue Swapping**: Copying `GLOB.input_queue` and cutting the original reference prevents race conditions between new keypress events appended during a tick yield.
+3. **Exception Safety**: The `try...catch` block ensures that malformed input data or script runtime errors from individual client callbacks cannot leave the input subsystem in a locked state.
