@@ -1,6 +1,9 @@
 import pytest
-import ttnn
+
+ttnn = pytest.importorskip("ttnn")
 
 @pytest.fixture(scope="session")
 def device():
-    return ttnn.open_device(0)
+    device = ttnn.open_device(device_id=0)
+    yield device
+    ttnn.close_device(device)

@@ -1,6 +1,7 @@
 import pytest
 
 torch = pytest.importorskip("torch")
+ttnn = pytest.importorskip("ttnn")
 
 def to_ttnn(tensor, device, layout=None, dtype=None):
     import ttnn
@@ -32,6 +33,8 @@ def test_gemma2_accuracy(device, model_name):
     for i in range(config["num_layers"]):
         weights[f"layers.{i}.input_layernorm_weight"] = to_ttnn(torch.randn(config["hidden_size"]), device=device)
         weights[f"layers.{i}.post_attention_layernorm_weight"] = to_ttnn(torch.randn(config["hidden_size"]), device=device)
+        weights[f"layers.{i}.pre_feedforward_layernorm_weight"] = to_ttnn(torch.randn(config["hidden_size"]), device=device)
+        weights[f"layers.{i}.post_feedforward_layernorm_weight"] = to_ttnn(torch.randn(config["hidden_size"]), device=device)
         
         weights[f"layers.{i}.self_attn.q_proj_weight"] = to_ttnn(torch.randn(config["hidden_size"], config["num_heads"] * config["head_dim"]), device=device)
         weights[f"layers.{i}.self_attn.k_proj_weight"] = to_ttnn(torch.randn(config["hidden_size"], config["num_kv_heads"] * config["head_dim"]), device=device)

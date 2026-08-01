@@ -15,6 +15,7 @@ python app.py
 | 接口 | 说明 |
 |------|------|
 | `GET /balance/{username}` | 查询余额和折合现金 |
+| `GET /solver/margin/{bounty_id}` | 查询 solver 现金利润及保证金（直接支持 / 费率分析） |
 | `POST /redeem` | 自助兑换（自动审批） |
 | `GET /redeem/{id}` | 查询兑换状态 |
 | `GET /history/{username}` | 兑换历史 |
