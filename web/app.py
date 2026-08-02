@@ -77,7 +77,7 @@ def create_redeem(req: RedeemRequest):
     cash_value = req.amount * coin.RATE
     coin.ensure_account(conn, req.username)
     cur = conn.execute(
-        "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?,'pending')",
+        "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?,?,'pending')",
         (req.username, req.amount, cash_value, req.address)
     )
     req_id = cur.lastrowid

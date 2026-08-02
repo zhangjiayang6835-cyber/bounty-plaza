@@ -308,18 +308,6 @@ def cmd_pay(args):
     finally:
         conn.close()
     return 0
-    conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
-    req = cur.fetchone()
-    if not req:
-        print(f"ERROR: 兑换请求 #{args.id} 不存在或未批准")
-        return 1
-    conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
-    conn.execute("UPDATE transactions SET status = 'completed' WHERE reason = ?", (f"兑换请求 #{args.id}",))
-    conn.commit()
-    conn.close()
-    print(f"✅ 兑换 #{args.id} 已标记为已支付")
-    return 0
 
 
 def cmd_reject(args):
