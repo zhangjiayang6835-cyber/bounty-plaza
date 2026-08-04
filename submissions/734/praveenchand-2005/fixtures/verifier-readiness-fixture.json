@@ -1,0 +1,77 @@
+{
+  "expected_hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+  "contracts": [
+    {
+      "contract": "0xc710d54d192ffb0b84cd6e051754ab70acf1130c",
+      "verifier_set": {
+        "hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+        "threshold": 2,
+        "signers": ["0xsigner1", "0xsigner2"]
+      },
+      "runner": {
+        "identifier": "sandboxed_regression_v1",
+        "version": "1.0.0",
+        "last_seen_offset_secs": 0
+      },
+      "expected_state": "healthy"
+    },
+    {
+      "contract": "0xad4532e45d371ff5b5c40ebbf0c20687ed9e6fc4",
+      "verifier_set": {
+        "hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+        "threshold": 3,
+        "signers": ["0xsigner1"]
+      },
+      "runner": {
+        "identifier": "sandboxed_regression_v1",
+        "version": "1.0.0",
+        "last_seen_offset_secs": 0
+      },
+      "expected_state": "missing_signer"
+    },
+    {
+      "contract": "0x0f1e2d3c4b5a697887766554433221100feedface",
+      "verifier_set": {
+        "hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+        "threshold": 2,
+        "signers": ["0xsigner1", "0xsigner2"]
+      },
+      "runner": {
+        "identifier": "sandboxed_regression_v1",
+        "version": "1.0.0",
+        "last_seen_offset_secs": -600
+      },
+      "expected_state": "stale_runner"
+    },
+    {
+      "contract": "0xdeadbeefcafebabe000000000000000000000000",
+      "verifier_set": {
+        "hash": "0x0f1e2d3c4b5a697887766554433221100feedface",
+        "threshold": 2,
+        "signers": ["0xsigner1", "0xsigner2"]
+      },
+      "runner": {
+        "identifier": "sandboxed_regression_v1",
+        "version": "1.0.0",
+        "last_seen_offset_secs": 0
+      },
+      "expected_state": "verifier_set_mismatch"
+    },
+    {
+      "contract": "0x1111111111111111111111111111111111111111",
+      "verifier_set": {
+        "hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+        "threshold": 2,
+        "signers": ["0xsigner1", "0xsigner2"]
+      },
+      "runner": null,
+      "expected_state": "no_runner"
+    },
+    {
+      "contract": "0x2222222222222222222222222222222222222222",
+      "verifier_set": null,
+      "runner": null,
+      "expected_state": "no_config"
+    }
+  ]
+}
