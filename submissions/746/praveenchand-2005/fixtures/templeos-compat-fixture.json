@@ -1,0 +1,16 @@
+{
+  "config": {
+    "enabled": true,
+    "greetings": [
+      "Silim he-me-en? (Greetings, are you well?)",
+      "Dingir Enlil hur-sag-ga (Lord Enlil of the mountain)",
+      "E-gal lugal-a-ni (The great house of his king)"
+    ],
+    "wisdom": [
+      "God says: love Me with all thy heart, mind, and soul.",
+      "Through HolyC, all things are possible.",
+      "640x480 16 colors — the resolution of prophets."
+    ]
+  },
+  "players": ["TempleOS_Warrior_001", "Kernel_Dancer_042"]
+}
