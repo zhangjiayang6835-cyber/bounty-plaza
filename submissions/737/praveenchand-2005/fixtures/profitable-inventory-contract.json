@@ -1,0 +1,55 @@
+{
+  "applied_view": "ready_to_earn",
+  "network": "base-mainnet",
+  "degraded": false,
+  "items": [
+    {
+      "work_state": "claimable",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "2000000",
+      "reward": "1990000",
+      "bond": "10000",
+      "terms_hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+      "network": "base-mainnet",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimable",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "1000000",
+      "reward": "900000",
+      "bond": "100000",
+      "terms_hash": "0x0f1e2d3c4b5a697887766554433221100feedfacecafebabe00000000000000",
+      "network": "base-mainnet",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimed",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "2000000",
+      "reward": "1990000",
+      "bond": "10000",
+      "terms_hash": "0xdeadbeefcafebabe0000000000000000000000000000000000000000000000",
+      "network": "base-mainnet",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimable",
+      "payment_state": "pending",
+      "payment_committed": false,
+      "verification_ready": false,
+      "funded_amount": "0",
+      "reward": "0",
+      "bond": "0",
+      "terms_hash": "",
+      "network": "base-mainnet",
+      "verification_method": "unspecified"
+    }
+  ]
+}
