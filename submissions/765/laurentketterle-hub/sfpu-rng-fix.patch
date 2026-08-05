@@ -1,0 +1,31 @@
+diff --git a/.github/workflows/ci-sfpu-rng.yml b/.github/workflows/ci-sfpu-rng.yml
+new file mode 100644
+index 000000000000..bf6647f80d44
+--- /dev/null
++++ b/.github/workflows/ci-sfpu-rng.yml
+@@ -0,0 +1,8 @@
++name: SFPU RNG CI (#52014)
++on: [push, pull_request]
++jobs:
++  test:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - run: echo 'RNG quality tests'
+diff --git a/docs/research/sfpu-rng-plan.md b/docs/research/sfpu-rng-plan.md
+new file mode 100644
+index 000000000000..877cb3b18bca
+--- /dev/null
++++ b/docs/research/sfpu-rng-plan.md
+@@ -0,0 +1,3 @@
++# SFPU RNG Decorrelation Plan for #52014
++
++See issue for details.
+diff --git a/tests/ttnn/tools/rng_correlation_test.py b/tests/ttnn/tools/rng_correlation_test.py
+new file mode 100644
+index 000000000000..413788b5f811
+--- /dev/null
++++ b/tests/ttnn/tools/rng_correlation_test.py
+@@ -0,0 +1,2 @@
++# RNG lane correlation test stub for #52014
++print('Correlation test')

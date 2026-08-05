@@ -1,0 +1,19 @@
+{
+  "description": "SFPU RNG decorrelation test vectors",
+  "seed": 12345,
+  "num_lanes": 32,
+  "expected_mean_range": [
+    0.49,
+    0.51
+  ],
+  "expected_var_range": [
+    0.078,
+    0.088
+  ],
+  "lock_state_value": 4294967295,
+  "lfsr_polynomial": "x^32 + x^22 + x^2 + x + 1 (reflected 0x80000057)",
+  "wang_hash_test": {
+    "input": 305419896,
+    "diff_bits_min": 12
+  }
+}
