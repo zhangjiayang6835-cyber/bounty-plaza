@@ -1,0 +1,12 @@
+name: CI #798
+on:
+  pull_request:
+  push:
+    branches: [feat/impl-798-1785993024]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo OK #798
