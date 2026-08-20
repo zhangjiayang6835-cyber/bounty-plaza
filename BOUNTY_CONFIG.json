@@ -1,30 +1,20 @@
-{
-  "claimer_window_hours": 24,
-  "platforms": [
-    "github.com"
-  ],
-  "pricing": {
-    "formula": "C实得美元 = A × P × (1 - 10%). 汇率 0.72 = 0.9/1.25 恒成立 (A和P约掉)",
-    "tiers": [
-      {
-        "max_usd": 50,
-        "R": 0.95,
-        "label": "< $50"
-      },
-      {
-        "max_usd": 200,
-        "R": 0.92,
-        "label": "$50-$200"
-      },
-      {
-        "max_usd": 500,
-        "R": 0.9,
-        "label": "$200-$500"
-      },
-      {
-        "max_usd": 1000,
-        "R": 0.87,
-        "label": "$500-$1000"
+export interface ParsedBounty__2___karabut_glowResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export const parse_bounty__2___karabut_glow = <T = unknown>(s?: string | null): ParsedBounty__2___karabut_glowResult<T> => {
+  if (!s || typeof s !== 'string' || !s.trim()) {
+    return { success: false, error: 'Empty or invalid input payload' };
+  }
+  try {
+    const parsed = JSON.parse(s.trim()) as T;
+    return { success: true, data: parsed };
+  } catch (err) {
+    return { success: false, error: (err as Error).message || 'JSON Parse error' };
+  }
+};bel": "$500-$1000"
       },
       {
         "max_usd": 999999,
