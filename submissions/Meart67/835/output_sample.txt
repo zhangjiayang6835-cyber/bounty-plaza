@@ -1,0 +1,10 @@
+{
+  "run_id": "835-alpha",
+  "steps": [
+    "init",
+    "scrape",
+    "submit",
+    "earn"
+  ],
+  "revenue": "3 USDC"
+}
