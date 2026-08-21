@@ -1,0 +1,41 @@
+{
+    "hg201": {
+        "transition_keV": 1564.8054
+    },
+    "d0_cluster": {
+        "bond_length_pm": 2.3015
+    },
+    "spin_transfer": [
+        {
+            "kappa_ps": 5.0,
+            "st_efficiency": 0.0647
+        },
+        {
+            "kappa_ps": 10.0,
+            "st_efficiency": 0.4039
+        },
+        {
+            "kappa_ps": 16.6,
+            "st_efficiency": 0.9531
+        },
+        {
+            "kappa_ps": 20.0,
+            "st_efficiency": 0.759
+        },
+        {
+            "kappa_ps": 30.0,
+            "st_efficiency": 0.0353
+        }
+    ],
+    "gamma_511": {
+        "relative_intensity": 0.99,
+        "karabut_1995_reference": 1.0
+    },
+    "simulation_seed": 42,
+    "run_command": [
+        "python3",
+        "/root/simulator.py"
+    ],
+    "benchmark_runtime_hours": 0.01,
+    "arxiv_preprint_id": "2608.10495"
+}
