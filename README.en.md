@@ -62,3 +62,4 @@ See [RULES.en.md](RULES.en.md) for:
 > ⚠️ All bounties come from third-party platforms. Contributors must comply with each platform's rules.
 # bounty-fix-ref: https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/832
 # bounty-fix-ref: https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/832
+# bounty-fix-ref: https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/832
