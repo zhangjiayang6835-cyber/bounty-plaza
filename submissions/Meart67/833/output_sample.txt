@@ -1,0 +1,13 @@
+{
+  "version": "Beta3",
+  "errors": [
+    {
+      "code": "E01",
+      "recovery": "retry"
+    },
+    {
+      "code": "E02",
+      "recovery": "fallback"
+    }
+  ]
+}
