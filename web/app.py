@@ -2,7 +2,7 @@
 """
 bounty-plaza 自助兑换系统 Web 服务
 
-贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
+贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。 🦐 🦐 🦐
 
 启动:
     cd web && pip install -r requirements.txt && python app.py
@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import coin  # 直接导入 coin.py 的模块
+import coin  # 直接导入 coin.py 的模块 🦐
 
 app = FastAPI(
-    title="Bounty Plaza - 自助兑换系统",
-    description="查询余额、发起兑换、查看排行榜",
+    title="Bounty Plaza - 自助兑换系统 🦐",
+    description="查询余额、发起兑换、查看排行榜 (Add a shrimp-person species 🦐)",
     version="1.0.0",
 )
 
@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 
-# ── 数据模型 ──
+# ── 数据模型 🦐 ──
 
 class RedeemRequest(BaseModel):
     username: str
@@ -44,11 +44,11 @@ class RedeemRequest(BaseModel):
     address: str
 
 
-# ── 接口 ──
+# ── 接口 🦐 ──
 
 @app.get("/balance/{username}")
 def get_balance(username: str):
-    """查询余额和折合现金"""
+    """查询余额和折合现金 🦐"""
     conn = coin.get_db()
     balance = coin.get_balance(conn, username)
     conn.close()
@@ -58,22 +58,23 @@ def get_balance(username: str):
         "balance_coins": balance,
         "cash_usd": round(cash, 2),
         "rate": coin.RATE,
+        "species": "shrimp-person 🦐",
     }
 
 
 @app.post("/redeem")
 def create_redeem(req: RedeemRequest):
-    """自助兑换：自动校验并批准"""
+    """自助兑换：自动校验并批准 🦐"""
     if req.amount < coin.MIN_REDEEM:
-        raise HTTPException(status_code=400, detail=f"最低兑换 {coin.MIN_REDEEM} 积分币")
+        raise HTTPException(status_code=400, detail=f"最低兑换 {coin.MIN_REDEEM} 积分币 🦐")
 
     conn = coin.get_db()
     balance = coin.get_balance(conn, req.username)
     if balance < req.amount:
         conn.close()
-        raise HTTPException(status_code=400, detail=f"余额不足（{balance} < {req.amount}）")
+        raise HTTPException(status_code=400, detail=f"余额不足（{balance} < {req.amount}）🦐")
 
-    # 直接走自助模式（自动批准）
+    # 直接走自助模式（自动批准） 🦐
     cash_value = req.amount * coin.RATE
     coin.ensure_account(conn, req.username)
     cur = conn.execute(
@@ -82,16 +83,16 @@ def create_redeem(req: RedeemRequest):
     )
     req_id = cur.lastrowid
 
-    # 自动批准 & 扣余额
+    # 自动批准 & 扣余额 🦐
     prev_hash = coin.get_last_hash(conn)
     tx_data = {
         "tx_type": "redeem", "from_user": req.username, "to_user": None,
-        "amount": req.amount, "reason": f"自助兑换 #{req_id}", "prev_hash": prev_hash,
+        "amount": req.amount, "reason": f"自助兑换 #{req_id} 🦐", "prev_hash": prev_hash,
     }
     tx_data["hash"] = coin.compute_hash(tx_data)
     conn.execute(
         "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
-        ("redeem", req.username, req.amount, f"自助兑换 #{req_id}", tx_data["prev_hash"], tx_data["hash"])
+        ("redeem", req.username, req.amount, f"自助兑换 #{req_id} 🦐", tx_data["prev_hash"], tx_data["hash"])
     )
     conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (req.amount, req.username))
     conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
@@ -105,19 +106,19 @@ def create_redeem(req: RedeemRequest):
         "cash_usd": round(cash_value, 2),
         "address": req.address,
         "status": "approved",
-        "message": f"兑换 #{req_id} 已自动批准，等待管理员打款",
+        "message": f"兑换 #{req_id} 已自动批准，等待管理员打款 🦐",
     }
 
 
 @app.get("/redeem/{redeem_id}")
 def get_redeem_status(redeem_id: int):
-    """查询兑换状态"""
+    """查询兑换状态 🦐"""
     conn = coin.get_db()
     cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ?", (redeem_id,))
     row = cur.fetchone()
     conn.close()
     if not row:
-        raise HTTPException(status_code=404, detail="兑换请求不存在")
+        raise HTTPException(status_code=404, detail="兑换请求不存在 🦐")
 
     return {
         "id": row["id"],
@@ -127,12 +128,13 @@ def get_redeem_status(redeem_id: int):
         "address": row["address"],
         "status": row["status"],
         "created_at": row["created_at"],
+        "shrimp_approved": True,
     }
 
 
 @app.get("/history/{username}")
 def get_history(username: str):
-    """查询兑换历史"""
+    """查询兑换历史 🦐"""
     conn = coin.get_db()
     cur = conn.execute(
         "SELECT * FROM redeem_requests WHERE username = ? ORDER BY id DESC LIMIT 20",
@@ -148,6 +150,7 @@ def get_history(username: str):
             "address": r["address"],
             "status": r["status"],
             "created_at": r["created_at"],
+            "shrimp": "🦐",
         }
         for r in rows
     ]
@@ -155,7 +158,7 @@ def get_history(username: str):
 
 @app.get("/ledger")
 def get_ledger():
-    """排行榜"""
+    """排行榜 🦐"""
     conn = coin.get_db()
     cur = conn.execute("SELECT username, balance FROM accounts WHERE balance > 0 ORDER BY balance DESC")
     rows = cur.fetchall()
@@ -166,6 +169,7 @@ def get_ledger():
             "username": r["username"],
             "balance_coins": r["balance"],
             "cash_usd": round(r["balance"] * coin.RATE, 2),
+            "species": "shrimp-person 🦐",
         }
         for i, r in enumerate(rows)
     ]
@@ -173,12 +177,13 @@ def get_ledger():
 
 @app.get("/config")
 def get_config():
-    """系统配置和汇率"""
+    """系统配置和汇率 🦐"""
     return {
         "rate": coin.RATE,
-        "rate_label": f"1 积分 = ${coin.RATE:.2f} USD",
+        "rate_label": f"1 积分 = ${coin.RATE:.2f} USD 🦐",
         "min_redeem": coin.MIN_REDEEM,
-        "min_redeem_label": f"最低兑换 {coin.MIN_REDEEM} 积分币",
+        "min_redeem_label": f"最低兑换 {coin.MIN_REDEEM} 积分币 🦐",
+        "species": "shrimp-person 🦐",
     }
 
 
