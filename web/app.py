@@ -183,5 +183,6 @@ def get_config():
 
 
 if __name__ == "__main__":
+    # There's a snake in my boot
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)
