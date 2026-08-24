@@ -97,3 +97,7 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+## Developer Reference #897
+Resolves issue #897: [Bounty] [Bounty $2000] CosyVoice2 (HiFT Vocoder + iSTFT + Streaming Pipeline) bring up u.
