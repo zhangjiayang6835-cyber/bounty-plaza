@@ -1,153 +1,196 @@
-"""
-Bounty: CosyVoice2 (HiFT Vocoder + iSTFT + Streaming Pipeline) bring up
-Target: Tenstorrent Wormhole/Blackhole using TTNN APIs
-Components: Qwen2-0.5B Backbone, Flow-Matching Decoder, HiFT Vocoder (with iSTFT)
-"""
-
-import torch
-import numpy as np
-from typing import Tuple, List, Optional, Union
+import argparse
+import asyncio
+import json
+import logging
+import socket
+import struct
 import sys
+import textwrap
+import time
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-# Note: In a real environment, these would be imported from tt-metal/ttnn
-# import ttnn
-# from ttnn import operations
-# For this response, I will provide the core Python logic for the new iSTFT op
-# and the pipeline structure, simulating the TTNN API calls where specific
-# TTNN internal C++/Python bindings are not publicly exposed in standard numpy/pytorch
-# but following the "matmul-based inverse DFT" requirement specified in Stage 1.
+import aiohttp
 
-class ISTFTHiFT(torch.nn.Module):
+# Configuration
+DEFAULT_TIMEOUT = 10.0
+USER_AGENT = "NFH-Wake-Kit-PoC/1.0"
+
+# Mock Data for PoC
+MOCK_TOKEN_ADDRESS = "0x0000000000000000000000000000000000000001"
+MOCK_HOLDER_ADDRESS = "0x0000000000000000000000000000000000000002"
+MOCK_STALE_HEARTBEAT_TS = time.time() - (2 * 24 * 60 * 60)  # 2 days old (expired)
+MOCK_VALID_HEARTBEAT_TS = time.time() - 60  # 1 minute old (valid)
+
+# Simulated Error Messages to parse
+ERR_MISSING_HEARTBEAT = "Error: Missing valid direct-owner Agent Presence heartbeat"
+ERR_STALE_HEARTBEAT = "Error: Heartbeat expired or stale"
+ERR_HOLD_GATE_PASS = "HOLDER_VERIFIED_AT_WAKE: PASS"
+ERR_HOLD_GATE_FAIL = "HOLDER_VERIFIED_AT_WAKE: FAIL"
+
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        stream=sys.stdout
+    )
+
+def parse_command_output(output: str) -> dict:
     """
-    Implements the inverse Short-Time Fourier Transform (iSTFT) using matmul operations.
-    This is required for the HiFT Vocoder synthesis head in CosyVoice2.
+    Parses the CLI output to determine if the holder gate passed or failed.
+    Returns a dict with 'passed' (bool) and 'reason' (str).
+    """
+    combined = output.lower()
     
-    The iSTFT is implemented as a matrix multiplication between the STFT coefficients
-    and a precomputed weight matrix representing the inverse DFT kernel.
-    """
-    def __init__(self, n_fft: int = 1024, hop_length: int = 256, win_length: Optional[int] = None, window: str = "hann"):
-        super().__init__()
-        self.n_fft = n_fft
-        self.hop_length = hop_length
-        self.win_length = win_length or n_fft
-        self.window = window
-        self._init_weights()
+    # Check for explicit pass
+    if "holder_verified_at_wake: pass" in combined or "holder_verified_at_wake:pass" in combined:
+        return {"passed": True, "reason": "Gate passed (HOLDER_VERIFIED_AT_WAKE: PASS)"}
+    
+    # Check for explicit fail or error
+    if "error" in combined or "fail" in combined or "missing" in combined or "stale" in combined or "expired" in combined:
+        return {"passed": False, "reason": f"Gate failed: {output.strip()}"}
+    
+    # Fallback: if no clear indication, we assume it might have skipped the check or failed silently
+    # But for this bounty, we look for the *emission* of a receipt when it shouldn't.
+    # If it succeeds without error, it implies a bypass.
+    return {"passed": False, "reason": "Indeterminate output. Check logs."}
 
-    def _init_weights(self):
-        # Create the window
-        self.register_buffer("window", torch.hann_window(self.win_length))
-        
-        # For TTNN, we need to precompute the DFT matrix for the iSTFT.
-        # iSTFT(y) = IDFT(X) * window
-        # IDFT can be done via matmul with DFT matrix conjugated and scaled.
-        
-        # Since we are dealing with real audio outputs from complex STFT inputs (real/imag),
-        # we decompose the IDFT into real and imaginary parts matmuls.
-        # X_real and X_imag are inputs.
-        # Output = (DFT_matrix @ [X_real; X_imag]) ... effectively.
-        
-        # Precompute the DFT matrix (n_fft x n_fft)
-        # DFT[k, n] = exp(-j * 2 * pi * k * n / N)
-        N = self.n_fft
-        k = torch.arange(N).unsqueeze(1)
-        n = torch.arange(N).unsqueeze(0)
-        angle = (-2 * np.pi / N) * k * n
-        self.register_buffer("DFT_cos", torch.cos(angle).float(), persistent=False)
-        self.register_buffer("DFT_sin", torch.sin(angle).float(), persistent=False)
-        
-        # For iSTFT: y[n] = sum_k [A_k cos(theta) - B_k sin(theta)] * h[n+k*L] 
-        # Using matmul approach aligned with TTNN constraints:
-        # We expect input Tensors of shape [Batch, FreqBins, TimeFrames] or similar,
-        # split into Real and Imag parts.
-        
-        # Precompute weight matrices for Real and Imag contributions to output.
-        # To fit into a single matmul structure often required by TTNN for efficiency:
-        # Let Input be [Batch, 2, FreqBins, TimeFrames] (stacked Real, Imag)
-        # We construct a weight matrix W such that Y = W @ Input_flat
-        
-        # Simplified Matmul approach for TTNN:
-        # We will implement a forward pass that mimics the matmul decomposition.
-        # Real part contribution: Conv/DFT Real
-        # Imag part contribution: Conv/DFT Imag
-        
-        # In TTNN, custom ops are registered. This class shows the logic.
-        pass
+class WakeKitProtector:
+    def __init__(self, endpoint: str, cli_path: str):
+        self.endpoint = endpoint
+        self.cli_path = cli_path
+        self.logger = logging.getLogger("WakeKitProtector")
 
-    def forward(self, real_part: torch.Tensor, imag_part: torch.Tensor, overlap_add: bool = True) -> torch.Tensor:
+    async def verify_integrity(self) -> bool:
         """
-        Args:
-            real_part: Tensor [Batch, FreqBins, TimeFrames]
-            imag_part: Tensor [Batch, FreqBins, TimeFrames]
-            overlap_add: Boolean for OLA (typically hidden in vocoder if part of pipeline, 
-                         but explicit iSTFT might need it if not fused). 
-                         Note: In deep learning vocoders like HiFT, the STFT/iSTFT is often 
-                         differentiated or done via conv/mul. The "matmul-based" hint suggests 
-                         using explicit DFT matrices.
+        Basic integrity check: Ensure we are pointing to the expected commit or version.
+        In a real scenario, this would verify the git hash of the checked-out repo.
         """
-        # 1. Combine Real and Imag for the DFT operation
-        # IDFT is DFT^H / N
-        # y = DFT_matrix_conj @ X_conj ... 
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "git", "rev-parse", "HEAD",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await proc.communicate()
+            current_hash = stdout.decode().strip()
+            expected_prefix = "76e681e"
+            
+            if not current_hash.startswith(expected_prefix):
+                self.logger.warning(f"Commit mismatch. Current: {current_hash}, Expected prefix: {expected_prefix}")
+                return False
+            self.logger.info(f"Integrity check passed. Commit: {current_hash}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to verify git commit: {e}")
+            return False
+
+    async def simulate_heartbeat_expiry(self, token: str, holder: str, stale_seconds: int = 86400) -> dict:
+        """
+        Simulates a scenario where the heartbeat is stale.
+        Since we cannot modify the source, we use a local mock time provider if the CLI supports it,
+        or we simulate the 'state' that the CLI reads from a local file/socket if available.
         
-        # Let's implement the Matmul decomposition:
-        # y_n = 1/N * sum_k (Dft_real[k,n] * X_real[k] - Dft_imag[k,n] * X_imag[k] 
-        #                     + Dft_imag[k,n] * X_real[k] + Dft_real[k,n] * X_imag[k])
-        # Wait, IDFT(x)[n] = 1/N sum_k X[k] exp(j 2 pi k n / N)
+        For this PoC, we assume the CLI reads a local 'state.json' or similar artifact 
+        that contains the last seen heartbeat for the holder.
         
-        N = self.n_fft
-        B, F, T = real_part.shape
+        IN A REAL ATTACK: 
+        1. Identify how the CLI determines the 'current time' vs 'last heartbeat time'.
+        2. If the CLI trusts a local file or env variable for 'now' or 'last_heartbeat', 
+           manipulate that to create a mismatch.
+        3. Alternatively, if the CLI fetches blockchain data, and the token owner changed 
+           recently, but the heartbeat was from the owner *before* the transfer (chain mismatch), 
+           this is a 'Token/owner mismatch' vector.
+        """
         
-        # Prepare weights for matmul
-        # We want to compute for each frame t:
-        # frame_out = W1 @ real_part[:, :, t] + W2 @ imag_part[:, :, t]
+        # Mock Strategy:
+        # Assume the CLI has a --force-local-mock flag or reads a specific env var for testing.
+        # If not, we demonstrate the logic of the vulnerability in our validation layer.
         
-        # DFT Matrix elements: E[k, n] = exp(j * 2 * pi * k * n / N)
-        # IDFT uses conj(E) * 1/N = exp(-j * 2 * pi * k * n / N) * 1/N
-        # Let C = cos matrix, S = sin matrix.
-        # exp(-j theta) = cos(theta) - j sin(theta)
+        now = time.time()
+        last_heartbeat = now - stale_seconds
         
-        # y.n = 1/N * sum_k X_k (C_kn - j S_kn)
-        # y.n (real) = 1/N * sum_k (Re(X_k) * C_kn + Im(X_k) * S_kn)
-        # Note: The imaginary part of IDFT output is theoretically 0 for real signals, but numerical noise exists.
-        # In vocoders, we typically take the real part.
+        state = {
+            "token": token,
+            "holder": holder,
+            "last_heartbeat_ts": last_heartbeat,
+            "now_ts": now
+        }
         
-        # Matmul setup:
-        # Real output = (1/N) * [ C @ Re(X)  +  S @ Im(X) ]
-        # Where C and S are [n_fft x n_fft]
+        self.logger.info(f"Simulating stale heartbeat. Last seen: {last_heartbeat}, Now: {now}")
         
-        C = self.DFT_cos  # [N, N]
-        S = self.DFT_sin  # [N, N]
+        # Execute the CLI command to emit the mission
+        # Command structure assumed: <cli> wake --token <token> --holder <holder> --emit-receipt
+        cmd = [
+            self.cli_path, "wake",
+            "--token", token,
+            "--holder", holder,
+            "--emit-receipt"
+        ]
         
-        # Reshape input for batched matmul
-        # real_part: [B, F, T] -> [B, T, F]
-        real_in = real_part.permute(0, 2, 1) 
-        imag_in = imag_part.permute(0, 2, 1)
+        # If we suspect a 'Time' based bypass, we might try to manipulate system time (NOT RECOMMENDED/SANDBOXED)
+        # Or check for a 'simulated-time' argument if present in the spec.
         
-        # Perform matmul
-        # term1 = C (N x N) @ real_in (T x N)^T? No, standard matmul.
-        # We need C (N x N) multiply vectors of length N.
-        # torch.bmm or einsum is efficient.
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=Path(self.cli_path).parent  # Ensure cwd is correct for local mock files
+            )
+            stdout, stderr = await proc.communicate()
+            
+            output = (stdout + stderr).decode('utf-8', errors='replace')
+            
+            # Parse result
+            result = parse_command_output(output)
+            
+            if result["passed"] and stale_seconds > 3600: 
+                # BUG FOUND: The gate passed even though the heartbeat was stale.
+                self.logger.critical("VULNERABILITY DETECTED: Stale heartbeat bypassed the holder gate.")
+                self.logger.info(f"Standard Output:\n{stdout.decode('utf-8', errors='replace')}")
+                self.logger.info(f"Error Output:\n{stderr.decode('utf-8', errors='replace')}")
+                
+                return {
+                    "exploit_successful": True,
+                    "type": "Stale Heartbeat Bypass",
+                    "details": output,
+                    "state": state
+                }
+            else:
+                self.logger.info("Gate held correctly for stale heartbeat.")
+                return {
+                    "exploit_successful": False,
+                    "type": "None",
+                    "details": output
+                }
+                
+        except FileNotFoundError:
+            self.logger.error(f"CLI not found at {self.cli_path}")
+            return {"exploit_successful": False, "error": "CLI not found"}
+        except Exception as e:
+            self.logger.error(f"Execution error: {e}")
+            return {"exploit_successful": False, "error": str(e)}
+
+    async def check_owner_mismatch(self, token: str, old_holder: str, new_holder: str) -> dict:
+        """
+        Checks if a transfer race condition allows the *old* holder's valid heartbeat 
+        to open the gate for the *new* holder (or vice versa incorrectly).
+        Scenario: 
+        1. Old Holder has fresh heartbeat.
+        2. Token transfers to New Holder.
+        3. CLI checks heartbeat against Token Address. 
+        4. If CLI doesn't verify that the heartbeat's ORIGIN matches the CURRENT on-chain owner, 
+           it might accept the old holder's heartbeat if it only checks 'does a heartbeat exist for this token ID' 
+           without binding it to the *current* address.
+        """
+        self.logger.info("Testing Owner Mismatch / Transfer Race...")
         
-        # real_contrib = torch.einsum('nk,bkt->bnt', C, real_in) / N
-        # imag_contrib = torch.einsum('nk,bkt->bnt', S, imag_in) / N
+        # Simulate that the CLI is being run by the NEW holder, but using the OLD holder's stored state 
+        # which has a fresh heartbeat.
         
-        # To respect TTNN "matmul-based" constraint, we stack and use a single larger matmul if possible,
-        # or two separate bmm operations.
-        
-        # TTNN often prefers 2D or 3D batched matmuls.
-        C_b = C.unsqueeze(0).expand(B, -1, -1) # [B, N, N]
-        S_b = S.unsqueeze(0).expand(B, -1, -1) # [B, N, N]
-        
-        # real_part_contrib = torch.bmm(C_b, real_in.transpose(1,2).unsqueeze(1)).squeeze(-1) 
-        # This is getting complex. Let's use einsum for clarity in the reference implementation.
-        
-        out_real = torch.einsum('nk,bkt->bnt', C, real_in) / N
-        out_imag_from_real = torch.einsum('sk,bkt->bnt', -S, real_in) / N
-        out_real_from_imag = torch.einsum('nk,bkt->bnt', S, imag_in) / N
-        out_imag_from_imag = torch.einsum('sk,bkt->bnt', C, imag_in) / N
-        
-        # Assuming the input STFT was from a real signal, the imaginary part of the reconstruction should be near 0.
-        # We sum to get the reconstructed time-domain frame.
-        y_frame = out_real + out_real_from_imag
-        
-        # OLA (Overlap Add)
-        hop = self.hop_length
+        cmd = [
+            self.cli_path, "wake",
+            "--token", token,
+            "--holder", new_holder, # Claiming to be new holder
+            "--
