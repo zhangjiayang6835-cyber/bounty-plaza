@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import functools
 """
 bounty-plaza 自助兑换系统 Web 服务
 
@@ -12,8 +13,8 @@ bounty-plaza 自助兑换系统 Web 服务
 
 import sys
 import os
-
-# 确保能找到 coin.py（上一级 scripts/ 目录）
+@require_auth
+def latest_bounties():
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
 from fastapi import FastAPI, HTTPException
@@ -25,9 +26,18 @@ app = FastAPI(
     title="Bounty Plaza - 自助兑换系统",
     description="查询余额、发起兑换、查看排行榜",
     version="1.0.0",
-)
-
+@require_auth
+def registry():
 app.add_middleware(
+
+def require_auth(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token or not token.startswith("Bearer "):
+            return jsonify({"error": "unauthorized", "audit_status": "FAIL"}), 401
+        return f(*args, **kwargs)
+    return wrapper
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
