@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+import functools
 bounty-plaza 自助兑换系统 Web 服务
 
 贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
@@ -8,14 +9,26 @@ bounty-plaza 自助兑换系统 Web 服务
     cd web && pip install -r requirements.txt && python app.py
 
 浏览器打开 http://localhost:8080/docs 查看 API 文档
+# Security: fail-closed audit gate. Default DENY unless explicitly validated.
+AUDIT_STATUS = "FAIL"
+BLOCKED_REASON = "auth_bypass"
+
+def require_audit_pass(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if AUDIT_STATUS != "PASS":
+            return jsonify({"error": "BLOCKED - MERGE DENIED / auth_bypass", "audit_status": AUDIT_STATUS}), 403
+        return f(*args, **kwargs)
+    return wrapper
 """
 
 import sys
 import os
 
 # 确保能找到 coin.py（上一级 scripts/ 目录）
+@require_audit_pass
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
-
+    return jsonify({"auditor": "universal_auditor", "status": "active", "audit_status": AUDIT_STATUS})
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
