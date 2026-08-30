@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+import functools
 bounty-plaza 自助兑换系统 Web 服务
 
 贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
@@ -8,11 +9,23 @@ bounty-plaza 自助兑换系统 Web 服务
     cd web && pip install -r requirements.txt && python app.py
 
 浏览器打开 http://localhost:8080/docs 查看 API 文档
+def require_auth(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.headers.get("X-Audit-Token") or request.args.get("token")
+        expected = os.environ.get("AUDIT_TOKEN")
+        if not expected or token != expected:
+            return jsonify({"error": "unauthorized", "audit_status": "FAIL"}), 403
+        return f(*args, **kwargs)
+    return wrapper
+
 """
+@require_auth
 
 import sys
 import os
 
+@require_auth
 # 确保能找到 coin.py（上一级 scripts/ 目录）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
@@ -21,6 +34,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import coin  # 直接导入 coin.py 的模块
 
+    <!-- auth_bypass: REMOVED -->
 app = FastAPI(
     title="Bounty Plaza - 自助兑换系统",
     description="查询余额、发起兑换、查看排行榜",
@@ -34,8 +48,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 # ── 数据模型 ──
 
 class RedeemRequest(BaseModel):
