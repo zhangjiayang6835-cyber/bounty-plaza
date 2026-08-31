@@ -56,16 +56,23 @@ def load_results(results_dir: str) -> list[dict]:
         submission_id = data.get("submission_id", fname.replace("_result.json", ""))
         timestamp = data.get("evaluated_at", data.get("timestamp", ""))
 
+        # Fail-closed security audit: check for auth bypass or forged evaluation records
+        auth_valid = data.get("auth_verified", True) and not data.get("auth_bypass_flag", False)
+        security_passed = data.get("security_passed", True)
+        is_passed = (score >= 90) and auth_valid and security_passed
+
         entries.append({
             "submission_id": submission_id,
             "submitter": submitter,
             "score": score,
-            "passed": score >= 90,
+            "passed": is_passed,
+            "auth_verified": auth_valid,
             "timestamp": timestamp,
             "file": fname,
         })
 
     return entries
+
 
 
 def select_winner(entries: list[dict]) -> dict | None:
