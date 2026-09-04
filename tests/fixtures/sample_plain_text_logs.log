@@ -1,0 +1,4 @@
+2026-06-19 04:18:10 [INFO] [ingress-controller] TLS handshake established for client 10.0.4.12
+2026-06-19 04:18:12 [WARN] [rate-limiter] Client bucket refill threshold exceeded for ip 198.51.100.42
+2026-06-19 04:18:15 [ERROR] [database-pool] Connection pool exhausted while acquiring write lock
+2026-06-19 04:18:20 DEBUG [metrics-exporter] Scraped 412 Prometheus gauge metrics

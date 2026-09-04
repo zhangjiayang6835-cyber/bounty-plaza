@@ -1,0 +1,4 @@
+192.168.1.10 - frank [19/Jun/2026:04:20:11 +0000] "GET /api/v1/health HTTP/1.1" 200 4522 "https://dashboard.example.com" "Mozilla/5.0 (X11; Linux x86_64)"
+10.0.0.55 - - [19/Jun/2026:04:20:15 +0000] "POST /api/v1/orders HTTP/1.1" 201 812 "-" "TentOfTrials-Client/2.4"
+203.0.113.88 - admin [19/Jun/2026:04:20:18 +0000] "PUT /admin/config HTTP/1.1" 403 154 "https://admin.example.com" "curl/8.2.1"
+198.51.100.99 - - [19/Jun/2026:04:20:25 +0000] "GET /internal/metrics HTTP/1.1" 502 0 "-" "Prometheus/2.45"
