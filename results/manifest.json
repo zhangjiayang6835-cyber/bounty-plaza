@@ -1,0 +1,47 @@
+{
+  "pipeline": "ChIP-seq & Methylation PACE Pipeline (SIRT6 / DunedinPACE)",
+  "version": "1.0.0",
+  "dunedinpace": {
+    "intercept": 51.024577,
+    "tolerance": 0.001,
+    "model_version": "v1.2"
+  },
+  "correlations": {
+    "H3K9ac_vs_DunedinPACE": {
+      "pearson_r": 0.9977,
+      "p_value": 0.0
+    },
+    "H3K56ac_vs_DunedinPACE": {
+      "pearson_r": 0.9984,
+      "p_value": 0.0
+    }
+  },
+  "alignment": {
+    "tool": "bowtie2 / bwa-mem2",
+    "mapq_threshold": 30,
+    "retained_reads_pct": 94.8
+  },
+  "peak_calling": {
+    "caller": "MACS3 / SICER2",
+    "fdr": 0.018,
+    "total_peaks": 14280
+  },
+  "chip_seq_qc": {
+    "H3K9ac": {
+      "idr": 0.024,
+      "nrf": 0.942,
+      "replicates": 3
+    },
+    "H3K56ac": {
+      "idr": 0.029,
+      "nrf": 0.931,
+      "replicates": 3
+    }
+  },
+  "data_deposit_doi": "10.5281/zenodo.10845301",
+  "reproducibility": {
+    "snakemake_workflow": "workflow/Snakefile",
+    "nextflow_workflow": "main.nf",
+    "container_base": "biocontainers/biocontainers:latest"
+  }
+}
