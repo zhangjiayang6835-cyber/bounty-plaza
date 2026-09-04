@@ -1,0 +1,5 @@
+{"operation_id": "OP-2026-0904-001", "actor": "SiLA2_STARlet_Service", "timestamp": "2026-09-04T07:00:00.000432Z", "delta": {"state_transition": "INITIALIZING -> READY", "hardware_channels": 8}}
+{"operation_id": "OP-2026-0904-002", "actor": "DryLab4_Bridge_Worker", "timestamp": "2026-09-04T07:00:05.120432Z", "delta": {"gradient_model": "MeOH_H2O_0.1TFA", "flow_rate_ml_min": 1.0}}
+{"operation_id": "OP-2026-0904-003", "actor": "Hamilton_STARlet_LiquidHandler", "timestamp": "2026-09-04T07:00:10.250432Z", "delta": {"aspirate_volume_ul": 10.0, "well_source": "A01", "well_dest": "HPLC_INJECTOR"}}
+{"operation_id": "OP-2026-0904-004", "actor": "Waters_Empower_CDS_Connector", "timestamp": "2026-09-04T07:00:15.890432Z", "delta": {"sample_injection_confirmed": true, "method_set": "QC_SIRT6_PEPTIDES"}}
+{"operation_id": "OP-2026-0904-005", "actor": "Agilent_OpenLab_CDS_Connector", "timestamp": "2026-09-04T07:00:20.340432Z", "delta": {"detector": "DAD_254nm", "sampling_rate_hz": 40.0, "status": "ACQUIRING"}}
