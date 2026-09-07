@@ -128,7 +128,7 @@ def score_correctness(test_dir: str) -> tuple:
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
         # 从 stdout 解析测试结果
@@ -155,9 +155,11 @@ def score_security(violations: list[str], code: str) -> tuple:
 def score_quality(code_file: str) -> tuple:
     """代码质量评分，调用 pylint"""
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
@@ -176,7 +178,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start

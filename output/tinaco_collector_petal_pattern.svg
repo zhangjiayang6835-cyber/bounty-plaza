@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 288 400" width="288mm" height="400mm">
+  <style>
+    .cutline { fill: none; stroke: #d32f2f; stroke-width: 1.5; }
+    .foldline { fill: none; stroke: #1976d2; stroke-width: 1.0; stroke-dasharray: 4,4; }
+    .centerline { fill: none; stroke: #388e3c; stroke-width: 0.8; stroke-dasharray: 8,3,2,3; }
+    .text { font-family: monospace; font-size: 11px; fill: #212121; }
+  </style>
+  <rect width="100%" height="100%" fill="#fafafa"/>
+  <text x="20" y="25" class="text">TINACO PETAL PATTERN (1 of 8)</text>
+  <path d="M 144.0 344.0 C 185.6 252.8, 248.0 131.20000000000002, 164.8 40.0 Q 144.0 25.0, 123.2 40.0 C 40.0 131.20000000000002, 102.4 252.8, 144.0 344.0 Z" class="cutline"/>
+  <line x1="144.0" y1="25.0" x2="144.0" y2="344.0" class="centerline"/>
+  <line x1="112.8" y1="324.0" x2="112.8" y2="70.0" class="foldline"/>
+  <line x1="175.2" y1="324.0" x2="175.2" y2="70.0" class="foldline"/>
+  <text x="20" y="380" class="text">Length: 380.0mm | Width: 260.0mm | UV-HDPE 4mm</text>
+</svg>
