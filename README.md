@@ -97,3 +97,21 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1235 -->
+```typescript
+// scripts/deploy.ts
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+
+/**
+ * Resolves the Minecraft Bedrock development packs directory across all
+ * modern Windows 10/11 installations, handling both the official Microsoft
+ * Store (UWP) and legacy/alternative installations.
+ *
+ * The function searches through multiple known package locations and
+ * validates the existence of the development_behavior_packs directory.
+ *
+ * @returns {string} The absolute path to t
