@@ -97,3 +97,18 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1232 -->
+```typescript
+// contraption:display_entity.js
+import { world, system } from '@minecraft/server';
+
+// Single unified entity type for all dynamic voxel blocks
+const DISPLAY_ENTITY_TYPE = 'contraption:dynamic_voxel';
+const BLOCK_ENTITY_MAP = new Map(); // entityId -> { blockId, texture, variant }
+
+// Texture atlas mapping - single texture atlas for all block types
+const TEXTURE_ATLAS = {
+  'minecraft:stone': { texture: 'textures/blocks/stone', uv: [0, 0, 16, 16] },
+  'minecraft:dirt': { texture: '
