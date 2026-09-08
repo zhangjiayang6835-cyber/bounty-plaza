@@ -97,3 +97,22 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1232 -->
+```typescript
+// contraption:unified_display_entity.js
+import { world, system } from '@minecraft/server';
+
+const BLOCK_GEOMETRY = 'geometry.contraption:block';
+const BLOCK_TEXTURE_PREFIX = 'texture.contraption:block_';
+const ENTITY_TYPE = 'contraption:unified_display';
+
+// Cache for block texture mappings to avoid repeated lookups
+const blockTextureCache = new Map();
+
+// Registry to track active display entities and their block types
+const activeDisplays = new Map();
+
+/**
+ * Initialize the unifi
