@@ -1,0 +1,66 @@
+"""Autonomous API child bounty seeder and canonical settlement engine."""
+
+from packages.api_child_bounty_seeder.cli import cli_main, run_demo
+from packages.api_child_bounty_seeder.models import (
+    APIActionType,
+    APIEndpointSpec,
+    APITaskVector,
+    BlockAnchor,
+    BountyEconomics,
+    BountyStatus,
+    CanonicalSettlementReceipt,
+    ChildBountySpec,
+    EconomicMarginAnalysis,
+    ExecutionReceipt,
+    ParentProofPayload,
+    Participant,
+    ParticipantRole,
+    QuorumVerification,
+    abi_encode_address,
+    compute_sha256_digest,
+    validate_evm_address,
+    validate_bounty_id,
+)
+from packages.api_child_bounty_seeder.seeder import (
+    APIBountySeeder,
+    DEFAULT_CHILD_BOUNTY_ID,
+    DEFAULT_EVM_PAYOUT,
+    DEFAULT_PARENT_BOUNTY_ID,
+    DEFAULT_PARENT_CONTRACT,
+    DEFAULT_STELLAR_PAYOUT,
+)
+from packages.api_child_bounty_seeder.verifier import (
+    DEFAULT_VERIFIER_NODES,
+    DeterministicModuleVerifier,
+)
+
+__all__ = [
+    "APIActionType",
+    "APIBountySeeder",
+    "APIEndpointSpec",
+    "APITaskVector",
+    "BlockAnchor",
+    "BountyEconomics",
+    "BountyStatus",
+    "CanonicalSettlementReceipt",
+    "ChildBountySpec",
+    "DEFAULT_CHILD_BOUNTY_ID",
+    "DEFAULT_EVM_PAYOUT",
+    "DEFAULT_PARENT_BOUNTY_ID",
+    "DEFAULT_PARENT_CONTRACT",
+    "DEFAULT_STELLAR_PAYOUT",
+    "DEFAULT_VERIFIER_NODES",
+    "DeterministicModuleVerifier",
+    "EconomicMarginAnalysis",
+    "ExecutionReceipt",
+    "ParentProofPayload",
+    "Participant",
+    "ParticipantRole",
+    "QuorumVerification",
+    "abi_encode_address",
+    "cli_main",
+    "compute_sha256_digest",
+    "run_demo",
+    "validate_evm_address",
+    "validate_bounty_id",
+]
