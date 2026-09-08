@@ -97,3 +97,30 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1227 -->
+```yaml
+# .github/workflows/build.yml
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean Scratch Folders
+        run: |
+          rm -rf _temp/ temp/ .cache/
+          # Preserve generated block family definitions
+          mkdir -p _temp/block_families
+          cp -r src/main/resources/data/*/block_families _temp/block_families/ 2>/dev/null || true
+
+      - name: Build Addon
+
