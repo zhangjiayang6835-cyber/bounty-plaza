@@ -97,3 +97,20 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1220 -->
+```python
+#!/usr/bin/env python3
+"""
+Agent Bounties — Paid API Child Bounty Seeder
+
+Seeds a concrete paid API coding bounty on the Agent Bounties platform
+by creating and fully funding a child bounty that a different registered
+participant can complete and receive canonical settlement for.
+
+Usage:
+    python seed_paid_api_child_bounty.py \
+        --parent-bounty-id 0x99f668fc2f432e156033fd2fda2c9e91edffa30cc598013b4f2aaebbfd2348e3 \
+        --network base-mainnet \
+        --rpc-url https://mai
