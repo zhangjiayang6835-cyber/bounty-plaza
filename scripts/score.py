@@ -123,15 +123,18 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
 # ── 评分函数 ─────────────────────────────────────────────────────
 
 def score_correctness(test_dir: str) -> tuple:
-    """运行 pytest，返回 (分数, 详情)"""
-    if not test_dir or not os.path.isdir(test_dir):
+    """Run pytest on the test directory or file and return the score and details.
+
+    :param test_dir: Path to test directory or test file.
+    :return: Tuple of integer score out of 40 and details string.
+    """
+    if not test_dir or not (os.path.isdir(test_dir) or os.path.isfile(test_dir)):
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
-        # 从 stdout 解析测试结果
         passed = result.stdout.count("PASSED")
         failed = result.stdout.count("FAILED") + result.stdout.count("ERROR") + result.stdout.count("ERRORS")
         total = passed + failed
@@ -145,7 +148,12 @@ def score_correctness(test_dir: str) -> tuple:
 
 
 def score_security(violations: list[str], code: str) -> tuple:
-    """安全评分，满分 35，每项违规扣 7 分"""
+    """Calculate security score subtracting 7 points per violation.
+
+    :param violations: List of violation strings detected by AST and bandit.
+    :param code: Source code string.
+    :return: Tuple of integer score out of 35 and details string.
+    """
     deductions = len(violations) * 7
     score = max(0, 35 - deductions)
     details = "; ".join(violations) if violations else "无违规"
@@ -153,15 +161,20 @@ def score_security(violations: list[str], code: str) -> tuple:
 
 
 def score_quality(code_file: str) -> tuple:
-    """代码质量评分，调用 pylint"""
+    """Score code quality using pylint.
+
+    :param code_file: Path to code file to evaluate.
+    :return: Tuple of integer score out of 15 and details string.
+    """
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
-                # "Your code has been rated at 8.50/10"
                 m = re.search(r"([\d.]+)/10", line)
                 if m:
                     score = float(m.group(1))
@@ -172,19 +185,30 @@ def score_quality(code_file: str) -> tuple:
 
 
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
-    """性能评分，执行时间对比基线"""
+    """Score execution performance against baseline duration.
+
+    :param code_file: Path to executable verification script.
+    :param baseline_sec: Baseline duration in seconds.
+    :return: Tuple of integer score out of 10 and details string.
+    """
     try:
         start = time.time()
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["python", "-c", code],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         elapsed = time.time() - start
         ratio = elapsed / max(baseline_sec, 0.1)
-        if ratio <= 1: score = 10
-        elif ratio <= 2: score = 8
-        elif ratio <= 5: score = 5
-        else: score = 2
+        if ratio <= 1:
+            score = 10
+        elif ratio <= 2:
+            score = 8
+        elif ratio <= 5:
+            score = 5
+        else:
+            score = 2
         return score, f"执行时间 {elapsed:.2f}s (基线 {baseline_sec}s)"
     except Exception as e:
         return 0, f"执行失败: {e}"
