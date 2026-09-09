@@ -97,3 +97,22 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1232 -->
+```typescript
+// contraption:display_entity.js
+import { world, system } from '@minecraft/server';
+
+const BLOCK_GEOMETRY = 'geometry.contraption.display';
+const TEXTURE_PREFIX = 'textures/blocks/';
+const RENDER_CONTROLLER = 'controller.render.contraption.display';
+
+// Cache for block state to texture mapping
+const blockTextureCache = new Map();
+
+// Single unified entity type for all dynamic blocks
+const DISPLAY_ENTITY_TYPE = 'contraption:dynamic_display';
+
+// Runtime block type registry
+const blo
