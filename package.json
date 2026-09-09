@@ -1,0 +1,11 @@
+{
+  "name": "bounty-plaza-voxel-display",
+  "version": "1.0.0",
+  "description": "Unified Dynamic Voxel Display Entity Architecture for Issue #1232",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test tests/voxel_cluster.test.js"
+  },
+  "author": "s6pa1rta3n-lab",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.unified_voxel": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.atlas"
+      ],
+      "uv_anim": {
+        "offset": [
+          "variable.u_offset",
+          "variable.v_offset"
+        ],
+        "scale": [
+          0.015625,
+          0.015625
+        ]
+      }
+    }
+  }
+}
