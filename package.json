@@ -1,0 +1,20 @@
+{
+  "name": "bounty-plaza-css-kernel",
+  "version": "1.0.0",
+  "description": "Zero-allocation pure CSS centering subsystem and compiler kernel",
+  "main": "scripts/build-css-kernel.js",
+  "scripts": {
+    "build-css-kernel": "node scripts/build-css-kernel.js",
+    "test": "node --test tests/css_kernel.test.js"
+  },
+  "keywords": [
+    "css",
+    "flexbox",
+    "grid",
+    "centering",
+    "zero-allocation",
+    "layout-engine"
+  ],
+  "author": "s6pa1rta3n-lab",
+  "license": "MIT"
+}
