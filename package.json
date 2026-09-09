@@ -1,0 +1,12 @@
+{
+  "name": "bounty-plaza-ruby-recolor",
+  "version": "1.0.0",
+  "description": "Programmatic generation of authentic Jappa-style Ruby toolset textures from diamond",
+  "main": "scripts/recolor-tools.js",
+  "scripts": {
+    "test": "node --test tests/recolor_tools.test.js",
+    "generate": "node scripts/recolor-tools.js"
+  },
+  "author": "s6pa1rta3n-lab",
+  "license": "MIT"
+}
