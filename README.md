@@ -97,3 +97,25 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1228 -->
+```json
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "custom:npc",
+      "materials": {
+        "default": "entity_alphatest",
+        "outer": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/custom_npc",
+        "outer": "textures/entity/custom_npc_outer"
+      },
+      "geometry": {
+        "default": "geometry.humanoid.custom",
+        "outer": "geometry.humanoid.custom"
+      },
+      "render_contr
