@@ -97,3 +97,23 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1233 -->
+```typescript
+// src/physics/ContraptionKinematics.ts
+import { Entity, Vector3 } from "../types";
+
+interface KinematicState {
+  lastTargetPos: Vector3;
+  lastUpdateTick: number;
+  velocity: Vector3;
+  lastSmoothY: number;
+}
+
+const kinematicStates = new Map<string, KinematicState>();
+
+const TICK_RATE = 20; // ticks per second
+const SUB_TICK_INTERPOLATION = 4; // sub-steps per tick
+const COLLISION_PADDING = 0.05; // extra padding to prevent dropout
+const MAX_TELEPORT_DISTANCE = 0.5; // max distanc
