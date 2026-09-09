@@ -1,0 +1,14 @@
+### Mandatory Pre-Fabrication Measurement Protocol (Site Survey)
+
+Before finalizing fabrication tooling or custom thermoforming for a specific rooftop tinaco in Mexico City, a technician must physically verify and document the following critical dimensions:
+
+| Code | Measurement Parameter | Target Nominal | Allowable Tolerance | Verified Tool / Method | Engineering Impact If Out of Spec |
+|:----:|:----------------------|:--------------:|:-------------------:|:-----------------------|:-----------------------------------|
+| `DIM-01` | **Tinaco Manhole Neck Outer Diameter (D_mouth)** | 470.0 mm | [400.0 mm – 650.0 mm] | Circumferential Pi-tape or 600mm external vernier caliper across 3 orthogonal diameters | Adapter collar will fail to clamp securely if neck diameter exceeds adapter quadrant range |
+| `DIM-02` | **Tinaco Mouth Vertical Rim Lip Height (H_lip)** | 50.0 mm | [35.0 mm – 90.0 mm] | Depth gauge or steel machinist ruler from top lip crown down to shoulder weld/transition | Insufficient lip height (<35mm) prevents adapter clamp bolts from establishing positive mechanical bite |
+| `DIM-03` | **Tinaco Neck Rim Wall Thickness (T_wall)** | 5.5 mm | [3.0 mm – 8.5 mm] | External micrometer or dial caliper at 4 equidistant points around the rim circumference | Excessive clamp torque on thin-walled rims (<3mm) risks hoop stress cracking and vacuum seal loss |
+| `DIM-04` | **Top Dome Crown Curvature Radius (R_dome)** | 550.0 mm | [450.0 mm – 750.0 mm] | Contour profile gauge or 3-point sagitta calculation using 1000mm straight edge | Steep convex domes could interfere with petal downward slope, requiring customized collar riser spacers |
+| `DIM-05` | **Clearance to Atmospheric Rooftop Vent (L_vent)** | 350.0 mm | [250.0 mm – 1200.0 mm] | Radial tape measurement from neck center to outer edge of tank atmospheric breathing jarro | Interference with atmospheric jarro prevents proper domestic hydraulic pressure equalization |
+| `DIM-06` | **Distance to Internal Float Ballcock Valve (L_float)** | 220.0 mm | [150.0 mm – 450.0 mm] | Internal vertical and horizontal ruler probe through lid opening to float pivot bracket | Collector downspout drop tube could collide with float arm, preventing municipal water shutoff |
+| `DIM-07` | **Rooftop Edge Parapet Safety Clearance (W_roof)** | 1200.0 mm | [900.0 mm – 5000.0 mm] | Laser distance meter or 10m fiberglass tape from outer petal radius to parapet wall | Overhanging petal array increases aerodynamic vortex lift during Mexico City thunderstorm microbursts |
+| `DIM-08` | **Vertical Overhead Obstacle Clearance (H_clear)** | 800.0 mm | [600.0 mm – 3000.0 mm] | Vertical laser measure from tinaco top lid to lowest overhead utility cable, solar heater, or clothesline | Obstacles prevent full 360-degree blooming petal assembly and impede routine seasonal maintenance |
