@@ -97,3 +97,28 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1227 -->
+```yaml
+# .github/workflows/build.yml
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean Scratch Folders (Preserve Generated Block Data)
+        run: |
+          # Preserve generated block family definitions before cleaning
+          if [ -d "_temp/block_families" ]; then
+            mkdir -p .cache/block_families_backup
+            cp -r _temp/block_fa
