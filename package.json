@@ -1,0 +1,16 @@
+{
+  "name": "bounty-plaza-issue-1324",
+  "version": "1.0.0",
+  "description": "Continuous Collision Detection (CCD) Swept AABB for Rapid Kinematic Translation in Bedrock",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test test/swept_aabb.test.js"
+  },
+  "dependencies": {
+    "@minecraft/server": "^2.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
