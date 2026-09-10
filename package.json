@@ -1,0 +1,14 @@
+{
+  "name": "aquarium-of-gullibles",
+  "version": "1.0.0",
+  "description": "High-throughput state resolution and invariant simulation runtime",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node test/verify.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.12.0"
+  }
+}
