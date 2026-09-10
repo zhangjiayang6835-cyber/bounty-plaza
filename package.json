@@ -1,0 +1,14 @@
+{
+  "name": "bounty-plaza",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bounty plaza platform with an exact, deterministic subgraph-isomorphism solver (src/solver/isomorphism.ts) and its verification suite (test/verify.js).",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node test/verify.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
