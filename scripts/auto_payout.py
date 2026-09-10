@@ -37,9 +37,13 @@ except ImportError:
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from hashlib import sha256 as _sha256
+
+import coin
+from safe_erc20 import SafeERC20Error, verify_transfer_success
 
 # ── 路径 ──
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -47,7 +51,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "") or ""
 BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
@@ -110,7 +114,7 @@ def call_binance_withdraw(address: str, amount: float) -> dict:
         "X-MBX-APIKEY": BINANCE_API_KEY,
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    body = __import__("urllib.parse").urlencode(params)
+    body = urllib.parse.urlencode(params)
 
     req = urllib.request.Request(url, data=body.encode(), headers=headers, method="POST")
     try:
@@ -118,6 +122,23 @@ def call_binance_withdraw(address: str, amount: float) -> dict:
             return json.loads(r.read())
     except urllib.error.HTTPError as e:
         return {"error": e.read().decode()[:200]}
+
+
+def check_withdraw_result(result: dict) -> None:
+    """
+    校验提现结果的返回值（SafeERC20 式）。
+
+    直接信任未校验的 transfer 返回值会让打款在失败时被标记为成功，
+    等价于批量收割中被非标准 ERC-20 静默拒绝的情况。这里对返回的
+    错误信息与 ok 标志做显式校验，失败即抛错，调用方不得继续。
+    """
+    error = result.get("error")
+    if error:
+        raise SafeERC20Error(error)
+    try:
+        verify_transfer_success(result.get("ok"), context="Binance USDT withdraw")
+    except SafeERC20Error as exc:
+        raise SafeERC20Error("Binance USDT withdraw did not succeed") from exc
 
 
 def comment_on_issue(issue_number: int, body: str):
@@ -160,15 +181,19 @@ def process_one(req: dict) -> bool:
 
     print(f"\n  处理兑换 #{rid}: {username} ${cash_value:.2f} -> {address[:16]}...")
 
-    # 1. 调币安 API 打款
+    # 1. 调币安 API 打款（SafeERC20 式校验返回值，失败不继续）
     if BINANCE_API_KEY and BINANCE_SECRET_KEY:
         result = call_binance_withdraw(address, cash_value)
-        if "error" in result:
-            print(f"  ❌ 币安打款失败: {result['error']}")
+        try:
+            check_withdraw_result(result)
+        except SafeERC20Error as exc:
+            print(f"  ❌ 币安打款失败: {exc}")
             return False
-        print(f"  ✅ 币安打款成功: {result.get('id', '?')}")
+        print(f"  ✅ 币安打款成功: {result.get('id') or result.get('withdraw_id', '?')}")
     else:
         print(f"  ⚠️ 未配置币安 API Key，跳过真实打款（模拟模式）")
+        # 未发生真实打款，不得将兑换标记为 paid（未校验的返回值）。
+        return False
 
     # 2. 标记已打款
     if mark_paid(rid):

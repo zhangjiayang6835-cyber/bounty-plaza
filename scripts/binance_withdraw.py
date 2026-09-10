@@ -7,7 +7,10 @@ import json
 import os
 import sys
 import time
+import urllib.parse
 import urllib.request
+
+from safe_erc20 import SafeERC20Error, verify_transfer_success
 
 API_KEY = os.environ.get("BINANCE_API_KEY", "")
 SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "")
@@ -26,7 +29,7 @@ def withdraw(address: str, amount: float, coin: str = "USDT", network: str = "BS
         "timestamp": timestamp,
     }
 
-    query = __import__("urllib.parse").urlencode(sorted(params.items()))
+    query = urllib.parse.urlencode(sorted(params.items()))
     signature = hmac.new(SECRET_KEY.encode(), query.encode(), hashlib.sha256).hexdigest()
     params["signature"] = signature
 
@@ -38,10 +41,18 @@ def withdraw(address: str, amount: float, coin: str = "USDT", network: str = "BS
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             result = json.loads(r.read())
-            return {"ok": True, "withdraw_id": result.get("id", "?")}
     except urllib.error.HTTPError as e:
         err = e.read().decode()[:200]
         return {"ok": False, "error": err}
+
+    # 检查 transfer 返回值：成功的提现必须携带 id（SafeERC20 式校验）。
+    transfer_id = result.get("id")
+    try:
+        verify_transfer_success(bool(transfer_id), context="USDT withdraw")
+    except SafeERC20Error as exc:
+        return {"ok": False, "error": str(exc), "payload": str(result)[:200]}
+
+    return {"ok": True, "withdraw_id": transfer_id}
 
 
 if __name__ == "__main__":
