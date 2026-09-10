@@ -1,0 +1,14 @@
+{
+  "name": "tank-of-mannequins",
+  "version": "1.0.0",
+  "description": "Dynamic voxel display entity optimization and draw call batching framework",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test test/voxel_cluster.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.12.0"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "namespace": "hud",
+
+  "inventory_text_label": {
+    "type": "label",
+    "text": "#inventory_text_slice",
+    "color": [ 1.0, 1.0, 1.0 ],
+    "shadow": true,
+    "anchor_from": "center",
+    "anchor_to": "center",
+    "allow_clipping": true,
+    "max_size": [ "100%", "default" ],
+    "bindings": [
+      {
+        "binding_name": "#item_name",
+        "binding_type": "global"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "('%.16s' * (#item_name - ('%.0s' * #item_name)))",
+        "target_property_name": "#inventory_text_slice"
+      }
+    ]
+  },
+
+  "hud_custom_container_desktop": {
+    "type": "panel",
+    "size": [ 128, 16 ],
+    "offset": [ 0, -42 ],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "clips_children": true,
+    "controls": [
+      {
+        "label@hud.inventory_text_label": {
+          "size": [ 128, 16 ]
+        }
+      }
+    ]
+  },
+
+  "hud_custom_container_pocket": {
+    "type": "panel",
+    "size": [ 96, 14 ],
+    "offset": [ 0, -56 ],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "clips_children": true,
+    "controls": [
+      {
+        "label@hud.inventory_text_label": {
+          "size": [ 96, 14 ]
+        }
+      }
+    ]
+  },
+
+  "hud_custom_container_console": {
+    "type": "panel",
+    "size": [ 144, 18 ],
+    "offset": [ 0, -48 ],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "clips_children": true,
+    "controls": [
+      {
+        "label@hud.inventory_text_label": {
+          "size": [ 144, 18 ]
+        }
+      }
+    ]
+  },
+
+  "hud_custom_container_root": {
+    "type": "panel",
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "clips_children": true,
+    "controls": [
+      {
+        "desktop_profile@hud.hud_custom_container_desktop": {
+          "requires": "(not $pocket_screen)"
+        }
+      },
+      {
+        "pocket_profile@hud.hud_custom_container_pocket": {
+          "requires": "$pocket_screen"
+        }
+      },
+      {
+        "console_profile@hud.hud_custom_container_console": {
+          "requires": "$is_console"
+        }
+      }
+    ]
+  },
+
+  "root_panel": {
+    "modifications": [
+      {
+        "array_name": "controls",
+        "operation": "insert_back",
+        "value": [
+          {
+            "hud_custom_container_root@hud.hud_custom_container_root": {}
+          }
+        ]
+      }
+    ]
+  }
+}

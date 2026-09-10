@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Tank of Mannequins RP",
+    "description": "Resource pack for dynamic voxel entity rendering and atlas management",
+    "uuid": "7a3e9c12-4211-4fa3-9118-2e912ab56401",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "8b4f1d23-5322-40b4-a229-3f023bc67512",
+      "version": [1, 0, 0]
+    }
+  ]
+}

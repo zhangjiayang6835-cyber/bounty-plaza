@@ -1,0 +1,50 @@
+{
+  "format_version": "1.20.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "contraption:unified_voxel_display",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "contraption:block_id": {
+          "type": "string",
+          "default": "minecraft:stone"
+        },
+        "contraption:atlas_index": {
+          "type": "int",
+          "range": [0, 4096],
+          "default": 0
+        },
+        "contraption:variant": {
+          "type": "int",
+          "range": [0, 16],
+          "default": 0
+        },
+        "contraption:cluster_id": {
+          "type": "string",
+          "default": "default_cluster"
+        }
+      }
+    },
+    "components": {
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:collision_box": {
+        "width": 1.0,
+        "height": 1.0
+      },
+      "minecraft:scale": {
+        "value": 1.0
+      },
+      "minecraft:type_family": {
+        "family": [
+          "contraption",
+          "voxel_display"
+        ]
+      }
+    }
+  }
+}
