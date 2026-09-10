@@ -1,0 +1,10 @@
+{
+  "name": "bounty-plaza-ruby-toolset",
+  "version": "1.0.0",
+  "description": "Deterministic Node.js CLI script to programmatically generate ruby toolset textures from diamond",
+  "type": "module",
+  "scripts": {
+    "generate:ruby": "node scripts/tools/generate_ruby_toolset.js",
+    "test": "node --test test/ruby_toolset.test.js"
+  }
+}
