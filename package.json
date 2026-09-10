@@ -1,0 +1,13 @@
+{
+  "name": "bounty-plaza-solver",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node test/verify.js",
+    "test:unit": "node --test test/isomorphism.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
