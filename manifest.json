@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "Bedrock Physics 1-Tick Hidden Absorption and Jump Boost Mitigation",
+    "name": "Bedrock Physics Effects",
+    "uuid": "7a4938f2-291b-4cdb-9e1b-82175a130801",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "description": "Script module implementing 1-tick effect cycling and fall damage dampening",
+      "type": "script",
+      "uuid": "e3f61822-7b5f-4c78-8d28-926c7da30802",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.10.0"
+    }
+  ]
+}

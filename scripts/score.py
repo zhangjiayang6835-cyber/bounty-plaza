@@ -18,7 +18,7 @@
 
 用法:
     python scripts/score.py --code <file> --tests <test_dir>
-    python scripts/score.py --check <file>   # 仅检查作弊
+    python scripts/score.py --check <file>
 """
 
 import argparse
@@ -32,9 +32,6 @@ import tempfile
 import time
 from pathlib import Path
 
-
-# ── 评分配置 ─────────────────────────────────────────────────────
-
 PASS_THRESHOLD = 90
 WEIGHTS = {
     "correctness": 40,
@@ -43,8 +40,6 @@ WEIGHTS = {
     "performance": 10,
 }
 
-
-# ── 一票否决检测 ─────────────────────────────────────────────────
 
 def check_ast_cheating(code: str) -> list[str]:
     """AST 静态分析检测作弊行为"""
@@ -56,7 +51,6 @@ def check_ast_cheating(code: str) -> list[str]:
         return violations
 
     for node in ast.walk(tree):
-        # 检测直接 return 硬编码值
         if isinstance(node, ast.FunctionDef):
             for n in ast.walk(node):
                 if isinstance(n, ast.Return) and isinstance(n.value, (ast.Constant, ast.List, ast.Dict)):
@@ -67,16 +61,13 @@ def check_ast_cheating(code: str) -> list[str]:
                         violations.append(f"函数 {node.name} 直接返回硬编码列表（疑似预期输出伪造）")
                         break
 
-        # 检测 eval/exec
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name) and node.func.id in ("eval", "exec", "compile"):
                 violations.append(f"禁止使用 {node.func.id}()")
             if isinstance(node.func, ast.Attribute):
                 if node.func.attr in ("system", "popen", "call", "run") and isinstance(node.func.value, ast.Name) and node.func.value.id in ("os", "subprocess"):
-                    if True:  # 所有危险系统调用
-                        violations.append(f"危险系统调用: {node.func.value.id}.{node.func.attr}()")
+                    violations.append(f"危险系统调用: {node.func.value.id}.{node.func.attr}()")
 
-        # 检测 import 白名单违规
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             for alias in node.names:
                 module = alias.name.split(".")[0]
@@ -87,11 +78,11 @@ def check_ast_cheating(code: str) -> list[str]:
 
 
 def check_bandit(code_file: str) -> list[str]:
-    """调用 bandit 做安全扫描"""
+    """Execute bandit security analysis and return violations."""
     violations = []
     try:
         result = subprocess.run(
-            ["bandit", "-q", "-f", "json", code_file],
+            [sys.executable, "-m", "bandit", "-q", "-f", "json", code_file],
             capture_output=True, text=True, timeout=30
         )
         if result.stdout:
@@ -112,7 +103,6 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
     for f in Path(test_dir).glob("test_*.py"):
         content = f.read_text()
         current_hash = __import__("hashlib").md5(content.encode()).hexdigest()[:16]
-        # 简单校验：文件行数
         with open(f) as fh:
             lines = len(fh.readlines())
         if lines < 3:
@@ -120,91 +110,144 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
     return violations
 
 
-# ── 评分函数 ─────────────────────────────────────────────────────
-
 def score_correctness(test_dir: str) -> tuple:
-    """运行 pytest，返回 (分数, 详情)"""
-    if not test_dir or not os.path.isdir(test_dir):
-        return 0, "无测试目录"
+    """Run pytest and return score and details.
+
+    Args:
+        test_dir: Path to directory or file containing pytest tests.
+
+    Returns:
+        Tuple of integer score and detail string.
+    """
+    if not test_dir or not (os.path.isdir(test_dir) or os.path.isfile(test_dir)):
+        return 0, "No test directory or file provided"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
-        # 从 stdout 解析测试结果
-        passed = result.stdout.count("PASSED")
-        failed = result.stdout.count("FAILED") + result.stdout.count("ERROR") + result.stdout.count("ERRORS")
-        total = passed + failed
+        passed = 0
+        total = 0
+        for line in result.stdout.split("\n"):
+            m = re.search(r"(\d+) passed", line)
+            if m:
+                passed = int(m.group(1))
+            m_failed = re.search(r"(\d+) failed", line)
+            if m_failed:
+                total += int(m_failed.group(1))
+        total += passed
+
         if total == 0:
-            return 0, "无测试用例"
-        rate = passed / total if total > 0 else 0
-        score = round(40 * rate)
-        return score, f"{passed}/{total} 通过"
-    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-        return 0, f"测试执行失败: {e}"
+            if "no tests ran" in result.stdout or result.returncode == 5:
+                return 0, "No tests ran"
+            if result.returncode == 0:
+                return WEIGHTS["correctness"], "Passed"
+            return 0, f"Tests failed with exit code {result.returncode}"
+
+        rate = passed / total
+        score = int(rate * WEIGHTS["correctness"])
+        return score, f"{passed}/{total} passed"
+
+    except subprocess.TimeoutExpired:
+        return 0, "Test execution timed out (120s)"
+    except Exception as e:
+        return 0, f"Execution error: {e}"
 
 
 def score_security(violations: list[str], code: str) -> tuple:
-    """安全评分，满分 35，每项违规扣 7 分"""
-    deductions = len(violations) * 7
-    score = max(0, 35 - deductions)
-    details = "; ".join(violations) if violations else "无违规"
-    return score, details
+    """Calculate security score based on detected violations.
+
+    Args:
+        violations: List of security rule violations.
+        code: Source code string under inspection.
+
+    Returns:
+        Tuple of integer score and detail string.
+    """
+    del code
+    score = WEIGHTS["security"]
+    notes = []
+
+    for v in violations:
+        score -= 7
+        notes.append(v)
+
+    score = max(0, score)
+    detail = "No violations" if not notes else f"Found {len(notes)} issues: " + "; ".join(notes[:3])
+    return score, detail
 
 
 def score_quality(code_file: str) -> tuple:
-    """代码质量评分，调用 pylint"""
+    """Score code quality using pylint.
+
+    Args:
+        code_file: File path to evaluate.
+
+    Returns:
+        Tuple of integer score and detail string.
+    """
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
-                # "Your code has been rated at 8.50/10"
                 m = re.search(r"([\d.]+)/10", line)
                 if m:
-                    score = float(m.group(1))
-                    return round(score / 10 * 15), f"pylint: {score}/10"
-        return 0, "pylint 未输出评分（无法评分）"
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return 0, "pylint 未安装或执行失败"
+                    pylint_score = float(m.group(1))
+                    score = int(pylint_score / 10 * WEIGHTS["quality"])
+                    return score, f"pylint: {pylint_score}/10"
+        return 0, "pylint output parse failure"
+    except subprocess.TimeoutExpired:
+        return 0, "pylint timeout"
+    except Exception as e:
+        return 0, f"Quality score error: {e}"
 
 
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
-    """性能评分，执行时间对比基线"""
+    """Score execution performance.
+
+    Args:
+        code_file: File path to execute.
+        baseline_sec: Expected runtime baseline in seconds.
+
+    Returns:
+        Tuple of integer score and detail string.
+    """
     try:
         start = time.time()
-        result = subprocess.run(
-            ["python", "-c", code],
+        subprocess.run(
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
         ratio = elapsed / max(baseline_sec, 0.1)
-        if ratio <= 1: score = 10
-        elif ratio <= 2: score = 8
-        elif ratio <= 5: score = 5
-        else: score = 2
-        return score, f"执行时间 {elapsed:.2f}s (基线 {baseline_sec}s)"
+        if ratio <= 1:
+            score = 10
+        elif ratio <= 2:
+            score = 8
+        elif ratio <= 5:
+            score = 5
+        else:
+            score = 2
+        return score, f"Elapsed: {elapsed:.2f}s (baseline {baseline_sec}s)"
     except Exception as e:
-        return 0, f"执行失败: {e}"
+        return 0, f"Execution failed: {e}"
 
-
-# ── 主流程 ────────────────────────────────────────────────────────
 
 def evaluate(code_file: str, test_dir: str = None) -> dict:
-    """完整评测流程，返回评分结果"""
-    # 防路径遍历
+    """Run evaluation and scoring pipeline."""
     real_path = os.path.realpath(code_file)
     allowed_dir = os.path.realpath(os.getenv("SUBMISSION_DIR", os.path.dirname(code_file)))
     if not real_path.startswith(allowed_dir):
         raise ValueError(f"代码文件不在允许的目录中: {code_file}")
 
-    # 预先读入内存，避免 TOCTOU
     with open(real_path, encoding="utf-8") as f:
-        code = f.read(10_000_000)  # 限制 10MB
+        code = f.read(10_000_000)
 
-    # 使用内存中的代码进行分析和执行，避免文件被替换
     code_file_in_mem = real_path
 
     result = {
@@ -215,7 +258,6 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
         "cheating_detected": False,
     }
 
-    # 1. 一票否决检查
     ast_violations = check_ast_cheating(code)
     bandit_violations = check_bandit(code_file)
     all_violations = ast_violations + bandit_violations
@@ -227,7 +269,6 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
         result["score"] = 0
         return result
 
-    # 2. 分维度评分
     correctness_score, correctness_note = score_correctness(test_dir)
     security_score, security_note = score_security([], code)
     quality_score, quality_note = score_quality(code_file)
