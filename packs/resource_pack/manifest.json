@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Dynamic Container Inventory Text Slicing HUD",
+    "description": "Fixes 16-character inventory text slicing overflow in hud_custom_container_root",
+    "uuid": "8b3f1e94-c3e2-4f81-9b16-43d9f2e718b5",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "7a2e0d83-b2d1-4e70-8a05-32c8e1d607a4",
+      "version": [1, 0, 0]
+    }
+  ]
+}
