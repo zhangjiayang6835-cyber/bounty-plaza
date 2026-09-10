@@ -1,0 +1,20 @@
+{
+  "hud_screen": {
+    "type": "custom",
+    "controls": [
+      {
+        "inventory_text_slice@hud.inventory_text_label": {
+          "text": "#inventory_item_name",
+          "bindings": [
+            {
+              "binding_name": "#inventory_item_name",
+              "binding_name_override": "#text"
+            }
+          ],
+          "max_text_line_length": 16,
+          "text_alignment": "left"
+        }
+      }
+    ]
+  }
+}
