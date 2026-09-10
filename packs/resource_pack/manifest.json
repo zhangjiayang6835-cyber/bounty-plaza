@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Aquarium of Gullibles - Resource Pack",
+    "description": "Native Bedrock JSON UI dynamic inventory container text slicing and HUD responsive layout.",
+    "uuid": "4f9d2a6e-7b5c-4e89-913a-5d6e7f8a9b0c",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "7b5c4e89-913a-5d6e-7f8a-9b0c4f9d2a6e",
+      "version": [1, 0, 0]
+    }
+  ]
+}
