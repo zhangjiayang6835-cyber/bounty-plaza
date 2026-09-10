@@ -1,0 +1,26 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "Hitbox Math: entity.getAABB() Desync Resolution and Swept CCD",
+    "name": "Hitbox Math CCD",
+    "uuid": "4c94b593-5c8e-4a61-9c17-6428e18df912",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "description": "Script module for kinematic collision detection and hitbox math",
+      "type": "script",
+      "language": "javascript",
+      "uuid": "7a35b801-6c2e-4b92-8d77-9204c382f1b4",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.11.0"
+    }
+  ]
+}

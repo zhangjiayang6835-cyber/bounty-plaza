@@ -1,0 +1,16 @@
+{
+  "name": "bedrock-hitbox-math",
+  "version": "1.0.0",
+  "description": "Bedrock Script API Swept AABB Continuous Collision Detection and Kinematic Hitbox Synchronization",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test test/hitbox_math.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@minecraft/server": "^1.11.0"
+  }
+}
