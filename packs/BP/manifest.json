@@ -1,0 +1,30 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "Void Crystal Ore Behavior Pack",
+    "name": "Void Crystal Ore BP",
+    "uuid": "94227705-71e8-4cdd-9887-f2c1cf5be237",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "description": "Void Crystal Ore Behavior Pack Module",
+      "type": "data",
+      "uuid": "7e17226c-37e5-44a7-a190-151d32a7b1c5",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

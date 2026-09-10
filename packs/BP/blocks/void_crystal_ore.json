@@ -1,0 +1,92 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:block": {
+    "description": {
+      "identifier": "custom:void_crystal_ore",
+      "menu_category": {
+        "category": "nature",
+        "group": "itemGroup.name.ore"
+      }
+    },
+    "components": {
+      "minecraft:geometry": "geometry.void_crystal_ore",
+      "minecraft:material_instances": {
+        "down": {
+          "texture": "void_crystal_ore_bottom",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        },
+        "east": {
+          "texture": "void_crystal_ore_side",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        },
+        "north": {
+          "texture": "void_crystal_ore_side",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        },
+        "south": {
+          "texture": "void_crystal_ore_side",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        },
+        "up": {
+          "texture": "void_crystal_ore_top",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        },
+        "west": {
+          "texture": "void_crystal_ore_side",
+          "render_method": "alpha_test",
+          "face_dimming": true,
+          "ambient_occlusion": true,
+          "isotropic": false
+        }
+      },
+      "minecraft:selection_box": {
+        "origin": [
+          -8.0,
+          0.0,
+          -8.0
+        ],
+        "size": [
+          16.0,
+          16.0,
+          16.0
+        ]
+      },
+      "minecraft:collision_box": {
+        "origin": [
+          -8.0,
+          0.0,
+          -8.0
+        ],
+        "size": [
+          16.0,
+          16.0,
+          16.0
+        ]
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3.0
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 3.0
+      },
+      "minecraft:friction": 0.6,
+      "minecraft:light_emission": 3,
+      "minecraft:map_color": "#4A0E4E"
+    }
+  }
+}
