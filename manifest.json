@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "Dynamic Container Inventory Projection HUD Extension",
+    "name": "Inventory HUD Extension",
+    "uuid": "7a4e69b2-3b4e-4f18-a6b1-094bf4f71a10",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "description": "Script Engine Runtime",
+      "type": "script",
+      "uuid": "8c3b7f19-9154-4a2e-b6a2-63b2f814b721",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.10.0"
+    }
+  ]
+}

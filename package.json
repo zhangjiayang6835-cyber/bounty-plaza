@@ -1,0 +1,9 @@
+{
+  "name": "bounty-plaza-issue-1310",
+  "version": "1.0.0",
+  "description": "Bedrock JSON UI Dynamic Container Inventory Text Slicing Fix",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/inventory_hud.test.js"
+  }
+}
