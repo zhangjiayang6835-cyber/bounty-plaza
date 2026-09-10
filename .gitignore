@@ -3,3 +3,10 @@ data/coin*.db.bak
 *.pyc
 __pycache__/
 .env
+out/
+cache/
+artifacts/
+node_modules/
+node_modules
+target/
+.pytest_cache/
