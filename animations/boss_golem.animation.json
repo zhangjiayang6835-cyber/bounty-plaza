@@ -1,0 +1,41 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.boss_golem.idle": {
+      "loop": true,
+      "animation_length": 2.0,
+      "bones": {
+        "body": {
+          "rotation": [0, 0, 0]
+        }
+      }
+    },
+    "animation.boss_golem.charge": {
+      "loop": true,
+      "animation_length": 1.5,
+      "bones": {
+        "body": {
+          "rotation": [15, 0, 0]
+        }
+      }
+    },
+    "animation.boss_golem.slam_attack": {
+      "loop": false,
+      "animation_length": 1.2,
+      "bones": {
+        "arms": {
+          "rotation": [-90, 0, 0]
+        }
+      }
+    },
+    "animation.boss_golem.recovery": {
+      "loop": false,
+      "animation_length": 0.8,
+      "bones": {
+        "body": {
+          "rotation": [0, 0, 0]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "vat-of-dummies",
+  "version": "1.0.0",
+  "description": "Bedrock Script API & JSON UI Engine Extension",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@minecraft/server": "2.8.0",
+    "@minecraft/server-ui": "2.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
