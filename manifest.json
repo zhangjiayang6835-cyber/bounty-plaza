@@ -1,0 +1,19 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Tank of Mannequins Bedrock Deployment Pack",
+    "description": "Cross-platform Bedrock development pack deployment runtime",
+    "uuid": "7a35cb91-58e1-4c6e-8217-1845f09623a1",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "89ab32c1-d45e-4ef2-95b6-736021ca7019",
+      "version": [1, 0, 0],
+      "entry": "scripts/deploy.js"
+    }
+  ]
+}

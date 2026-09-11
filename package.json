@@ -1,0 +1,14 @@
+{
+  "name": "bounty-plaza-bedrock-deployment",
+  "version": "1.0.0",
+  "description": "Cross-platform Bedrock deployment path resolver and sync engine",
+  "type": "module",
+  "scripts": {
+    "deploy": "node scripts/deploy.js",
+    "build": "node tools/build.js",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
