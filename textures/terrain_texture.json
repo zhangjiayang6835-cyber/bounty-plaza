@@ -1,0 +1,15 @@
+{
+  "resource_pack_name": "bounty-plaza-block-pack",
+  "texture_name": "atlas.terrain",
+  "texture_data": {
+    "compressed_basalt_top": {
+      "textures": "textures/blocks/compressed_basalt_top"
+    },
+    "compressed_basalt_bottom": {
+      "textures": "textures/blocks/compressed_basalt_bottom"
+    },
+    "compressed_basalt_side": {
+      "textures": "textures/blocks/compressed_basalt_side"
+    }
+  }
+}

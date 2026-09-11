@@ -1,0 +1,52 @@
+{
+  "format_version": "1.21.50",
+  "minecraft:block_culling_rules": {
+    "description": {
+      "identifier": "custom:compressed_basalt_culling"
+    },
+    "rules": [
+      {
+        "direction": "up",
+        "geometry_part": {
+          "cube": 0,
+          "face": "up"
+        }
+      },
+      {
+        "direction": "down",
+        "geometry_part": {
+          "cube": 0,
+          "face": "down"
+        }
+      },
+      {
+        "direction": "north",
+        "geometry_part": {
+          "cube": 0,
+          "face": "north"
+        }
+      },
+      {
+        "direction": "south",
+        "geometry_part": {
+          "cube": 0,
+          "face": "south"
+        }
+      },
+      {
+        "direction": "east",
+        "geometry_part": {
+          "cube": 0,
+          "face": "east"
+        }
+      },
+      {
+        "direction": "west",
+        "geometry_part": {
+          "cube": 0,
+          "face": "west"
+        }
+      }
+    ]
+  }
+}

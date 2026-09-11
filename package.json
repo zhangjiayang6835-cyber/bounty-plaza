@@ -1,0 +1,9 @@
+{
+  "name": "bounty-plaza-block-engine",
+  "version": "1.0.0",
+  "description": "Custom block definition schema validator and material instance engine for Bedrock 1.21+/1.26+",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
