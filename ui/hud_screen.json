@@ -1,0 +1,10 @@
+{
+  "inventory_text_slice": {
+    "type": "label",
+    "text": "#inventory_item_name",
+    "max_text_length": 16,
+    "text_alignment": "center",
+    "clips_content": true,
+    "size": [ "default", 10 ]
+  }
+}
