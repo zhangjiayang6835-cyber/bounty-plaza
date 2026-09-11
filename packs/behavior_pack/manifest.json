@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Tank of Mannequins Behavior Pack",
+    "description": "Next-generation Bedrock runtime & entity simulation framework",
+    "uuid": "8f8b3401-4475-470b-a19c-85351a66a12b",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 80]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "4c42416f-124b-4c57-8178-024e031a0211",
+      "version": [1, 0, 0]
+    }
+  ]
+}
