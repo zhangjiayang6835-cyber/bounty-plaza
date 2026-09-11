@@ -56,5 +56,28 @@
     "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
   },
   "min_redeem": 1,
-  "min_redeem_label": "无最低兑换限制"
+  "min_redeem_label": "无最低兑换限制",
+  "bedrock_block_schema": {
+    "format_version": "1.21.40",
+    "min_engine_version": "1.21.0",
+    "target_engine_version": "1.26.30",
+    "material_instances": {
+      "render_method": "opaque",
+      "allowed_render_methods": [
+        "opaque",
+        "double_sided",
+        "blend",
+        "alpha_test"
+      ],
+      "face_specifiers": {
+        "isotropic": "*",
+        "note": "Bedrock 1.21+ 要求 isotropic 面使用 '*' 时必须搭配 render_method 'opaque' 或 'double_sided'；'alpha_test' 与 '*' 组合会触发 BlockSchemaValidator 报错。"
+      }
+    },
+    "validation_rules": [
+      "minecraft:material_instances 中 '*' 面说明符不得与 render_method 'alpha_test' 同时出现",
+      "isotropic 纹理需使用 render_method 'opaque' 以保证客户端渲染管线不触发 assert",
+      "format_version 必须 ≥ 1.21.40 以兼容 Bedrock 1.26.30 的 schema 校验"
+    ]
+  }
 }
