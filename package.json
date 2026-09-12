@@ -1,0 +1,18 @@
+{
+  "name": "tank-of-mannequins",
+  "version": "1.0.0",
+  "description": "Next-generation Bedrock runtime & entity simulation framework",
+  "type": "module",
+  "scripts": {
+    "clean": "node tools/build.js --clean-only",
+    "prebuild": "node tools/build.js --stage-only",
+    "build": "node tools/build.js",
+    "families": "node tools/family_builder.js",
+    "validate": "node tools/pack_validator.js",
+    "deploy": "node tools/build.js --deploy",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "description": {
+    "identifier": "{{namespace}}:{{block_name}}",
+    "menu_category": {
+      "category": "construction"
+    },
+    "states": {
+      "tank:facing": [0, 1, 2, 3],
+      "tank:upside_down": [false, true]
+    }
+  },
+  "components": {
+    "minecraft:block_families": [
+      "custom",
+      "stone"
+    ],
+    "minecraft:destructible_by_mining": {
+      "seconds_to_destroy": 1.5
+    },
+    "minecraft:destructible_by_explosion": {
+      "explosion_resistance": 3.0
+    },
+    "minecraft:geometry": "geometry.custom_stair",
+    "minecraft:material_instances": {
+      "*": {
+        "texture": "{{texture}}",
+        "render_method": "opaque"
+      }
+    }
+  },
+  "permutations": [
+    {
+      "condition": "q.block_state('tank:facing') == 0 && !q.block_state('tank:upside_down')",
+      "components": {
+        "minecraft:transformation": {
+          "rotation": [0, 0, 0]
+        }
+      }
+    },
+    {
+      "condition": "q.block_state('tank:facing') == 1 && !q.block_state('tank:upside_down')",
+      "components": {
+        "minecraft:transformation": {
+          "rotation": [0, 180, 0]
+        }
+      }
+    },
+    {
+      "condition": "q.block_state('tank:facing') == 2 && !q.block_state('tank:upside_down')",
+      "components": {
+        "minecraft:transformation": {
+          "rotation": [0, 90, 0]
+        }
+      }
+    },
+    {
+      "condition": "q.block_state('tank:facing') == 3 && !q.block_state('tank:upside_down')",
+      "components": {
+        "minecraft:transformation": {
+          "rotation": [0, 270, 0]
+        }
+      }
+    },
+    {
+      "condition": "q.block_state('tank:upside_down')",
+      "components": {
+        "minecraft:transformation": {
+          "rotation": [180, 0, 0]
+        }
+      }
+    }
+  ]
+}

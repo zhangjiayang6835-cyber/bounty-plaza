@@ -1,0 +1,31 @@
+{
+  "$scope": {
+    "namespace": "tank",
+    "block_name": "custom_slab",
+    "texture": "custom_slab_texture"
+  },
+  "format_version": "1.20.80",
+  "minecraft:block": {
+    "description": {
+      "identifier": "{{namespace}}:{{block_name}}",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:block_families": [
+        "custom",
+        "stone"
+      ],
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1.0
+      },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "{{texture}}",
+          "render_method": "opaque"
+        }
+      }
+    }
+  }
+}
