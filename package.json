@@ -1,0 +1,12 @@
+{
+  "name": "aioa-playground",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small utility library used to exercise the AI Opportunity Agent end to end.",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
