@@ -157,287 +157,215 @@ def cmd_transfer(args):
             (tx_data["tx_type"], tx_data["from_user"], tx_data["to_user"],
              tx_data["amount"], tx_data["reason"], tx_data["prev_hash"], tx_data["hash"])
         )
-        conn.execute("UPDATE accounts SET balance = balance + ? WHERE username = ?", (args.amount, args.to_user))
+        conn.execute(
+            "UPDATE accounts SET balance = balance + ?, updated_at = datetime('now') WHERE username = ?",
+            (args.amount, args.to_user)
+        )
         conn.commit()
-        print(f"✅ 转账成功: {args.from_user} → {args.to_user} 共 {args.amount} 积分币")
-        print(f"   原因: {args.reason}")
-    except Exception as e:
-        conn.rollback()
-        print(f"ERROR: {e}")
-        return 1
+        print(f"✅ 转账成功: {args.from_user} → {args.to_user} {args.amount} 积分币")
+        return 0
     finally:
         conn.close()
-    return 0
 
 
 def cmd_redeem(args):
     conn = get_db()
     try:
+        ensure_account(conn, args.user)
         balance = get_balance(conn, args.user)
         if balance < args.amount:
-            print(f"ERROR: {args.user} 余额不足（{balance} < {args.amount}）")
+            print(f"ERROR: {args.user} 余额不足 ({balance} < {args.amount})")
             return 1
-        if args.amount < 1:  # 无最低限制
-            print(f"ERROR: 金额必须大于 0")
+        if args.amount < MIN_REDEEM:
+            print(f"ERROR: 兑换数量低于最低限制 ({MIN_REDEEM})")
             return 1
 
-        cash_value = args.amount * RATE
-        ensure_account(conn, args.user)
+        coin_value = args.amount * RATE
         cur = conn.execute(
-            "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?,'pending')",
-            (args.user, args.amount, cash_value, args.address)
+            "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?, 'pending')",
+            (args.user, args.amount, coin_value, args.address)
         )
-        req_id = cur.lastrowid
+        redeem_id = cur.lastrowid
 
-        if args.auto:
-            prev_hash = get_last_hash(conn)
-            tx_data = {"tx_type": "redeem", "from_user": args.user, "to_user": None,
-                       "amount": args.amount, "reason": f"自助兑换 #{req_id}", "prev_hash": prev_hash}
-            tx_data["hash"] = compute_hash(tx_data)
-            conn.execute(
-                "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
-                ("redeem", args.user, args.amount, f"自助兑换 #{req_id}", tx_data["prev_hash"], tx_data["hash"])
-            )
-            conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ? AND balance >= ?", (args.amount, args.user, args.amount))
-            conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
-            conn.commit()
-            if args.json:
-                import json as _json
-                print(_json.dumps({"ok": True, "id": req_id, "username": args.user, "amount": args.amount, "cash_value": round(cash_value, 2), "address": args.address, "status": "approved", "balance_remaining": balance - args.amount}))
-            else:
-                print(f"✅ 自助兑换成功: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
-                print(f"   收款地址: {args.address}")
-                rid_label = f"兑换号: #{req_id}"; print(f"   {rid_label}，已自动批准，管理员请尽快打款")
+        # 冻结余额
+        conn.execute(
+            "UPDATE accounts SET balance = balance - ?, updated_at = datetime('now') WHERE username = ?",
+            (args.amount, args.user)
+        )
+
+        prev_hash = get_last_hash(conn)
+        tx_data = {
+            "tx_type": "redeem", "from_user": args.user,
+            "to_user": None, "amount": args.amount,
+            "reason": f"redeem #{redeem_id} → {args.address}", "prev_hash": prev_hash,
+        }
+        tx_data["hash"] = compute_hash(tx_data)
+        conn.execute(
+            "INSERT INTO transactions (tx_type, from_user, to_user, amount, reason, ref_id, prev_hash, hash, status) VALUES (?,?,?,?,?,?,?,?, 'pending')",
+            (tx_data["tx_type"], tx_data["from_user"], tx_data["to_user"],
+             tx_data["amount"], tx_data["reason"], str(redeem_id),
+             tx_data["prev_hash"], tx_data["hash"])
+        )
+        conn.commit()
+
+        if getattr(args, "json", False):
+            print(json.dumps({
+                "ok": True, "redeem_id": redeem_id, "user": args.user,
+                "amount": args.amount, "coin_value": coin_value,
+                "address": args.address, "status": "pending",
+            }, ensure_ascii=False))
         else:
-            conn.commit()
-            print(f"✅ 兑换申请已提交: {args.user} 兑换 {args.amount} 积分币 = ${cash_value:.2f}")
+            print(f"✅ 兑换申请已提交 #{redeem_id}: {args.amount} 积分币 = ${coin_value:.2f}")
             print(f"   收款地址: {args.address}")
-            print(f"   等待管理员审核（ID: {req_id}）")
-    except Exception as e:
-        conn.rollback()
-        print(f"ERROR: {e}")
-        return 1
+            print(f"   状态: pending（等待管理员审批）")
+        return 0
     finally:
         conn.close()
-    return 0
+
 
 def cmd_approve(args):
     conn = get_db()
     try:
-        # 原子锁定：只有 pending 状态的才能被批准，防止重复扣款
-        conn.execute(
-            "UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ? AND status = 'pending'",
-            (args.id,)
-        )
-        if conn.execute("SELECT changes()").fetchone()[0] == 0:
-            print(f"ERROR: 兑换请求 #{args.id} 不存在或已被处理")
-            return 1
-
-        cur = conn.execute("SELECT username, amount, coin_value FROM redeem_requests WHERE id = ?", (args.id,))
-        req = cur.fetchone()
-        username = req["username"]
-        amount = req["amount"]
-
-        # 原子扣款
-        cur2 = conn.execute(
-            "UPDATE accounts SET balance = balance - ? WHERE username = ? AND balance >= ?",
-            (amount, username, amount)
-        )
-        if cur2.rowcount == 0:
-            print(f"ERROR: {username} 余额不足（并发冲突）")
-            conn.execute("UPDATE redeem_requests SET status = 'pending', updated_at = datetime('now') WHERE id = ?", (args.id,))
-            return 1
-
-        prev_hash = get_last_hash(conn)
-        tx_data = {
-            "tx_type": "redeem", "from_user": username, "to_user": None,
-            "amount": amount, "reason": f"兑换请求 #{args.id}", "prev_hash": prev_hash,
-        }
-        tx_data["hash"] = compute_hash(tx_data)
-
-        conn.execute(
-            "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
-            ("redeem", username, amount, f"兑换请求 #{args.id}", tx_data["prev_hash"], tx_data["hash"])
-        )
-        conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (args.id,))
-        conn.commit()
-
-        cash = amount * RATE
-        print(f"✅ 兑换 #{args.id} 已批准: {username} 获得 ${cash:.2f}")
-        print(f"   打款地址: {req['address']}")
-        print(f"   请尽快打款并在打款后标记为已支付: python scripts/coin.py pay --id {args.id}")
-    except Exception as e:
-        conn.rollback()
-        print(f"ERROR: {e}")
-        return 1
-    finally:
-        conn.close()
-    return 0
-
-
-
-def cmd_pay(args):
-    conn = get_db()
-    try:
-        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
+        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ?", (args.id,))
         req = cur.fetchone()
         if not req:
-            if getattr(args, 'json', False):
-                import json as _json
-                print(_json.dumps({"ok": False, "error": "not_found", "id": args.id}))
-            else:
-                print(f"ERROR: 兑换请求 #{args.id} 不存在或已处理")
+            print(f"ERROR: 兑换申请 #{args.id} 不存在")
+            return 1
+        if req["status"] != "pending":
+            print(f"ERROR: 兑换申请 #{args.id} 状态为 {req['status']}，无法审批")
             return 1
 
-        conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
-        cur2 = conn.execute("SELECT * FROM transactions WHERE from_user = ? AND amount = ? AND status = 'approved' ORDER BY id DESC LIMIT 1", (req["username"], req["amount"]))
-        tx = cur2.fetchone()
-        if tx:
-            conn.execute("UPDATE transactions SET status = 'completed' WHERE id = ?", (tx["id"],))
+        conn.execute(
+            "UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?",
+            (args.id,)
+        )
+        conn.execute(
+            "UPDATE transactions SET status = 'approved' WHERE ref_id = ? AND tx_type = 'redeem'",
+            (str(args.id),)
+        )
         conn.commit()
-
-        if getattr(args, 'json', False):
-            import json as _json
-            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(req.get("coin_value", req["amount"] * 0.72), 2), "status": "paid"}))
-        else:
-            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${req.get('coin_value', req['amount'] * 0.72):.2f}")
-    except Exception as e:
-        conn.rollback()
-        print(f"ERROR: {e}")
-        return 1
+        print(f"✅ 兑换申请 #{args.id} 已批准")
+        return 0
     finally:
         conn.close()
-    return 0
-    conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
-    req = cur.fetchone()
-    if not req:
-        print(f"ERROR: 兑换请求 #{args.id} 不存在或未批准")
-        return 1
-    conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
-    conn.execute("UPDATE transactions SET status = 'completed' WHERE reason = ?", (f"兑换请求 #{args.id}",))
-    conn.commit()
-    conn.close()
-    print(f"✅ 兑换 #{args.id} 已标记为已支付")
-    return 0
 
 
 def cmd_reject(args):
     conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'pending'", (args.id,))
-    req = cur.fetchone()
-    if not req:
-        print(f"ERROR: 兑换请求 #{args.id} 不存在或已处理")
-        return 1
-    conn.execute("UPDATE redeem_requests SET status = 'rejected', updated_at = datetime('now') WHERE id = ?", (args.id,))
-    conn.commit()
-    conn.close()
-    print(f"✅ 兑换 #{args.id} 已拒绝")
-    return 0
+    try:
+        cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ?", (args.id,))
+        req = cur.fetchone()
+        if not req:
+            print(f"ERROR: 兑换申请 #{args.id} 不存在")
+            return 1
+        if req["status"] != "pending":
+            print(f"ERROR: 兑换申请 #{args.id} 状态为 {req['status']}，无法拒绝")
+            return 1
+
+        # 退还余额
+        conn.execute(
+            "UPDATE accounts SET balance = balance + ?, updated_at = datetime('now') WHERE username = ?",
+            (req["amount"], req["username"])
+        )
+        conn.execute(
+            "UPDATE redeem_requests SET status = 'rejected', updated_at = datetime('now') WHERE id = ?",
+            (args.id,)
+        )
+        conn.execute(
+            "UPDATE transactions SET status = 'rejected' WHERE ref_id = ? AND tx_type = 'redeem'",
+            (str(args.id),)
+        )
+        conn.commit()
+        print(f"✅ 兑换申请 #{args.id} 已拒绝，{req['amount']} 积分币已退还 {req['username']}")
+        return 0
+    finally:
+        conn.close()
 
 
 def cmd_ledger(args):
     conn = get_db()
-    cur = conn.execute("SELECT username, balance FROM accounts WHERE balance > 0 ORDER BY balance DESC")
+    cur = conn.execute("SELECT * FROM transactions ORDER BY id DESC LIMIT ?", (args.limit,))
     rows = cur.fetchall()
     conn.close()
     if not rows:
-        print("暂无数据")
+        print("(无交易记录)")
         return 0
-    print(f"{'排名':>4} | {'用户名':<20} | {'积分币':>8} | {'现金价值':>8}")
-    print("-" * 50)
-    for i, row in enumerate(rows, 1):
-        cash = row["balance"] * RATE
-        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, "")
-        print(f"{medal}{i:>3} | {row['username']:<20} | {row['balance']:>8} | ${cash:<6.2f}")
+    print(f"{'ID':<6} {'类型':<10} {'从':<16} {'到':<16} {'数量':<10} {'状态':<10} {'时间'}")
+    print("-" * 90)
+    for r in rows:
+        print(f"{r['id']:<6} {r['tx_type']:<10} {str(r['from_user'] or '-'):<16} "
+              f"{str(r['to_user'] or '-'):<16} {r['amount']:<10} {r['status']:<10} {r['created_at']}")
     return 0
 
 
 def cmd_audit(args):
     conn = get_db()
-    cur = conn.execute("SELECT * FROM transactions ORDER BY id DESC LIMIT 50")
+    cur = conn.execute("SELECT * FROM transactions ORDER BY id ASC")
     rows = cur.fetchall()
     conn.close()
-    if not rows:
-        print("暂无交易记录")
-        return 0
-    for row in rows:
-        print(f"#{row['id']:>4} {row['tx_type']:<8} {row['from_user'] or '':<15} → {row['to_user'] or '':<15} {row['amount']:>8} [{row['status']:<9}] {row['created_at'][:19]}")
-        if args.verbose:
-            print(f"      hash: {row['hash'][:20]}...  prev: {row['prev_hash'][:20]}...")
-    return 0
 
+    prev = "0" * 64
+    broken = 0
+    for r in rows:
+        expected = compute_hash({
+            "prev_hash": prev, "tx_type": r["tx_type"],
+            "from_user": r["from_user"], "to_user": r["to_user"],
+            "amount": r["amount"], "reason": r["reason"],
+        })
+        if r["prev_hash"] != prev or r["hash"] != expected:
+            print(f"❌ 交易 #{r['id']} 哈希链断裂")
+            broken += 1
+        prev = r["hash"]
 
-def cmd_history(args):
-    conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests ORDER BY id DESC LIMIT 50")
-    rows = cur.fetchall()
-    conn.close()
-    if not rows:
-        print("暂无兑换记录")
+    if broken == 0:
+        print(f"✅ 审计通过：{len(rows)} 笔交易哈希链完整")
         return 0
-    for row in rows:
-        print(f"#{row['id']:>4} {row['username']:<20} {row['amount']:>8}积分币 = ${row['coin_value']:<6.2f} [{row['status']:<8}] {row['address'][:30]:<30} {row['created_at'][:19]}")
-    return 0
+    print(f"❌ 审计失败：{broken} 笔交易异常")
+    return 1
 
 
 def main():
-    init_db()
+    parser = argparse.ArgumentParser(description="积分币系统")
+    sub = parser.add_subparsers(dest="command", required=True)
 
-    parser = argparse.ArgumentParser(description="积分币系统 — Coin System")
-    sub = parser.add_subparsers(dest="command")
+    p_bal = sub.add_parser("balance", help="查询余额")
+    p_bal.add_argument("user")
+    p_bal.add_argument("--init", action="store_true", help="初始化 admin 账户")
+    p_bal.set_defaults(func=cmd_balance)
 
-    p = sub.add_parser("balance", help="查询余额")
-    p.add_argument("user")
-    p.add_argument("--init", action="store_true", help="初始化 Admin 账户并注入初始积分")
+    p_tr = sub.add_parser("transfer", help="转账")
+    p_tr.add_argument("--from", dest="from_user", required=True)
+    p_tr.add_argument("--to", dest="to_user", required=True)
+    p_tr.add_argument("--amount", type=int, required=True)
+    p_tr.add_argument("--reason", default="")
+    p_tr.set_defaults(func=cmd_transfer)
 
-    p = sub.add_parser("transfer", help="转账")
-    p.add_argument("--from", dest="from_user", required=True)
-    p.add_argument("--to", dest="to_user", required=True)
-    p.add_argument("--amount", type=int, required=True)
-    p.add_argument("--reason", default="")
+    p_rd = sub.add_parser("redeem", help="兑换")
+    p_rd.add_argument("--user", required=True)
+    p_rd.add_argument("--amount", type=int, required=True)
+    p_rd.add_argument("--address", required=True)
+    p_rd.add_argument("--note", default="")
+    p_rd.add_argument("--auto", action="store_true")
+    p_rd.add_argument("--json", action="store_true")
+    p_rd.set_defaults(func=cmd_redeem)
 
-    p = sub.add_parser("redeem", help="发起兑换")
-    p.add_argument("--user", required=True)
-    p.add_argument("--amount", type=int, required=True)
-    p.add_argument("--address", required=True, help="PayPal 邮箱或 USDT 地址")
-    p.add_argument("--auto", action="store_true", help="自助模式：自动批准兑换")
-    p.add_argument("--json", action="store_true", help="JSON 格式输出")
-    p.add_argument("--note", default="", help="备注")
+    p_ap = sub.add_parser("approve", help="批准兑换")
+    p_ap.add_argument("--id", type=int, required=True)
+    p_ap.set_defaults(func=cmd_approve)
 
-    p = sub.add_parser("approve", help="批准兑换")
-    p.add_argument("--id", type=int, required=True)
+    p_rj = sub.add_parser("reject", help="拒绝兑换")
+    p_rj.add_argument("--id", type=int, required=True)
+    p_rj.set_defaults(func=cmd_reject)
 
-    p = sub.add_parser("pay", help="标记已打款")
-    p.add_argument("--id", type=int, required=True)
-    p.add_argument("--json", action="store_true", help="JSON 格式输出")
-    p.add_argument("--note", default="", help="备注")
+    p_lg = sub.add_parser("ledger", help="查看账本")
+    p_lg.add_argument("--limit", type=int, default=50)
+    p_lg.set_defaults(func=cmd_ledger)
 
-    p = sub.add_parser("reject", help="拒绝兑换")
-    p.add_argument("--id", type=int, required=True)
-
-    p = sub.add_parser("ledger", help="查看排行榜")
-    p = sub.add_parser("audit", help="审计日志")
-    p.add_argument("--verbose", action="store_true")
-    p = sub.add_parser("history", help="兑换历史")
+    p_au = sub.add_parser("audit", help="审计哈希链")
+    p_au.set_defaults(func=cmd_audit)
 
     args = parser.parse_args()
-    if not args.command:
-        parser.print_help()
-        return 1
-
-    commands = {
-        "balance": cmd_balance,
-        "transfer": cmd_transfer,
-        "redeem": cmd_redeem,
-        "approve": cmd_approve,
-        "pay": cmd_pay,
-        "reject": cmd_reject,
-        "ledger": cmd_ledger,
-        "audit": cmd_audit,
-        "history": cmd_history,
-    }
-    return commands[args.command](args)
+    return args.func(args)
 
 
 if __name__ == "__main__":
