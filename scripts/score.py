@@ -176,107 +176,114 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            ["python", "-c", code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
-        ratio = elapsed / max(baseline_sec, 0.1)
-        if ratio <= 1: score = 10
-        elif ratio <= 2: score = 8
-        elif ratio <= 5: score = 5
-        else: score = 2
-        return score, f"执行时间 {elapsed:.2f}s (基线 {baseline_sec}s)"
-    except Exception as e:
-        return 0, f"执行失败: {e}"
+        if elapsed <= baseline_sec:
+            return 10, f"{elapsed:.3f}s (基线 {baseline_sec}s)"
+        ratio = baseline_sec / elapsed
+        return round(10 * ratio), f"{elapsed:.3f}s (基线 {baseline_sec}s)"
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        return 0, f"性能测试失败: {e}"
 
 
-# ── 主流程 ────────────────────────────────────────────────────────
+# ── 主流程 ───────────────────────────────────────────────────────
 
-def evaluate(code_file: str, test_dir: str = None) -> dict:
-    """完整评测流程，返回评分结果"""
-    # 防路径遍历
-    real_path = os.path.realpath(code_file)
-    allowed_dir = os.path.realpath(os.getenv("SUBMISSION_DIR", os.path.dirname(code_file)))
-    if not real_path.startswith(allowed_dir):
-        raise ValueError(f"代码文件不在允许的目录中: {code_file}")
+def evaluate(code_file: str, test_dir: str = None, original_hash: str = None) -> dict:
+    """综合评分"""
+    if not os.path.isfile(code_file):
+        return {"total_score": 0, "error": f"代码文件不存在: {code_file}"}
 
-    # 预先读入内存，避免 TOCTOU
-    with open(real_path, encoding="utf-8") as f:
-        code = f.read(10_000_000)  # 限制 10MB
+    with open(code_file, encoding="utf-8") as f:
+        code = f.read()
 
-    # 使用内存中的代码进行分析和执行，避免文件被替换
-    code_file_in_mem = real_path
+    if not code.strip():
+        return {"total_score": 0, "error": "代码为空"}
 
-    result = {
-        "score": 0,
-        "passed": False,
-        "details": {},
-        "violations": [],
-        "cheating_detected": False,
-    }
-
-    # 1. 一票否决检查
+    # 一票否决检测
     ast_violations = check_ast_cheating(code)
     bandit_violations = check_bandit(code_file)
-    all_violations = ast_violations + bandit_violations
+    tamper_violations = check_test_tampering(original_hash, test_dir) if test_dir else []
+    all_violations = ast_violations + bandit_violations + tamper_violations
 
-    if all_violations:
-        result["cheating_detected"] = True
-        result["violations"] = all_violations
-        result["details"]["security"] = {"score": 0, "note": "一票否决: 检测到作弊行为"}
-        result["score"] = 0
-        return result
+    # 严重违规直接 0 分
+    fatal = [v for v in all_violations if "语法错误" in v or "被清空" in v or "禁止使用" in v]
+    if fatal:
+        return {
+            "total_score": 0,
+            "fatal": fatal,
+            "violations": all_violations,
+        }
 
-    # 2. 分维度评分
-    correctness_score, correctness_note = score_correctness(test_dir)
-    security_score, security_note = score_security([], code)
-    quality_score, quality_note = score_quality(code_file)
-    perf_score, perf_note = score_performance(code_file)
+    # 各维度评分
+    correctness_score, correctness_detail = score_correctness(test_dir) if test_dir else (0, "无测试目录")
+    security_score, security_detail = score_security(all_violations, code)
+    quality_score, quality_detail = score_quality(code_file)
+    performance_score, performance_detail = score_performance(code_file)
 
-    total = correctness_score + security_score + quality_score + perf_score
+    total = correctness_score + security_score + quality_score + performance_score
 
-    result["score"] = total
-    result["passed"] = total >= PASS_THRESHOLD
-    result["details"] = {
-        "correctness": {"score": correctness_score, "note": correctness_note, "weight": 40},
-        "security": {"score": security_score, "note": security_note, "weight": 35},
-        "quality": {"score": quality_score, "note": quality_note, "weight": 15},
-        "performance": {"score": perf_score, "note": perf_note, "weight": 10},
+    return {
+        "total_score": total,
+        "passed": total >= PASS_THRESHOLD,
+        "breakdown": {
+            "correctness": {"score": correctness_score, "max": 40, "detail": correctness_detail},
+            "security": {"score": security_score, "max": 35, "detail": security_detail},
+            "quality": {"score": quality_score, "max": 15, "detail": quality_detail},
+            "performance": {"score": performance_score, "max": 10, "detail": performance_detail},
+        },
+        "violations": all_violations,
     }
-    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description="代码质量评分系统")
-    parser.add_argument("--code", required=True, help="待评分的代码文件")
-    parser.add_argument("--tests", default=None, help="测试目录")
-    parser.add_argument("--json", action="store_true", help="JSON 格式输出")
+    parser.add_argument("--code", help="待评分代码文件")
+    parser.add_argument("--tests", help="测试目录")
+    parser.add_argument("--check", help="仅检查作弊（代码文件）")
+    parser.add_argument("--hash", help="原始测试哈希")
+    parser.add_argument("--json", action="store_true", help="JSON 输出")
     args = parser.parse_args()
 
-    result = evaluate(args.code, args.tests)
+    if args.check:
+        with open(args.check, encoding="utf-8") as f:
+            code = f.read()
+        violations = check_ast_cheating(code)
+        if args.json:
+            print(json.dumps({"violations": violations}, indent=2, ensure_ascii=False))
+        else:
+            if violations:
+                print("❌ 检测到违规:")
+                for v in violations:
+                    print(f"  - {v}")
+            else:
+                print("✅ 未检测到作弊行为")
+        return 0 if not violations else 1
+
+    if not args.code:
+        parser.print_help()
+        return 1
+
+    result = evaluate(args.code, args.tests, args.hash)
 
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
-        print("=" * 50)
-        print("📊 评分结果")
-        print("=" * 50)
-        for dim, data in result["details"].items():
-            bar = "█" * (data["score"] // 2) + "░" * (10 - data["score"] // 2)
-            print(f"  {dim:<15} {data['score']:>3}/{data['weight']:<2} {bar} {data['note']}")
-        print("-" * 50)
-        verdict = "✅ 达标 ✅" if result["passed"] else "❌ 未达标 ❌"
-        print(f"  总分: {result['score']}/100  {verdict}")
-
-        if result["violations"]:
-            print("\n  违规项:")
+        print(f"总分: {result['total_score']}/100")
+        if result.get("passed"):
+            print("✅ 达标")
+        else:
+            print("❌ 未达标")
+        if "breakdown" in result:
+            for dim, info in result["breakdown"].items():
+                print(f"  {dim}: {info['score']}/{info['max']} — {info['detail']}")
+        if result.get("violations"):
+            print("违规:")
             for v in result["violations"]:
-                print(f"    ❌ {v}")
+                print(f"  - {v}")
 
-        if result["cheating_detected"]:
-            print("\n  ⚠️  检测到作弊行为，总分: 0")
-
-    return 0 if result["passed"] else 1
+    return 0 if result.get("passed") else 1
 
 
 if __name__ == "__main__":
