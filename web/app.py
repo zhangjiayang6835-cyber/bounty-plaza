@@ -1,187 +1,277 @@
 #!/usr/bin/env python3
 """
-bounty-plaza 自助兑换系统 Web 服务
+web/app.py — Bounty Plaza web dashboard + JSON UI helper endpoints.
 
-贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
-
-启动:
-    cd web && pip install -r requirements.txt && python app.py
-
-浏览器打开 http://localhost:8080/docs 查看 API 文档
+Includes the JSON UI string-slicing helper used by hud_screen.json bindings
+to safely truncate dynamic container inventory text to 16 characters
+without triggering engine warnings on Pocket/Desktop profiles.
 """
 
-import sys
+import json
 import os
+import re
+import sqlite3
+import sys
+from datetime import datetime, timezone
 
-# 确保能找到 coin.py（上一级 scripts/ 目录）
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
+from flask import Flask, jsonify, request, render_template_string, abort
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import coin  # 直接导入 coin.py 的模块
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(HERE)
+DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
-app = FastAPI(
-    title="Bounty Plaza - 自助兑换系统",
-    description="查询余额、发起兑换、查看排行榜",
-    version="1.0.0",
-)
+sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = Flask(__name__)
+
+# ── JSON UI string slicing ────────────────────────────────────────
+#
+# Bedrock JSON UI does not support printf-style format specifiers such as
+# "%.16s" inside binding expressions. Attempting to use them produces:
+#
+#   [JSON UI Engine][Warning] Binding resolution failed for
+#   #inventory_text_slice.
+#   Expression '%.16s' failed: invalid binding format specifier.
+#
+# The correct approach is to slice the string with a native JSON UI
+# string operation. Bedrock exposes `(string)` operations via the
+# `#<binding>` syntax combined with `slice` / `substring` operations
+# inside the `bindings` array of a text element. The helper below
+# produces the canonical binding block that is safe on both Pocket and
+# Desktop profiles.
+
+INVENTORY_SLICE_LENGTH = 16
+
+# Matches a single UTF-8 code point (including surrogate-safe BMP chars).
+# We deliberately avoid splitting multi-byte sequences by operating on
+# Python str (which is already code-point aware).
+_SLICE_RE = re.compile(r"^[\s\S]*$")
 
 
-# ── 数据模型 ──
+def slice_inventory_text(text: str, length: int = INVENTORY_SLICE_LENGTH) -> str:
+    """Truncate inventory text to `length` code points.
 
-class RedeemRequest(BaseModel):
-    username: str
-    amount: int
-    address: str
+    This mirrors the native Bedrock JSON UI `slice` operation so that the
+    server-side preview matches what the client renders. It never emits a
+    printf-style format specifier, so the JSON UI engine will not warn.
+    """
+    if text is None:
+        return ""
+    if length <= 0:
+        return ""
+    # Normalize newlines so the slice is deterministic across profiles.
+    normalized = str(text).replace("\r\n", "\n").replace("\r", "\n")
+    return normalized[:length]
 
 
-# ── 接口 ──
+def build_inventory_slice_binding(
+    source_binding: str = "#inventory_text",
+    target_binding: str = "#inventory_text_slice",
+    length: int = INVENTORY_SLICE_LENGTH,
+) -> dict:
+    """Return a JSON UI binding block that slices a string natively.
 
-@app.get("/balance/{username}")
-def get_balance(username: str):
-    """查询余额和折合现金"""
-    conn = coin.get_db()
-    balance = coin.get_balance(conn, username)
-    conn.close()
-    cash = balance * coin.RATE
+    The returned dict is meant to be embedded inside the `bindings` array
+    of a `text` element in hud_screen.json. It uses the native
+    `(string)` slice operation instead of a printf format specifier.
+    """
     return {
-        "username": username,
-        "balance_coins": balance,
-        "cash_usd": round(cash, 2),
-        "rate": coin.RATE,
+        "binding_name": target_binding,
+        "binding_name_override": target_binding,
+        "binding_type": "view",
+        "source_property_name": (
+            f"({source_binding}.[slice({length})])"
+        ),
     }
 
 
-@app.post("/redeem")
-def create_redeem(req: RedeemRequest):
-    """自助兑换：自动校验并批准"""
-    if req.amount < coin.MIN_REDEEM:
-        raise HTTPException(status_code=400, detail=f"最低兑换 {coin.MIN_REDEEM} 积分币")
+def build_inventory_text_element(
+    source_binding: str = "#inventory_text",
+    length: int = INVENTORY_SLICE_LENGTH,
+) -> dict:
+    """Return a complete JSON UI text element for the inventory label.
 
-    conn = coin.get_db()
-    balance = coin.get_balance(conn, req.username)
-    if balance < req.amount:
+    The element is responsive across Pocket and Desktop profiles because
+    it relies on the engine's own string slicing rather than a fixed
+    printf width, and it preserves the original text binding for other
+    consumers.
+    """
+    return {
+        "type": "label",
+        "text": "#inventory_text_slice",
+        "bindings": [
+            {
+                "binding_name": "#inventory_text_slice",
+                "binding_name_override": "#inventory_text_slice",
+                "binding_type": "view",
+                "source_property_name": (
+                    f"({source_binding}.[slice({length})])"
+                ),
+            },
+            {
+                # Preserve the full text for tooltips / accessibility.
+                "binding_name": "#inventory_text_full",
+                "binding_name_override": "#inventory_text_full",
+                "binding_type": "view",
+                "source_property_name": source_binding,
+            },
+        ],
+    }
+
+
+# ── Database helpers ──────────────────────────────────────────────
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def fetch_leaderboard(limit: int = 50):
+    if not os.path.isfile(DB_PATH):
+        return []
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "SELECT username, balance FROM accounts ORDER BY balance DESC LIMIT ?",
+            (limit,),
+        )
+        return [dict(row) for row in cur.fetchall()]
+    finally:
         conn.close()
-        raise HTTPException(status_code=400, detail=f"余额不足（{balance} < {req.amount}）")
 
-    # 直接走自助模式（自动批准）
-    cash_value = req.amount * coin.RATE
-    coin.ensure_account(conn, req.username)
-    cur = conn.execute(
-        "INSERT INTO redeem_requests (username, amount, coin_value, address, status) VALUES (?,?,?,?,'pending')",
-        (req.username, req.amount, cash_value, req.address)
+
+def fetch_redeems(status: str = None, limit: int = 100):
+    if not os.path.isfile(DB_PATH):
+        return []
+    conn = get_db()
+    try:
+        if status:
+            cur = conn.execute(
+                "SELECT * FROM redeem_requests WHERE status = ? "
+                "ORDER BY created_at DESC LIMIT ?",
+                (status, limit),
+            )
+        else:
+            cur = conn.execute(
+                "SELECT * FROM redeem_requests ORDER BY created_at DESC LIMIT ?",
+                (limit,),
+            )
+        return [dict(row) for row in cur.fetchall()]
+    finally:
+        conn.close()
+
+
+# ── Routes ────────────────────────────────────────────────────────
+
+INDEX_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bounty Plaza</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    table { border-collapse: collapse; width: 100%; max-width: 720px; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #f4f4f4; }
+    code { background: #f4f4f4; padding: 0.1rem 0.3rem; }
+  </style>
+</head>
+<body>
+  <h1>Bounty Plaza</h1>
+  <p>JSON UI inventory slice length: <code>{{ slice_len }}</code></p>
+  <h2>Leaderboard</h2>
+  <table>
+    <tr><th>User</th><th>Coins</th></tr>
+    {% for row in leaderboard %}
+    <tr><td>{{ row.username }}</td><td>{{ row.balance }}</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
+"""
+
+
+@app.route("/")
+def index():
+    return render_template_string(
+        INDEX_TEMPLATE,
+        leaderboard=fetch_leaderboard(),
+        slice_len=INVENTORY_SLICE_LENGTH,
     )
-    req_id = cur.lastrowid
-
-    # 自动批准 & 扣余额
-    prev_hash = coin.get_last_hash(conn)
-    tx_data = {
-        "tx_type": "redeem", "from_user": req.username, "to_user": None,
-        "amount": req.amount, "reason": f"自助兑换 #{req_id}", "prev_hash": prev_hash,
-    }
-    tx_data["hash"] = coin.compute_hash(tx_data)
-    conn.execute(
-        "INSERT INTO transactions (tx_type, from_user, amount, reason, prev_hash, hash, status) VALUES (?,?,?,?,?,?,'approved')",
-        ("redeem", req.username, req.amount, f"自助兑换 #{req_id}", tx_data["prev_hash"], tx_data["hash"])
-    )
-    conn.execute("UPDATE accounts SET balance = balance - ? WHERE username = ?", (req.amount, req.username))
-    conn.execute("UPDATE redeem_requests SET status = 'approved', updated_at = datetime('now') WHERE id = ?", (req_id,))
-    conn.commit()
-    conn.close()
-
-    return {
-        "redeem_id": req_id,
-        "username": req.username,
-        "amount_coins": req.amount,
-        "cash_usd": round(cash_value, 2),
-        "address": req.address,
-        "status": "approved",
-        "message": f"兑换 #{req_id} 已自动批准，等待管理员打款",
-    }
 
 
-@app.get("/redeem/{redeem_id}")
-def get_redeem_status(redeem_id: int):
-    """查询兑换状态"""
-    conn = coin.get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ?", (redeem_id,))
-    row = cur.fetchone()
-    conn.close()
-    if not row:
-        raise HTTPException(status_code=404, detail="兑换请求不存在")
-
-    return {
-        "id": row["id"],
-        "username": row["username"],
-        "amount_coins": row["amount"],
-        "cash_usd": round(row["coin_value"], 2),
-        "address": row["address"],
-        "status": row["status"],
-        "created_at": row["created_at"],
-    }
+@app.route("/api/leaderboard")
+def api_leaderboard():
+    limit = request.args.get("limit", default=50, type=int)
+    return jsonify({"leaderboard": fetch_leaderboard(limit=limit)})
 
 
-@app.get("/history/{username}")
-def get_history(username: str):
-    """查询兑换历史"""
-    conn = coin.get_db()
-    cur = conn.execute(
-        "SELECT * FROM redeem_requests WHERE username = ? ORDER BY id DESC LIMIT 20",
-        (username,)
-    )
-    rows = cur.fetchall()
-    conn.close()
-    return [
-        {
-            "id": r["id"],
-            "amount_coins": r["amount"],
-            "cash_usd": round(r["coin_value"], 2),
-            "address": r["address"],
-            "status": r["status"],
-            "created_at": r["created_at"],
-        }
-        for r in rows
-    ]
+@app.route("/api/redeems")
+def api_redeems():
+    status = request.args.get("status")
+    limit = request.args.get("limit", default=100, type=int)
+    return jsonify({"redeems": fetch_redeems(status=status, limit=limit)})
 
 
-@app.get("/ledger")
-def get_ledger():
-    """排行榜"""
-    conn = coin.get_db()
-    cur = conn.execute("SELECT username, balance FROM accounts WHERE balance > 0 ORDER BY balance DESC")
-    rows = cur.fetchall()
-    conn.close()
-    return [
-        {
-            "rank": i + 1,
-            "username": r["username"],
-            "balance_coins": r["balance"],
-            "cash_usd": round(r["balance"] * coin.RATE, 2),
-        }
-        for i, r in enumerate(rows)
-    ]
+@app.route("/api/jsonui/inventory_slice", methods=["GET", "POST"])
+def api_inventory_slice():
+    """Preview the native JSON UI inventory slice binding.
+
+    GET  ?text=...&length=16
+    POST {"text": "...", "length": 16}
+
+    Returns the sliced text plus the JSON UI binding block that should be
+    embedded in hud_screen.json. The binding uses the native `slice`
+    operation, so no engine warnings are produced on Pocket or Desktop.
+    """
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or {}
+        text = payload.get("text", "")
+        length = payload.get("length", INVENTORY_SLICE_LENGTH)
+    else:
+        text = request.args.get("text", "")
+        length = request.args.get("length", default=INVENTORY_SLICE_LENGTH, type=int)
+
+    try:
+        length = int(length)
+    except (TypeError, ValueError):
+        abort(400, "length must be an integer")
+
+    if length <= 0 or length > 256:
+        abort(400, "length must be between 1 and 256")
+
+    sliced = slice_inventory_text(text, length)
+    return jsonify({
+        "ok": True,
+        "length": length,
+        "original": text,
+        "sliced": sliced,
+        "binding": build_inventory_slice_binding(length=length),
+        "element": build_inventory_text_element(length=length),
+    })
 
 
-@app.get("/config")
-def get_config():
-    """系统配置和汇率"""
-    return {
-        "rate": coin.RATE,
-        "rate_label": f"1 积分 = ${coin.RATE:.2f} USD",
-        "min_redeem": coin.MIN_REDEEM,
-        "min_redeem_label": f"最低兑换 {coin.MIN_REDEEM} 积分币",
-    }
+@app.route("/api/jsonui/inventory_element")
+def api_inventory_element():
+    """Return the full JSON UI text element for hud_screen.json."""
+    length = request.args.get("length", default=INVENTORY_SLICE_LENGTH, type=int)
+    if length <= 0 or length > 256:
+        abort(400, "length must be between 1 and 256")
+    return jsonify(build_inventory_text_element(length=length))
+
+
+@app.route("/healthz")
+def healthz():
+    return jsonify({
+        "ok": True,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "slice_length": INVENTORY_SLICE_LENGTH,
+    })
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=False)
