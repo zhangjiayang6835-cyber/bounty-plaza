@@ -1,0 +1,57 @@
+"""Enterprise SaaS mode module providing multi-tenant isolation, RBAC, and quota management."""
+
+from packages.saas_mode.models import (
+    AuditEntry,
+    ExecutionMode,
+    FeatureNotAllowedError,
+    Permission,
+    QuotaExceededError,
+    QuotaUsage,
+    Role,
+    SaaSModeError,
+    Tenant,
+    TenantEvent,
+    TenantNotFoundError,
+    TenantStatus,
+    TenantSuspendedError,
+    TenantTier,
+    TierLimits,
+    UnauthorizedAccessError,
+    User,
+)
+from packages.saas_mode.manager import (
+    AuditLogger,
+    MultiTenantStore,
+    QuotaManager,
+    RBACManager,
+    SaaSModeManager,
+    WebhookDispatcher,
+)
+from packages.saas_mode.verifier import SaaSModeVerifier
+
+__all__ = [
+    "AuditEntry",
+    "AuditLogger",
+    "ExecutionMode",
+    "FeatureNotAllowedError",
+    "MultiTenantStore",
+    "Permission",
+    "QuotaExceededError",
+    "QuotaManager",
+    "QuotaUsage",
+    "RBACManager",
+    "Role",
+    "SaaSModeError",
+    "SaaSModeManager",
+    "SaaSModeVerifier",
+    "Tenant",
+    "TenantEvent",
+    "TenantNotFoundError",
+    "TenantStatus",
+    "TenantSuspendedError",
+    "TenantTier",
+    "TierLimits",
+    "UnauthorizedAccessError",
+    "User",
+    "WebhookDispatcher",
+]
