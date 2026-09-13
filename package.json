@@ -1,0 +1,9 @@
+{
+  "name": "bounty-plaza-command-engine",
+  "version": "1.0.0",
+  "description": "Administrative custom slash command engine for Minecraft Bedrock 1.21.70",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
