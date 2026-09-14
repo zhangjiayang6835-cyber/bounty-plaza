@@ -1,0 +1,9 @@
+{
+  "name": "bedrock-swept-aabb",
+  "version": "1.0.0",
+  "description": "Bedrock physics: swept AABB continuous collision detection and 8-vertex spatial bounds",
+  "type": "module",
+  "scripts": {
+    "test": "node test/verify.js"
+  }
+}
