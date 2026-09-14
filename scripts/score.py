@@ -15,6 +15,7 @@
   - 引入外部恶意依赖
   - 代码为空/乱码
   - bandit 检测到高危漏洞
+  - 植入 auth_bypass（注释掉 require_auth / 硬编码 bypass 开关）
 
 用法:
     python scripts/score.py --code <file> --tests <test_dir>
@@ -120,6 +121,68 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
     return violations
 
 
+# ── auth_bypass 检测（Pillar 2: 鉴权/安全，fail-closed）──────────────
+
+AUTH_BYPASS_NAMES = ("auth_bypass", "bypass_auth", "skip_auth")
+
+
+def _is_truthy_constant(value) -> bool:
+    """判断赋值右侧是否为硬编码真值"""
+    if not isinstance(value, ast.Constant):
+        return False
+    v = value.value
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        return v != 0
+    if isinstance(v, str):
+        return v.strip().lower() in ("true", "1", "yes", "on")
+    return False
+
+
+def check_auth_bypass(code: str) -> list[str]:
+    """检测被植入的 auth_bypass 作弊（Pillar 2: 鉴权/安全）。
+
+    覆盖两种典型植入方式:
+      1. 注释掉的鉴权调用 —— `# require_auth(...)`（鉴权被静默禁用）
+      2. 硬编码真值的 bypass 开关 —— `auth_bypass = True` 等
+
+    返回: 违规描述列表；空列表表示未发现植入。
+    """
+    violations = []
+    for lineno, line in enumerate(code.splitlines(), start=1):
+        stripped = line.strip()
+        if stripped.startswith("#") and re.search(r"\brequire_auth\s*\(", stripped):
+            violations.append(
+                f"第 {lineno} 行: require_auth() 鉴权调用被注释掉（auth_bypass 植入）"
+            )
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return violations
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and _is_truthy_constant(node.value):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id.lower() in AUTH_BYPASS_NAMES:
+                    violations.append(
+                        f"第 {node.lineno} 行: 鉴权开关 {target.id} 被硬编码为真值（auth_bypass 植入）"
+                    )
+    return violations
+
+
+def audit_auth_bypass(code: str) -> dict:
+    """Fail-closed 审计：植入 auth_bypass → FAIL；清除后 → PASS。
+
+    对应验收标准中 auditor 的 REQUEST_CHANGES / APPROVE 语义：
+      - 检测到植入: audit_status="FAIL"（阻断合并，评分按一票否决计 0 分）
+      - 未检测到:   audit_status="PASS"（可进入 APPROVE / ready-for-review）
+    """
+    violations = check_auth_bypass(code)
+    if violations:
+        return {"audit_status": "FAIL", "cheating_detected": True, "violations": violations}
+    return {"audit_status": "PASS", "cheating_detected": False, "violations": []}
+
+
 # ── 评分函数 ─────────────────────────────────────────────────────
 
 def score_correctness(test_dir: str) -> tuple:
@@ -215,10 +278,11 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
         "cheating_detected": False,
     }
 
-    # 1. 一票否决检查
+    # 1. 一票否决检查（含 auth_bypass 植入检测，Pillar 2）
     ast_violations = check_ast_cheating(code)
+    auth_violations = check_auth_bypass(code)
     bandit_violations = check_bandit(code_file)
-    all_violations = ast_violations + bandit_violations
+    all_violations = ast_violations + auth_violations + bandit_violations
 
     if all_violations:
         result["cheating_detected"] = True

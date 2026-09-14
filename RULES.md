@@ -76,6 +76,7 @@
 | 删除/清空测试用例 | 文件 hash 校验 | 测试文件被篡改或行数 < 3 |
 | 使用禁止模块 | import 白名单 | pickle / marshal / ctypes / eval / exec |
 | 危险系统调用 | AST 分析 | os.system / subprocess.Popen 等 |
+| 植入 auth_bypass | AST + 文本分析 | 注释掉 require_auth() / 硬编码 bypass 开关（fail-closed） |
 | 代码为空/乱码 | 长度 + AST | 代码长度 < 10 或 AST 解析失败 |
 | 高危安全漏洞 | bandit | bandit HIGH/MEDIUM 级别告警 |
 
