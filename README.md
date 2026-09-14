@@ -97,3 +97,19 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1212 -->
+```typescript
+// src/physics/ContraptionKinematics.ts
+import { Entity, Vector3 } from '../types';
+import { KinematicsSolver } from './KinematicsSolver';
+
+export function updateColliderKinematics(entity: Entity, targetPos: Vector3): void {
+  // 1. Maintain visual camouflage
+  entity.addEffect("invisibility", 20000, { showParticles: false });
+
+  // 2. Continuous kinematic transform with collision-safe interpolation
+  const currentPos = entity.getPosition();
+  const delta = {
+    x: targetPos.x - c
