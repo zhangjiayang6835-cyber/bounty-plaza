@@ -97,3 +97,21 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1229 -->
+```javascript
+// scripts/recolor-tools.js
+import sharp from 'sharp';
+import path from 'path';
+import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Ruby gemstone color palette (Jappa-style hand-shaded)
+const RUBY_PALETTE = {
+  // Base ruby reds with hue shifting for depth
+  darkest: { r: 74, g: 8, b: 12 },    // Deep shadow
+  dark: { r: 120, g: 12, b: 20 },      // Shadow
+  base: { r: 180, g: 20, b: 30 },      // B
