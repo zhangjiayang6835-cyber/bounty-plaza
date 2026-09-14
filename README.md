@@ -97,3 +97,21 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1235 -->
+```typescript
+// scripts/deploy.ts
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+
+// Known Minecraft Bedrock package family names across different installations
+const UWP_PACKAGE_NAMES = [
+  'Microsoft.MinecraftUWP_8wekyb3d8bbwe', // Standard Microsoft Store
+  'Microsoft.MinecraftEducationEdition_8wekyb3d8bbwe', // Education Edition
+  'Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe', // Beta/Preview
+];
+
+// Relative path from the package root to the development behavior packs
+c
