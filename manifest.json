@@ -1,0 +1,26 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Kinematic Swept AABB Collision Engine",
+    "description": "Continuous Collision Detection (CCD) for rapid kinematic contraption translation",
+    "uuid": "8c593b61-419b-426b-a481-b5fb31341324",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "description": "Kinematic Swept AABB CCD Module",
+      "type": "script",
+      "language": "javascript",
+      "uuid": "a17f3945-812e-4b6e-a745-f62294151324",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ]
+}
