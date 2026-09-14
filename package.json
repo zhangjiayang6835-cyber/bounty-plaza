@@ -1,0 +1,16 @@
+{
+  "name": "bounty-plaza-turing-decider",
+  "version": "1.0.0",
+  "description": "Deterministic computational graph decider and Turing undecidability invariant verifier",
+  "main": "src/turing.ts",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.5.0",
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12",
+    "typescript": "^6.0.3"
+  }
+}
