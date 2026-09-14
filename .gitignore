@@ -3,3 +3,11 @@ data/coin*.db.bak
 *.pyc
 __pycache__/
 .env
+artifacts/
+cache/
+node_modules
+node_modules/
+out/
+target/
+dist/
+
