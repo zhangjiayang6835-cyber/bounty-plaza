@@ -97,3 +97,28 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1227 -->
+```yaml
+# .github/workflows/build.yml
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean Scratch Folders (safe)
+        run: |
+          # Only remove generated cache directories, NOT source-controlled block definitions
+          rm -rf .cache/
+          # _temp/ and temp/ are NOT safe to delete — they contain generated block family registries
+          # u
