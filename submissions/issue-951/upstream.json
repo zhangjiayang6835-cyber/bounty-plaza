@@ -1,0 +1,15 @@
+{
+  "bounty_plaza_issue": 951,
+  "upstream_repo": "NSPG13/agent-bounties",
+  "upstream_issue": 1251,
+  "target_file": "scripts/next-agent-claim-action.mjs",
+  "code": "scripts/next-agent-claim-action.mjs",
+  "benchmark": "benchmarks/direct-v1/agent-loop/test.mjs claim-next-action",
+  "auto_submit": {
+    "upstream": "NSPG13/agent-bounties",
+    "target": "scripts/next-agent-claim-action.mjs",
+    "code": "scripts/next-agent-claim-action.mjs",
+    "branch": "fix/claim-next-action-mapper",
+    "message": "fix: harden claim next-action mapper to match known-good benchmark"
+  }
+}
