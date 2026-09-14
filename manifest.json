@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "Continuous Collision Detection (CCD) Swept AABB for Bedrock Kinematic Projection",
+    "name": "Bedrock Kinematic CCD",
+    "uuid": "8b5847e1-381c-4ceb-8d0b-71286b240134",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "description": "Script module implementing swept AABB CCD",
+      "type": "script",
+      "uuid": "f2e51921-6a4e-4b67-9c17-915b8cb40134",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.10.0"
+    }
+  ]
+}
