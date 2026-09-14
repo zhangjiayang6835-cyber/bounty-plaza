@@ -1,0 +1,26 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:block": {
+    "description": {
+      "identifier": "tank:compressed_basalt",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:block_families": [
+        "compressed_basalt",
+        "stone"
+      ],
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 2.5
+      },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "compressed_basalt_texture",
+          "render_method": "opaque"
+        }
+      }
+    }
+  }
+}

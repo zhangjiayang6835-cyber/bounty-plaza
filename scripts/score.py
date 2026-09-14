@@ -91,7 +91,7 @@ def check_bandit(code_file: str) -> list[str]:
     violations = []
     try:
         result = subprocess.run(
-            ["bandit", "-q", "-f", "json", code_file],
+            [sys.executable, "-m", "bandit", "-q", "-f", "json", code_file],
             capture_output=True, text=True, timeout=30
         )
         if result.stdout:
@@ -112,7 +112,6 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
     for f in Path(test_dir).glob("test_*.py"):
         content = f.read_text()
         current_hash = __import__("hashlib").md5(content.encode()).hexdigest()[:16]
-        # 简单校验：文件行数
         with open(f) as fh:
             lines = len(fh.readlines())
         if lines < 3:
@@ -124,14 +123,15 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
 
 def score_correctness(test_dir: str) -> tuple:
     """运行 pytest，返回 (分数, 详情)"""
-    if not test_dir or not os.path.isdir(test_dir):
+    if not test_dir or not (os.path.isdir(test_dir) or os.path.isfile(test_dir)):
         return 0, "无测试目录"
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
-            capture_output=True, text=True, timeout=120
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
+            capture_output=True, text=True, timeout=120, env=env
         )
-        # 从 stdout 解析测试结果
         passed = result.stdout.count("PASSED")
         failed = result.stdout.count("FAILED") + result.stdout.count("ERROR") + result.stdout.count("ERRORS")
         total = passed + failed
@@ -155,13 +155,14 @@ def score_security(violations: list[str], code: str) -> tuple:
 def score_quality(code_file: str) -> tuple:
     """代码质量评分，调用 pylint"""
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
-                # "Your code has been rated at 8.50/10"
                 m = re.search(r"([\d.]+)/10", line)
                 if m:
                     score = float(m.group(1))
@@ -174,10 +175,14 @@ def score_quality(code_file: str) -> tuple:
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     """性能评分，执行时间对比基线"""
     try:
+        with open(code_file, encoding="utf-8") as f:
+            code = f.read()
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-c", code],
+            capture_output=True, text=True, timeout=30, env=env
         )
         elapsed = time.time() - start
         ratio = elapsed / max(baseline_sec, 0.1)
