@@ -1,0 +1,9 @@
+{
+  "name": "bounty-plaza-geometry-engine",
+  "version": "1.0.0",
+  "description": "Custom humanoid NPC geometry UV layout validator and migration engine for Bedrock 1.21.50+",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

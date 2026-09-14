@@ -1,0 +1,30 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Bounty Plaza Custom NPC Geometry Pack",
+    "description": "Custom humanoid NPC 64x64 geometry UV layout engine for Bedrock 1.21.50+",
+    "uuid": "d8e5f2a1-4b19-49c3-9821-7e39a0f51230",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "b2f6c910-1a73-4e82-b349-8f01c4d92135",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "c358f271-9c88-4392-8012-3b1a8d054219",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ]
+}

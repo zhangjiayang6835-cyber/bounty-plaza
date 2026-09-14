@@ -1,0 +1,25 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "custom:custom_npc",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/custom_npc/custom_npc"
+      },
+      "geometry": {
+        "default": "geometry.custom_npc",
+        "slim": "geometry.custom_npc.slim"
+      },
+      "scripts": {
+        "scale": "1.0"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "enable_attachables": true
+    }
+  }
+}
