@@ -1,0 +1,8 @@
+{
+  "expected_effects": [
+    "yellow", "red", "green", "cyan", "purple", "white",
+    "flash1", "flash2", "flash3",
+    "glow1", "glow2", "glow3", "rainbow",
+    "wave", "wave2", "shake", "slide", "scroll"
+  ]
+}
