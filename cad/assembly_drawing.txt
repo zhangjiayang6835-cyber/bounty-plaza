@@ -1,0 +1,33 @@
+==========================================================================================
+          ENGINEERING SCHEMATIC: FLOWER-SHAPED TINACO RAINWATER COLLECTOR                 
+          MEXICO CITY (CDMX) ROOFTOP RETROFIT CONCEPT - DRAWING CDMX-TRH-001              
+==========================================================================================
+
+  <----------------------------- DIA 1700 mm (CATCHMENT RIM) ----------------------------->
+  \________________                                                      ________________/
+   \   PETAL BLADE  \____                                          ____/  SLOPE: 18.5°   /
+    \    (UV-HDPE)       \____                                ____/      (GRAVITY FLOW) /
+     \                        \____                      ____/                         /
+      \____________________________\                    /____________________________/
+                                    |  DIA 450 mm   |
+                                    | (CENTRAL THROAT) |
+                                    \                  /
+                                     \  VORTEX FUNNEL /
+                                      \   (ANTI-AIR) /
+                                       | DIA 110 mm |  <--- 500-MICRON STAINLESS SCREEN
+                     =======================================================
+                    [+]  ADJUSTABLE TINACO ADAPTER COLLAR (4-SEGMENT)    [+]
+                    [+]  FITS 400 mm - 650 mm TINACO LIDS (ROTOPLAS/ETC) [+]
+                     =======================================================
+                                       |              |
+                                       |  DOWNSPOUT   |
+                                       v  INTO TANK   v
+                     _______________________________________________________
+                    |                                                       |
+                    |          EXISTING ROOFTOP TINACO WATER TANK           |
+                    |              (450L / 750L / 1100L / 2500L)            |
+                    |_______________________________________________________|
+
+  TOTAL ASSEMBLED HEIGHT: 509.1 mm | EFFECTIVE CATCHMENT AREA: 2.11 m²
+  ESTIMATED WEIGHT: ~12.5 kg | RETROFIT CLAMP TORQUE: 12.0 N*m (316 SS HARDWARE)
+==========================================================================================

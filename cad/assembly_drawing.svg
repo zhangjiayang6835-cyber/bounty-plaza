@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100">
+<defs>
+  <style>
+    .border { fill: none; stroke: #1e293b; stroke-width: 3; }
+    .title-box { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; }
+    .grid-line { stroke: #cbd5e1; stroke-width: 0.5; stroke-dasharray: 4,4; }
+    .center-line { stroke: #dc2626; stroke-width: 1; stroke-dasharray: 8,4,2,4; }
+    .solid-line { fill: none; stroke: #0f172a; stroke-width: 2; }
+    .hidden-line { fill: none; stroke: #64748b; stroke-width: 1.2; stroke-dasharray: 4,3; }
+    .dimension { stroke: #0284c7; stroke-width: 1.2; }
+    .dim-text { font-family: "Courier New", monospace; font-size: 13px; font-weight: bold; fill: #0369a1; }
+    .view-title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #0f172a; }
+    .view-sub { font-family: Arial, sans-serif; font-size: 12px; fill: #475569; }
+    .title-text-main { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #0f172a; }
+    .title-text-label { font-family: Arial, sans-serif; font-size: 11px; fill: #64748b; font-weight: bold; }
+    .title-text-val { font-family: Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+    .petal-fill { fill: #bae6fd; fill-opacity: 0.35; stroke: #0284c7; stroke-width: 1.8; }
+    .funnel-fill { fill: #7dd3fc; fill-opacity: 0.45; stroke: #0369a1; stroke-width: 2; }
+    .adapter-fill { fill: #cbd5e1; fill-opacity: 0.5; stroke: #334155; stroke-width: 2; }
+    .tinaco-rim { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 6,4; }
+  </style>
+  <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#0284c7"/>
+  </marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="25" y="25" width="1550" height="1050" class="border"/>
+<rect x="35" y="35" width="1530" height="1030" class="border" stroke-width="1"/>
+<g transform="translate(1000, 915)">
+  <rect x="0" y="0" width="565" height="150" class="title-box"/>
+  <line x1="0" y1="40" x2="565" y2="40" stroke="#334155" stroke-width="1.5"/>
+  <line x1="0" y1="80" x2="565" y2="80" stroke="#334155" stroke-width="1.5"/>
+  <line x1="0" y1="115" x2="565" y2="115" stroke="#334155" stroke-width="1.5"/>
+  <line x1="280" y1="40" x2="280" y2="150" stroke="#334155" stroke-width="1.5"/>
+  <line x1="430" y1="40" x2="430" y2="150" stroke="#334155" stroke-width="1.5"/>
+  <text x="20" y="27" class="title-text-main">FLOWER-SHAPED RAINWATER COLLECTOR (TINACO RETROFIT)</text>
+  <text x="15" y="58" class="title-text-label">PROJECT / DEPLOYMENT TARGET:</text>
+  <text x="15" y="73" class="title-text-val">Mexico City (CDMX) Rooftop Tinaco Harvesting</text>
+  <text x="295" y="58" class="title-text-label">DRAWING NUMBER:</text>
+  <text x="295" y="73" class="title-text-val">CDMX-TRH-001-REV-A</text>
+  <text x="445" y="58" class="title-text-label">SHEET / SCALE:</text>
+  <text x="445" y="73" class="title-text-val">1 OF 1  |  1:15 METRIC</text>
+  <text x="15" y="96" class="title-text-label">PRIMARY MATERIAL:</text>
+  <text x="15" y="110" class="title-text-val">Food-Grade UV-HDPE / 316 SS Clamp Collar</text>
+  <text x="295" y="96" class="title-text-label">TOLERANCES (ISO 2768-m):</text>
+  <text x="295" y="110" class="title-text-val">Linear: ±1.5 mm | Angular: ±0.5°</text>
+  <text x="445" y="96" class="title-text-label">VERIFIED STATUS:</text>
+  <text x="445" y="110" class="title-text-val" fill="#16a34a" font-weight="bold">READY FOR TOOLING</text>
+  <text x="15" y="132" class="title-text-label">DESIGN SPECIFICATION:</text>
+  <text x="15" y="145" class="title-text-val">Parametric 8-Petal Bio-inspired Funnel Array</text>
+  <text x="295" y="132" class="title-text-label">ENGINEERING APPROVAL:</text>
+  <text x="295" y="145" class="title-text-val">Universal Bounty Operations CAD Core</text>
+  <text x="445" y="132" class="title-text-label">CAD UNITS:</text>
+  <text x="445" y="145" class="title-text-val">Millimeters [mm]</text>
+</g>
+<text x="60" y="80" class="view-title">VIEW 1: PLAN VIEW (TOP ORTHOGRAPHIC)</text>
+<text x="60" y="100" class="view-sub">Scale 1:15 - Looking directly down into 8-petal drainage collection basin</text>
+<line x1="70" y1="380" x2="650" y2="380" class="center-line"/>
+<line x1="360" y1="90" x2="360" y2="670" class="center-line"/>
+<path d="M 421.0 354.7 L 591.0 284.3 Q 628.0 380.0 591.0 475.7 L 421.0 405.3 Z" class="petal-fill"/>
+<path d="M 421.0 405.3 L 591.0 475.7 Q 549.5 569.5 455.7 611.0 L 385.3 441.0 Z" class="petal-fill"/>
+<path d="M 385.3 441.0 L 455.7 611.0 Q 360.0 648.0 264.3 611.0 L 334.7 441.0 Z" class="petal-fill"/>
+<path d="M 334.7 441.0 L 264.3 611.0 Q 170.5 569.5 129.0 475.7 L 299.0 405.3 Z" class="petal-fill"/>
+<path d="M 299.0 405.3 L 129.0 475.7 Q 92.0 380.0 129.0 284.3 L 299.0 354.7 Z" class="petal-fill"/>
+<path d="M 299.0 354.7 L 129.0 284.3 Q 170.5 190.5 264.3 149.0 L 334.7 319.0 Z" class="petal-fill"/>
+<path d="M 334.7 319.0 L 264.3 149.0 Q 360.0 112.0 455.7 149.0 L 385.3 319.0 Z" class="petal-fill"/>
+<path d="M 385.3 319.0 L 455.7 149.0 Q 549.5 190.5 591.0 284.3 L 421.0 354.7 Z" class="petal-fill"/>
+<circle cx="360" cy="380" r="66" class="solid-line" fill="#e0f2fe"/>
+<circle cx="360" cy="380" r="18" class="solid-line" fill="#0284c7"/>
+<line x1="299" y1="380" x2="421" y2="380" stroke="#0f172a" stroke-width="3"/>
+<line x1="360" y1="319" x2="360" y2="441" stroke="#0f172a" stroke-width="3"/>
+<line x1="110" y1="110" x2="610" y2="110" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<line x1="110" y1="95" x2="110" y2="120" class="dimension"/>
+<line x1="610" y1="95" x2="610" y2="120" class="dimension"/>
+<text x="275" y="102" class="dim-text">DIA 1700 mm (OUTER RIM)</text>
+<line x1="294" y1="476" x2="426" y2="476" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="285" y="496" class="dim-text">DIA 450 mm (THROAT)</text>
+<text x="930" y="80" class="view-title">VIEW 2: FRONT ELEVATION &amp; SLOPED INCLINE</text>
+<text x="930" y="100" class="view-sub">Cross-section contour demonstrating 18.5° positive self-cleansing gravity drainage</text>
+<line x1="700" y1="290" x2="1260" y2="290" class="dimension" stroke-dasharray="3,3"/>
+<polygon points="740,180 740,190 915,290 960,370 960,420 965,420 965,375 920,295 745,190 745,180" class="funnel-fill"/>
+<polygon points="1220,180 1220,190 1045,290 1000,370 1000,420 995,420 995,375 1040,295 1215,190 1215,180" class="funnel-fill"/>
+<rect x="905" y="370" width="150" height="70" class="adapter-fill"/>
+<line x1="895" y1="380" x2="915" y2="380" stroke="#0f172a" stroke-width="4"/>
+<line x1="1045" y1="380" x2="1065" y2="380" stroke="#0f172a" stroke-width="4"/>
+<rect x="898" y="375" width="6" height="15" fill="#475569"/>
+<rect x="1056" y="375" width="6" height="15" fill="#475569"/>
+<line x1="1245" y1="180" x2="1245" y2="290" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="1255" y="240" class="dim-text">DROP 209 mm</text>
+<line x1="1245" y1="290" x2="1245" y2="370" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="1255" y="335" class="dim-text">FUNNEL 180 mm</text>
+<line x1="1245" y1="370" x2="1245" y2="440" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="1255" y="410" class="dim-text">COLLAR 120 mm</text>
+<line x1="1345" y1="180" x2="1345" y2="440" class="dimension" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="1355" y="315" class="dim-text" fill="#0f172a">TOTAL H = 509 mm</text>
+<text x="60" y="680" class="view-title">VIEW 3: SECTION A-A CUTAWAY (ADJUSTABLE TINACO ADAPTER)</text>
+<text x="60" y="700" class="view-sub">Detail of 4-quadrant segmented collar clamping onto variable Mexico City tinaco rims</text>
+<rect x="190" y="800" width="340" height="90" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+<rect x="220" y="810" width="280" height="70" class="adapter-fill"/>
+<rect x="215" y="815" width="10" height="60" fill="#22c55e" stroke="#15803d"/>
+<rect x="495" y="815" width="10" height="60" fill="#22c55e" stroke="#15803d"/>
+<circle cx="190" cy="845" r="7" fill="#64748b" stroke="#0f172a" stroke-width="1.5"/>
+<circle cx="530" cy="845" r="7" fill="#64748b" stroke="#0f172a" stroke-width="1.5"/>
+<line x1="180" y1="845" x2="240" y2="845" stroke="#0f172a" stroke-width="2.5"/>
+<line x1="480" y1="845" x2="540" y2="845" stroke="#0f172a" stroke-width="2.5"/>
+<text x="230" y="920" class="dim-text">VARIABLE CLAMP RANGE: 400 mm - 650 mm</text>
+<text x="250" y="940" class="view-sub">Compatible with Rotoplas 450L, 750L, 1100L, and 2500L models</text>
+<g transform="translate(1000, 520)">
+  <rect x="0" y="0" width="565" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="25" y="35" class="view-title">VIEW 4: 3D ISOMETRIC SCHEMATIC</text>
+  <text x="25" y="55" class="view-sub">Radial blooming petal array with vortex inhibitor and modular collar</text>
+  <ellipse cx="280" cy="140" rx="180" ry="60" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/>
+  <path d="M 100 140 C 130 190, 200 230, 280 230 C 360 230, 430 190, 460 140" fill="none" stroke="#0284c7" stroke-width="2"/>
+  <ellipse cx="280" cy="230" rx="60" ry="20" fill="#bae6fd" stroke="#0369a1" stroke-width="2"/>
+  <path d="M 220 230 L 220 290 C 220 305, 340 305, 340 290 L 340 230" fill="#cbd5e1" stroke="#334155" stroke-width="2"/>
+  <line x1="280" y1="80" x2="280" y2="310" class="center-line"/>
+  <text x="310" y="110" font-family="Arial" font-size="12" fill="#0369a1" font-weight="bold">[1] Petal Blade (x8)</text>
+  <text x="350" y="225" font-family="Arial" font-size="12" fill="#0369a1" font-weight="bold">[2] Central Throat</text>
+  <text x="350" y="275" font-family="Arial" font-size="12" fill="#334155" font-weight="bold">[3] Adjustable Clamp</text>
+</g>
+</svg>
