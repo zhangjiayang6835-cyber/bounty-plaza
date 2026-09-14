@@ -1,0 +1,45 @@
+{
+  "namespace": "hud_custom_container",
+  "hud_custom_container_root": {
+    "type": "panel",
+    "allow_clipping": true,
+    "clip_children": true,
+    "size": ["100%", "100%"],
+    "controls": [
+      {
+        "container_inventory_panel": {
+          "type": "panel",
+          "size": [140, 24],
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "offset": [4, 4],
+          "controls": [
+            {
+              "inventory_item_label": {
+                "type": "label",
+                "text": "#inventory_text_slice",
+                "color": "$white",
+                "size": ["default", 10],
+                "max_size": ["100%", 10],
+                "text_alignment": "left",
+                "anchor_from": "top_left",
+                "anchor_to": "top_left",
+                "bindings": [
+                  {
+                    "binding_name": "#inventory_text",
+                    "binding_name_override": "#inventory_text_raw"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "('%.16s' * #inventory_text_raw)",
+                    "target_property_name": "#inventory_text_slice"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
