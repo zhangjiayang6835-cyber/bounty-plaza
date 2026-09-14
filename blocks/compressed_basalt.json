@@ -1,0 +1,79 @@
+{
+  "format_version": "1.21.50",
+  "minecraft:block": {
+    "description": {
+      "identifier": "custom:compressed_basalt",
+      "menu_category": {
+        "category": "construction",
+        "group": "itemGroup.name.stone"
+      }
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 2.5
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 6.0
+      },
+      "minecraft:friction": 0.6,
+      "minecraft:map_color": "#474F52",
+      "minecraft:selection_box": {
+        "origin": [-8, 0, -8],
+        "size": [16, 16, 16]
+      },
+      "minecraft:collision_box": {
+        "origin": [-8, 0, -8],
+        "size": [16, 16, 16]
+      },
+      "minecraft:geometry": {
+        "identifier": "geometry.compressed_basalt"
+      },
+      "minecraft:material_instances": {
+        "up": {
+          "texture": "compressed_basalt_top",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true,
+          "isotropic": true
+        },
+        "down": {
+          "texture": "compressed_basalt_bottom",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true,
+          "isotropic": true
+        },
+        "north": {
+          "texture": "compressed_basalt_side",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true
+        },
+        "south": {
+          "texture": "compressed_basalt_side",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true
+        },
+        "east": {
+          "texture": "compressed_basalt_side",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true
+        },
+        "west": {
+          "texture": "compressed_basalt_side",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true
+        },
+        "*": {
+          "texture": "compressed_basalt_side",
+          "render_method": "opaque",
+          "ambient_occlusion": 1.0,
+          "face_dimming": true
+        }
+      }
+    }
+  }
+}
