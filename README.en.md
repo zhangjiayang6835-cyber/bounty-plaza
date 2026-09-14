@@ -52,6 +52,10 @@ See [RULES.en.md](RULES.en.md) for:
 7. When paid → coins credited to your account
 8. Redeem coins for cash anytime
 
+## Docs
+
+- [tt-metal #56277 legacy sqrt/rsqrt/reciprocal compatibility path removal plan](docs/tt-metal-56277-legacy-sqrt-rsqrt-reciprocal-removal.md) — for Issue #1472
+
 ## Languages
 
 - [中文](README.md)

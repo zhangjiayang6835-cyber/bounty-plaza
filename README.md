@@ -44,6 +44,10 @@
   - ✅ 修复说明
   - ✅ 测试用例（如果适用）
 
+## 📄 相关文档 / Docs
+
+- [tt-metal #56277 遗留 sqrt/rsqrt/reciprocal 兼容路径移除方案](docs/tt-metal-56277-legacy-sqrt-rsqrt-reciprocal-removal.md) — 对应 Issue #1472
+
 ## 📊 评分标准
 
 | 维度 | 权重 | 评分方式 |
