@@ -1,0 +1,81 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.boss_golem.state_machine": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "animations": [
+            "idle"
+          ],
+          "blend_transition": 0.2,
+          "on_entry": [
+            "variable.state_flag = 0;"
+          ],
+          "transitions": [
+            {
+              "charging": "variable.state_flag == 0 && (variable.is_charging || query.is_delayed_attacking)"
+            }
+          ]
+        },
+        "charging": {
+          "animations": [
+            "charge"
+          ],
+          "blend_transition": 0.25,
+          "on_entry": [
+            "variable.state_flag = 1;"
+          ],
+          "transitions": [
+            {
+              "eval_charge": "variable.state_flag == 1 && query.anim_time >= 1.5"
+            }
+          ]
+        },
+        "eval_charge": {
+          "blend_transition": 0.2,
+          "on_entry": [
+            "variable.state_flag = 2;",
+            "variable.is_charging = 0;"
+          ],
+          "transitions": [
+            {
+              "slam_attack": "variable.state_flag == 2 && query.anim_time >= 0.25"
+            },
+            {
+              "default": "variable.state_flag == 2 && !query.is_alive"
+            }
+          ]
+        },
+        "slam_attack": {
+          "animations": [
+            "slam_attack"
+          ],
+          "blend_transition": 0.2,
+          "on_entry": [
+            "variable.state_flag = 3;"
+          ],
+          "transitions": [
+            {
+              "recovery": "variable.state_flag == 3 && query.anim_time >= 1.2"
+            }
+          ]
+        },
+        "recovery": {
+          "animations": [
+            "recovery"
+          ],
+          "blend_transition": 0.3,
+          "on_entry": [
+            "variable.state_flag = 4;"
+          ],
+          "transitions": [
+            {
+              "default": "variable.state_flag == 4 && query.anim_time >= 0.8"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

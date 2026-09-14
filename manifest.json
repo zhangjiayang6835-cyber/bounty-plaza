@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Vat of Dummies BP",
+    "description": "Experimental Bedrock Engine Core",
+    "uuid": "b53f6681-420a-4530-9b37-b4d216f40b2a",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "d9834272-9b0a-4bf3-a154-47ef2542a22b",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.8.0"
+    }
+  ]
+}
