@@ -1,0 +1,27 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "contraption:unified_voxel_display",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "atlas": "textures/atlas/terrain_atlas"
+      },
+      "geometry": {
+        "default": "geometry.contraption.voxel_cube"
+      },
+      "render_controllers": [
+        "controller.render.unified_voxel"
+      ],
+      "scripts": {
+        "pre_animation": [
+          "variable.atlas_index = query.property('contraption:atlas_index');",
+          "variable.u_offset = (variable.atlas_index % 64) / 64.0;",
+          "variable.v_offset = math.floor(variable.atlas_index / 64.0) / 64.0;"
+        ]
+      }
+    }
+  }
+}
