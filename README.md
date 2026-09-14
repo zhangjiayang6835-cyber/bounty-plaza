@@ -97,3 +97,19 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1232 -->
+```typescript
+// contraption:display_entity.js - Unified dynamic block display entity
+import { world, system } from '@minecraft/server';
+
+// Single shared geometry identifier - no per-block attachables
+const SHARED_GEOMETRY = 'geometry.contraption.block';
+const SHARED_RENDER_CONTROLLER = 'controller.render.contraption_block';
+
+// Texture mapping cache: blockId -> texture identifier
+const textureCache = new Map();
+
+// Block state -> texture mapping (customize per your block registry)
+const BLOCK_
