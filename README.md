@@ -97,3 +97,21 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1235 -->
+```typescript
+// scripts/deploy.ts
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+
+/**
+ * Resolves the Minecraft Bedrock development packs directory across all
+ * supported Windows installations (Microsoft Store / Xbox App / legacy).
+ *
+ * Detection order:
+ * 1. Explicit environment override (for CI/testing/custom setups).
+ * 2. Standard UWP package path (Microsoft Store / Xbox App).
+ * 3. Legacy Minecraft path (pre-UWP / manual installs).
+ * 4. Common fallback paths (e.g., X
