@@ -128,7 +128,7 @@ def score_correctness(test_dir: str) -> tuple:
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
         # 从 stdout 解析测试结果
@@ -174,9 +174,11 @@ def score_quality(code_file: str) -> tuple:
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     """性能评分，执行时间对比基线"""
     try:
+        with open(code_file, "r", encoding="utf-8") as f:
+            code_content = f.read()
         start = time.time()
-        result = subprocess.run(
-            ["python", "-c", code],
+        subprocess.run(
+            [sys.executable, "-c", code_content],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
