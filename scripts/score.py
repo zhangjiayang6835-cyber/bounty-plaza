@@ -123,68 +123,97 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
 # ── 评分函数 ─────────────────────────────────────────────────────
 
 def score_correctness(test_dir: str) -> tuple:
-    """运行 pytest，返回 (分数, 详情)"""
-    if not test_dir or not os.path.isdir(test_dir):
+    """Run pytest and return (score, details)."""
+    if not test_dir or not (os.path.isdir(test_dir) or os.path.isfile(test_dir)):
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
-        # 从 stdout 解析测试结果
-        passed = result.stdout.count("PASSED")
-        failed = result.stdout.count("FAILED") + result.stdout.count("ERROR") + result.stdout.count("ERRORS")
-        total = passed + failed
+        passed = 0
+        total = 0
+        for line in result.stdout.split("\n"):
+            m = re.search(r"(\d+) passed", line)
+            if m:
+                passed = int(m.group(1))
+            m_failed = re.search(r"(\d+) failed", line)
+            if m_failed:
+                total += int(m_failed.group(1))
+        total += passed
+
         if total == 0:
-            return 0, "无测试用例"
-        rate = passed / total if total > 0 else 0
-        score = round(40 * rate)
+            if "no tests ran" in result.stdout or result.returncode == 5:
+                return 0, "未发现有效测试"
+            if result.returncode == 0:
+                return WEIGHTS["correctness"], "通过"
+            return 0, f"测试失败 (exit code {result.returncode})"
+
+        rate = passed / total
+        score = int(rate * WEIGHTS["correctness"])
         return score, f"{passed}/{total} 通过"
-    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-        return 0, f"测试执行失败: {e}"
+
+    except subprocess.TimeoutExpired:
+        return 0, "测试超时 (120s)"
+    except Exception as e:
+        return 0, f"运行错误: {e}"
 
 
 def score_security(violations: list[str], code: str) -> tuple:
-    """安全评分，满分 35，每项违规扣 7 分"""
-    deductions = len(violations) * 7
-    score = max(0, 35 - deductions)
-    details = "; ".join(violations) if violations else "无违规"
-    return score, details
+    """Calculate security score based on detected violations."""
+    score = WEIGHTS["security"]
+    notes = []
+
+    for v in violations:
+        score -= 7
+        notes.append(v)
+
+    score = max(0, score)
+    detail = "无违规" if not notes else f"发现 {len(notes)} 项问题: " + "; ".join(notes[:3])
+    return score, detail
 
 
 def score_quality(code_file: str) -> tuple:
-    """代码质量评分，调用 pylint"""
+    """Score code quality using pylint."""
     try:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = f"{os.getcwd()}:{env.get('PYTHONPATH', '')}"
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
-            capture_output=True, text=True, timeout=30
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
+            capture_output=True, text=True, timeout=30, env=env
         )
         for line in result.stdout.split("\n"):
             if "Your code has been rated at" in line:
-                # "Your code has been rated at 8.50/10"
                 m = re.search(r"([\d.]+)/10", line)
                 if m:
-                    score = float(m.group(1))
-                    return round(score / 10 * 15), f"pylint: {score}/10"
-        return 0, "pylint 未输出评分（无法评分）"
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return 0, "pylint 未安装或执行失败"
+                    pylint_score = float(m.group(1))
+                    score = int(pylint_score / 10 * WEIGHTS["quality"])
+                    return score, f"pylint: {pylint_score}/10"
+        return 0, "pylint 解析失败"
+    except subprocess.TimeoutExpired:
+        return 0, "pylint 超时"
+    except Exception as e:
+        return 0, f"质量评分错误: {e}"
 
 
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
-    """性能评分，执行时间对比基线"""
+    """Score execution performance."""
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
         ratio = elapsed / max(baseline_sec, 0.1)
-        if ratio <= 1: score = 10
-        elif ratio <= 2: score = 8
-        elif ratio <= 5: score = 5
-        else: score = 2
+        if ratio <= 1:
+            score = 10
+        elif ratio <= 2:
+            score = 8
+        elif ratio <= 5:
+            score = 5
+        else:
+            score = 2
         return score, f"执行时间 {elapsed:.2f}s (基线 {baseline_sec}s)"
     except Exception as e:
         return 0, f"执行失败: {e}"
