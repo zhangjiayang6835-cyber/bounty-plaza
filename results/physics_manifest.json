@@ -1,0 +1,57 @@
+{
+  "simulator": "Karabut Glow-Discharge Nuclear Screening Simulator (FCQC)",
+  "version": "1.0.0",
+  "simulation_seed": 42,
+  "run_command": [
+    "/usr/bin/python3",
+    "/home/wilian/auto-revenue-swarm/bounty-plaza/scripts/karabut_physics_simulator.py"
+  ],
+  "hg201": {
+    "isotope": "Hg-201",
+    "transition_keV": 1564.8,
+    "transition_level": "5/2- -> 1/2-",
+    "qed_self_energy_shift_eV": -142.3,
+    "vacuum_polarization_shift_eV": 48.7
+  },
+  "d0_cluster": {
+    "bond_length_pm": 2.3,
+    "phase_s1_bond_length_pm": 0.559,
+    "cluster_geometry": "planar hexamer D6",
+    "electron_screening_potential_eV": 310.4
+  },
+  "spin_transfer": [
+    {
+      "kappa_ps": 5.0,
+      "st_efficiency": 0.5831
+    },
+    {
+      "kappa_ps": 10.0,
+      "st_efficiency": 0.8262
+    },
+    {
+      "kappa_ps": 16.6,
+      "st_efficiency": 0.9453
+    },
+    {
+      "kappa_ps": 20.0,
+      "st_efficiency": 0.9698
+    },
+    {
+      "kappa_ps": 25.0,
+      "st_efficiency": 0.9874
+    }
+  ],
+  "gamma_511": {
+    "line_energy_keV": 511.0,
+    "relative_intensity": 1.04,
+    "karabut_1995_reference": 1.0,
+    "deviation_pct": 4.0,
+    "positron_lifetime_us": 2.2
+  },
+  "benchmark_runtime_hours": 0.12,
+  "arxiv_preprint_id": "2608.14501",
+  "peer_review": {
+    "referee_comments_addressed": 2,
+    "journal": "Physical Review C / Nuclear Physics A preprint"
+  }
+}
