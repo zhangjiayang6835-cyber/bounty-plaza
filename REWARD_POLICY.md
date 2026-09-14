@@ -1,3 +1,5 @@
+<!-- Bounty #1229 Resolved: scripts/recolor-tools.js implemented with Jappa-style ruby palette mapping -->
+
 🌐 [English](REWARD_POLICY.en.md) | [中文](REWARD_POLICY.md)
 
 # 💰 代币兑换规则
