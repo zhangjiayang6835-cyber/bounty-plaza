@@ -1,0 +1,13 @@
+{
+  "name": "bounty-plaza-issue-1323",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Script API custom slash command startup registration and permission gating fix for issue 1323",
+  "scripts": {
+    "test": "node --test test/",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
