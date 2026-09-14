@@ -1,0 +1,11 @@
+{
+  "format_version": [
+    1,
+    1,
+    0
+  ],
+  "custom:compressed_basalt": {
+    "sound": "stone",
+    "textures": "compressed_basalt"
+  }
+}
