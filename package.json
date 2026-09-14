@@ -1,0 +1,8 @@
+{
+  "name": "bounty-plaza-agentshield-819",
+  "private": true,
+  "scripts": {
+    "test": "bash scripts/verify.sh",
+    "verify": "bash scripts/verify.sh"
+  }
+}

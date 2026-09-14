@@ -1,0 +1,475 @@
+Metadata-Version: 2.4
+Name: agentshield
+Version: 0.1.2
+Summary: Security and monitoring for AI agents
+Home-page: https://agent-shield.com
+Author: AgentShield
+Author-email: AgentShield <support@agent-shield.com>
+License: MIT
+Project-URL: Homepage, https://agent-shield.com
+Project-URL: Documentation, https://agent-shield.com/docs
+Project-URL: Repository, https://github.com/agentshield/python-sdk
+Project-URL: Bug Tracker, https://github.com/agentshield/python-sdk/issues
+Keywords: ai,agent,security,monitoring,llm,safety
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.28.0
+Requires-Dist: urllib3>=1.26.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: pytest-mock>=3.10.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=5.0.0; extra == "dev"
+Requires-Dist: mypy>=0.990; extra == "dev"
+Requires-Dist: types-requests>=2.28.0; extra == "dev"
+Provides-Extra: langchain
+Requires-Dist: langchain>=0.1.0; extra == "langchain"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# AgentShield Python SDK
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI version](https://badge.fury.io/py/agentshield.svg)](https://badge.fury.io/py/agentshield)
+
+**Security and monitoring for AI agents.** Monitor agent behavior, enforce policies, and get real-time alerts for suspicious activity.
+
+AgentShield provides enterprise-grade security for autonomous AI agents, with seamless integration for LangChain, OpenAI Assistants, and custom agent frameworks.
+
+🔗 **Dashboard**: [https://agent-shield.com](https://agent-shield.com)
+📚 **Documentation**: [https://agent-shield.com/docs](https://agent-shield.com/docs)
+
+---
+
+## ✨ Features
+
+- **🛡️ Policy Enforcement**: Block, flag, or require approval for sensitive operations
+- **📊 Real-Time Monitoring**: Track every tool call, API request, and agent decision
+- **🚨 Smart Alerts**: Get notified of anomalies, policy violations, and security events
+- **🔍 Anomaly Detection**: ML-powered detection of unusual agent behavior
+- **⚡ Zero-Config**: Drop-in replacement - no code changes required
+- **🎯 Framework Agnostic**: Works with LangChain, OpenAI, or custom agents
+- **📈 Cost Tracking**: Monitor and optimize agent operational costs
+- **🔐 Fail-Safe**: Configurable fail-open or fail-closed modes
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+pip install agentshield
+```
+
+### 5-Line Integration
+
+```python
+from agentshield import SecureAgent
+from langchain.agents import create_openai_functions_agent
+
+# Your existing agent
+agent = create_openai_functions_agent(llm, tools, prompt)
+
+# Add security - that's it!
+secure_agent = SecureAgent(
+    agent=agent,
+    shield_key="agsh_your_api_key",
+    agent_id="my-assistant"
+)
+
+# Use normally - security is automatic
+result = secure_agent.invoke({"input": "Search for AI security"})
+```
+
+**Get your API key**: [https://agent-shield.com/dashboard/settings](https://agent-shield.com/dashboard/settings)
+
+---
+
+## 📖 Examples
+
+### Basic Function Wrapping
+
+Secure any Python function with AgentShield:
+
+```python
+from agentshield import SecureAgent, SecurityException
+
+def web_search(query: str) -> str:
+    """Search the web."""
+    return perform_search(query)
+
+# Initialize SecureAgent
+secure_agent = SecureAgent(
+    agent=agent,
+    shield_key="agsh_...",
+    agent_id="search-agent"
+)
+
+# Wrap the function
+secure_search = secure_agent.wrap_function(web_search, "web_search")
+
+# Use it - calls are automatically monitored
+try:
+    result = secure_search("AI security best practices")
+    print(result)
+except SecurityException as e:
+    print(f"Blocked: {e.message}")
+    print(f"Policy: {e.policy_matched}")
+    print(f"Call ID: {e.call_id}")
+```
+
+### LangChain Integration
+
+AgentShield automatically wraps LangChain tools:
+
+```python
+from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain.tools import Tool
+from langchain_openai import ChatOpenAI
+from agentshield import SecureAgent
+
+# Define tools
+tools = [
+    Tool(name="Search", func=search_func, description="Search the web"),
+    Tool(name="Calculator", func=calc_func, description="Do math"),
+    Tool(name="Database", func=db_func, description="Query database"),
+]
+
+# Create LangChain agent
+llm = ChatOpenAI(model="gpt-4")
+agent = create_openai_functions_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+# Wrap with AgentShield - tools are automatically secured
+secure_agent = SecureAgent(
+    agent=agent_executor,
+    shield_key="agsh_...",
+    agent_id="langchain-assistant",
+    fail_open=False,  # Fail closed for security
+)
+
+# Use normally - all tool calls are monitored and enforced
+result = secure_agent.invoke({"input": "What's the weather in SF?"})
+```
+
+### OpenAI Assistants
+
+```python
+from openai import OpenAI
+from agentshield import SecureAgent
+
+client = OpenAI()
+
+# Create assistant
+assistant = client.beta.assistants.create(
+    name="Data Analyst",
+    instructions="You analyze data and generate reports.",
+    tools=[{"type": "code_interpreter"}],
+    model="gpt-4"
+)
+
+# Wrap with AgentShield
+secure_assistant = SecureAgent(
+    agent=assistant,
+    shield_key="agsh_...",
+    agent_id="data-analyst",
+)
+
+# Function calls are now monitored
+thread = client.beta.threads.create()
+message = client.beta.threads.messages.create(
+    thread_id=thread.id,
+    role="user",
+    content="Analyze this dataset and find trends"
+)
+run = client.beta.threads.runs.create(
+    thread_id=thread.id,
+    assistant_id=secure_assistant.id
+)
+```
+
+---
+
+## 🎛️ Configuration
+
+### SecureAgent Options
+
+```python
+secure_agent = SecureAgent(
+    agent=agent,                    # Required: Your agent instance
+    shield_key="agsh_...",          # Required: Your AgentShield API key
+    agent_id="unique-agent-id",     # Required: Unique identifier for this agent
+    api_url=None,                   # Optional: Custom API endpoint
+    timeout=30,                     # Optional: API timeout in seconds
+    debug=False,                    # Optional: Enable debug logging
+    fail_open=False,                # Optional: Allow calls if API unavailable
+)
+```
+
+### Policy Actions
+
+AgentShield supports four policy actions:
+
+| Action | Behavior | Use Case |
+|--------|----------|----------|
+| **ALLOWED** | Execute tool normally | Safe, approved operations |
+| **BLOCKED** | Raise `SecurityException`, prevent execution | Dangerous operations, PII access |
+| **FLAGGED** | Log warning, allow execution | Suspicious but not critical |
+| **PENDING_APPROVAL** | Raise exception, require manual approval | High-risk operations |
+
+---
+
+## 🔐 Security Policies
+
+Create policies in the [AgentShield Dashboard](https://agent-shield.com/dashboard/policies):
+
+### Example Policies
+
+**Block PII Access**
+```yaml
+name: Block PII Access
+action: BLOCK
+conditions:
+  keywords: ["social security", "ssn", "credit card", "password"]
+  tools: ["database_query", "file_read"]
+```
+
+**Flag Expensive Operations**
+```yaml
+name: Flag Expensive Operations
+action: FLAG
+conditions:
+  cost_limit: 1.00  # Flag if cost > $1
+  tools: ["gpt4_call", "dalle_generate"]
+```
+
+**Rate Limiting**
+```yaml
+name: Rate Limit API Calls
+action: BLOCK
+conditions:
+  rate_limit:
+    calls: 100
+    window: 3600  # 100 calls per hour
+```
+
+---
+
+## 📊 Monitoring & Alerts
+
+### Dashboard Features
+
+Visit [agent-shield.com/dashboard](https://agent-shield.com/dashboard) to:
+
+- **📈 View Activity**: See every agent call in real-time
+- **🎯 Create Policies**: Define security rules with a visual editor
+- **🚨 Set Alerts**: Get notified via email or webhook
+- **📉 Track Metrics**: Monitor costs, performance, and anomalies
+- **🔍 Search Logs**: Find specific calls, filter by status/tool/agent
+- **📊 Analytics**: Understand agent behavior patterns
+
+### Webhook Alerts
+
+Configure webhooks to receive alerts:
+
+```python
+# Set webhook URL in dashboard settings
+webhook_url = "https://your-api.com/agentshield-webhook"
+
+# Receive events:
+{
+  "event": "call_blocked",
+  "agent_id": "my-agent",
+  "tool_name": "database_query",
+  "policy_matched": "Block PII Access",
+  "call_id": "call_abc123",
+  "timestamp": "2024-11-06T12:34:56Z",
+  "severity": "HIGH"
+}
+```
+
+---
+
+## 🛠️ Error Handling
+
+### SecurityException
+
+```python
+from agentshield import SecurityException
+
+try:
+    result = secure_agent.invoke({"input": "Delete user data"})
+except SecurityException as e:
+    print(f"Status: {e.status}")                # BLOCKED or PENDING_APPROVAL
+    print(f"Message: {e.message}")              # Human-readable reason
+    print(f"Policy: {e.policy_matched}")        # Which policy was violated
+    print(f"Call ID: {e.call_id}")              # For debugging/auditing
+```
+
+### Other Exceptions
+
+```python
+from agentshield import (
+    APIKeyError,          # Invalid or revoked API key
+    NetworkError,         # Network/connectivity issues
+    PolicyEvaluationError,  # Server-side policy evaluation failed
+    ConfigurationError,   # Invalid SDK configuration
+)
+```
+
+### Fail-Open vs Fail-Closed
+
+```python
+# Fail-Closed (default): Block calls if API is unavailable
+secure_agent = SecureAgent(agent, shield_key, agent_id, fail_open=False)
+
+# Fail-Open: Allow calls if API is unavailable (less secure)
+secure_agent = SecureAgent(agent, shield_key, agent_id, fail_open=True)
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Run with coverage
+pytest --cov=agentshield --cov-report=html
+
+# Run specific test
+pytest tests/test_client.py::TestAgentShieldClient::test_log_agent_call_allowed
+```
+
+---
+
+## 📚 API Reference
+
+### SecureAgent
+
+**`__init__(agent, shield_key, agent_id, **options)`**
+
+Initialize SecureAgent wrapper.
+
+**`wrap_function(func, tool_name=None) -> Callable`**
+
+Manually wrap a function with AgentShield security.
+
+### AgentShieldClient
+
+**`log_agent_call(tool_name, tool_args, execution_time_ms=None, timestamp=None) -> dict`**
+
+Log an agent call to AgentShield for policy evaluation.
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. APIKeyError: Invalid or revoked shield_key**
+- Check your API key at [agent-shield.com/dashboard/settings](https://agent-shield.com/dashboard/settings)
+- Ensure key starts with `agsh_`
+- Key may be revoked - generate a new one
+
+**2. NetworkError: Failed to connect**
+- Check your internet connection
+- Verify firewall allows outbound HTTPS to `*.cloudfunctions.net`
+- Try with `timeout=60` for slower connections
+
+**3. Tool calls not being intercepted**
+- Enable debug mode: `SecureAgent(..., debug=True)`
+- Check logs for "Wrapped X tools" message
+- Some agent frameworks require manual wrapping
+
+**4. High latency**
+- API calls add ~50-200ms overhead
+- Use `fail_open=True` for non-critical applications
+- Consider caching for repeated calls
+
+### Debug Mode
+
+```python
+import logging
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+
+secure_agent = SecureAgent(
+    agent=agent,
+    shield_key="agsh_...",
+    agent_id="debug-agent",
+    debug=True  # Enables verbose logging
+)
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
+
+```bash
+# Setup development environment
+git clone https://github.com/agentshield/python-sdk.git
+cd python-sdk
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Format code
+black agentshield tests examples
+flake8 agentshield
+
+# Type check
+mypy agentshield
+```
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Links
+
+- **Dashboard**: [https://agent-shield.com](https://agent-shield.com)
+- **Documentation**: [https://agent-shield.com/docs](https://agent-shield.com/docs)
+- **GitHub**: [https://github.com/agentshield/python-sdk](https://github.com/agentshield/python-sdk)
+- **PyPI**: [https://pypi.org/project/agentshield/](https://pypi.org/project/agentshield/)
+- **Support**: [support@agent-shield.com](mailto:support@agent-shield.com)
+
+---
+
+## 🙋 Support
+
+- **Email**: support@agent-shield.com
+- **GitHub Issues**: [github.com/agentshield/python-sdk/issues](https://github.com/agentshield/python-sdk/issues)
+- **Documentation**: [agent-shield.com/docs](https://agent-shield.com/docs)
+- **Discord**: [discord.gg/agentshield](https://discord.gg/agentshield)
+
+---
+
+**Made with ❤️ by the AgentShield team**
