@@ -1,0 +1,10 @@
+{
+  "name": "bounty-plaza",
+  "version": "1.0.0",
+  "description": "Bounty Plaza build tools and plugins",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "watch": "node scripts/watch.js"
+  }
+}
