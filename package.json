@@ -1,0 +1,31 @@
+{
+  "name": "soroban-lite-sdk",
+  "version": "0.4.0",
+  "description": "Lightweight Soroban client and wallet adapter SDK for Stellar dApps",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/test_wallet_adapters.js"
+  },
+  "keywords": [
+    "stellar",
+    "soroban",
+    "freighter",
+    "stellar-wallets-kit",
+    "web3"
+  ],
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "@creit.tech/stellar-wallets-kit": "^1.0.0",
+    "@stellar/freighter-api": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@creit.tech/stellar-wallets-kit": {
+      "optional": true
+    },
+    "@stellar/freighter-api": {
+      "optional": true
+    }
+  }
+}
