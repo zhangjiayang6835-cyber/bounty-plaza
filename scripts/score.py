@@ -91,7 +91,7 @@ def check_bandit(code_file: str) -> list[str]:
     violations = []
     try:
         result = subprocess.run(
-            ["bandit", "-q", "-f", "json", code_file],
+            [sys.executable, "-m", "bandit", "-q", "-f", "json", code_file],
             capture_output=True, text=True, timeout=30
         )
         if result.stdout:
@@ -128,7 +128,7 @@ def score_correctness(test_dir: str) -> tuple:
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
             capture_output=True, text=True, timeout=120
         )
         # 从 stdout 解析测试结果
@@ -156,7 +156,7 @@ def score_quality(code_file: str) -> tuple:
     """代码质量评分，调用 pylint"""
     try:
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
             capture_output=True, text=True, timeout=30
         )
         for line in result.stdout.split("\n"):
@@ -174,9 +174,11 @@ def score_quality(code_file: str) -> tuple:
 def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     """性能评分，执行时间对比基线"""
     try:
+        with open(code_file, "r", encoding="utf-8") as f:
+            code_content = f.read()
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, "-c", code_content],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
@@ -247,6 +249,8 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="代码质量评分系统")
     parser.add_argument("--code", required=True, help="待评分的代码文件")
     parser.add_argument("--tests", default=None, help="测试目录")
