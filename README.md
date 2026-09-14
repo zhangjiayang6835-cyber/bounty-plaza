@@ -97,3 +97,26 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+
+<!-- Fix for issue #1234 -->
+```json
+{
+  "format_version": "1.26.30",
+  "minecraft:block": {
+    "description": {
+      "identifier": "custom:compressed_basalt",
+      "menu_category": {
+        "category": "nature"
+      }
+    },
+    "components": {
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 2.5
+      },
+      "minecraft:geometry": "geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "compressed_basalt",
+          "render_method": "opaque"
+       
