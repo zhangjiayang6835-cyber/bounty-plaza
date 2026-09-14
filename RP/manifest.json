@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Custom NPC Resource Pack",
+    "description": "Custom humanoid NPC dual-layer 64x64 skin resource definitions",
+    "uuid": "4c9d5d88-8cf2-4d2c-80a1-432a926d833b",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 10, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "1e7651a5-e362-4211-9a74-4b55c6d36ef5",
+      "version": [1, 0, 0]
+    }
+  ]
+}
