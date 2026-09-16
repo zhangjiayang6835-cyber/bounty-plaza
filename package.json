@@ -1,0 +1,18 @@
+{
+  "name": "omniblocks-forever-if",
+  "version": "1.0.0",
+  "description": "Forever If block implementation and execution engine for OmniBlocks",
+  "main": "src/forever_if.js",
+  "scripts": {
+    "test": "node test/forever_if.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "blockly",
+    "forever-if",
+    "runtime",
+    "fiber"
+  ],
+  "author": "Antigravity Swarm",
+  "license": "Apache-2.0"
+}
