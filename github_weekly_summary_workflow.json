@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "cronExpression": "0 17 * * 5"
+      },
+      "name": "Cron",
+      "type": "ncron",
+      "typeVersion": 1,
+      "position": [250, 30]
+    },
+    {
+      "parameters": {
+        "resource": "repo",
+        "repository": "=GITHUB_REPO",
+        "since": "=moment().subtract(7, 'days').format()",
+        "until": "=moment().format()"
+      },
+      "name": "GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [450, 30],
+      "credentials": {
+        "githubApi": "GitHub API Credentials"
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const { commits, issues, pullRequests } = items[0].json;\n\nreturn {\n  commits: commits.map(commit => commit.commit.message),\n  issues: issues.map(issue => issue.title),\n  pullRequests: pullRequests.map(pr => pr.title)\n};"
+      },
+      "name": "Function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 30]
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/claude-sonnet-4-20250514/generate",
+        "options": {},
+        "body": "={JSON.stringify({\n  prompt: `Generate a weekly summary for the GitHub repository ${GITHUB_REPO} based on the following data:\\n\\nCommits:\\n${items[0].json.commits.join('\\n')}\\n\\nIssues:\\n${items[0].json.issues.join('\\n')}\\n\\nPull Requests:\\n${items[0].json.pullRequests.join('\\n')}\\n\\nSummary in ${LANGUAGE}:`,\n  model: 'claude-sonnet-4-20250514'\n})}",
+        "headerParameters": {
+          "Authorization": "Bearer {{CLAUDE_API_KEY}}"
+        }
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 30]
+    },
+    {
+      "parameters": {
+        "toEmail": "=DESTINATION_EMAIL",
+        "subject": "Weekly GitHub Summary for {{GITHUB_REPO}}",
+        "text": "=items[0].json.body.summary"
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [1050, 30],
+      "credentials": {
+        "smtp": "SMTP Credentials"
+      }
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": ["[\"GitHub\"]"]
+    },
+    "GitHub": {
+      "main": ["[\"Function\"]"]
+    },
+    "Function": {
+      "main": ["[\"HTTP Request\"]"]
+    },
+    "HTTP Request": {
+      "main": ["[\"Send Email\"]"]
+    }
+  }
+}
