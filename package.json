@@ -1,0 +1,18 @@
+{
+  "name": "bounty-plaza-reverse-bounty",
+  "version": "1.0.0",
+  "description": "Multi-chain reverse bounty routing, negative escrow, and anti-spam engine",
+  "main": "src/reverse_bounty.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "bounty",
+    "reverse-bounty",
+    "security",
+    "anti-spam",
+    "multi-chain"
+  ],
+  "author": "Universal Bounty Fleet",
+  "license": "MIT"
+}

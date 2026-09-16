@@ -1,0 +1,8 @@
+[MAIN]
+max-line-length=120
+
+[DESIGN]
+max-attributes=15
+max-locals=25
+max-returns=12
+min-public-methods=1

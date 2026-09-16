@@ -3,6 +3,10 @@
 
 import json, os, re, sys, urllib.request
 from datetime import datetime, timezone
+try:
+    from packages.reverse_bounty.detector import detect_reverse_bounty
+except ImportError:
+    from reverse_bounty.detector import detect_reverse_bounty
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
 REPO = "zhangjiayang6835-cyber/bounty-plaza"
@@ -53,7 +57,9 @@ def is_real_money(item):
     # 排除纯虚拟代币（token/points 等且无真实金额）
     if VIRTUAL_KEYWORDS.search(body) and not REAL_MONEY.search(body[:200]):
         return False
-    # 提取金额
+    reverse_check = detect_reverse_bounty(item.get("title", ""), item.get("body") or "")
+    if reverse_check.is_reverse_bounty:
+        return False
     amounts = extract_amounts(body)
     if not amounts or all(a == 0 for a in amounts):
         return False
