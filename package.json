@@ -1,0 +1,18 @@
+{
+  "name": "omni-sass",
+  "version": "1.0.0",
+  "description": "SASS style compiler, theme engine, and multi-tenant SaaS workspace manager for OmniBlocks",
+  "main": "src/sass_mode.js",
+  "scripts": {
+    "test": "node --test test/sass_mode.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "sass",
+    "scss",
+    "blockly",
+    "theme",
+    "saas"
+  ],
+  "license": "MIT"
+}
