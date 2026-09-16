@@ -1,0 +1,19 @@
+{
+  "name": "omni-boxy-saas",
+  "version": "1.0.0",
+  "description": "Multi-tenant SaaS workspace and Bitcoin billing architecture for Boxy",
+  "main": "src/boxy_saas.js",
+  "scripts": {
+    "test": "node test/boxy_saas.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "boxy",
+    "saas",
+    "bitcoin",
+    "multi-tenant",
+    "probot"
+  ],
+  "author": "Antigravity Swarm",
+  "license": "Apache-2.0"
+}
