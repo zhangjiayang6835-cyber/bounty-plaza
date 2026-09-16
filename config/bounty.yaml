@@ -1,0 +1,31 @@
+schema_version: agent-bounties/external-prize-collaboration-v1
+id: build-with-gemini-xprize-2026
+status: recruiting_entrant_lead_and_contributors
+bountyboard:
+  publication_type: github_candidate
+  canonical_contract: null
+  funding_status: funding_needed
+  claimable: false
+  platform_reward_usdc: 0
+external_competition:
+  organizer: XPRIZE
+  administrator: Devpost
+  name: Build with Gemini XPRIZE
+  official_url: https://www.geminixprize.com/
+  official_rules_url: https://www.geminixprize.com/rules
+  registration_url: https://xprize.devpost.com/
+  total_prize_pool_usd: 2000000
+  submission_deadline_local: 2026-08-17T13:00:00-07:00
+  submission_deadline_utc: 2026-08-17T20:00:00Z
+  finalist_pitch_date: 2026-09-25
+  finalist_pitch_location: Los Angeles, California, USA
+entry:
+  project_must_be_new_after: 2026-05-19T10:00:00-07:00
+  human_or_legal_representative_required: true
+  allowed_entrant_types: [eligible_individual, team_of_eligible_individuals, organization_under_25_employees]
+  required_platform: Google Cloud
+  required_llm: Gemini API for at least one deployed LLM call
+  primary_language: English
+prize_share_agreement_required: true
+collaboration_mode: staged_product_selection_then_parallel_workstreams
+entrant_representative: [Name of the Entrant Representative]
