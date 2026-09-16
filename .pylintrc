@@ -1,0 +1,27 @@
+[MAIN]
+analyse-fallback-blocks=no
+
+[MESSAGES CONTROL]
+disable=
+    raw-checker-failed,
+    bad-inline-option,
+    locally-disabled,
+    file-ignored,
+    suppressed-message,
+    useless-suppression,
+    deprecated-pragma,
+    use-symbolic-message-instead
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=8
+max-locals=25
+max-returns=10
+max-branches=30
+max-statements=120
+max-attributes=15
+
+[SIMILARITIES]
+min-similarity-lines=15
