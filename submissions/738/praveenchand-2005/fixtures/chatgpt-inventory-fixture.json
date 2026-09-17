@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "work_state": "claimable",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "2000000",
+      "funding_target": "2000000",
+      "reward": "1990000",
+      "bond": "10000",
+      "refundable_bond": "10000",
+      "external_spend": "0",
+      "gross_cash_margin": "1990000",
+      "network": "base-mainnet",
+      "terms_hash": "0x7f9a8b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimable",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "2000000",
+      "funding_target": "2000000",
+      "reward": "1990000",
+      "bond": "10000",
+      "refundable_bond": "10000",
+      "external_spend": "0",
+      "gross_cash_margin": "1990000",
+      "network": "base-mainnet",
+      "terms_hash": "0x0f1e2d3c4b5a697887766554433221100feedfacecafebabe00000000000000",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimed",
+      "payment_state": "escrowed",
+      "payment_committed": true,
+      "verification_ready": true,
+      "funded_amount": "2000000",
+      "funding_target": "2000000",
+      "reward": "1990000",
+      "bond": "10000",
+      "refundable_bond": "10000",
+      "external_spend": "0",
+      "gross_cash_margin": "1990000",
+      "network": "base-mainnet",
+      "terms_hash": "0xdeadbeefcafebabe0000000000000000000000000000000000000000000000",
+      "verification_method": "sandboxed_regression_v1"
+    },
+    {
+      "work_state": "claimable",
+      "payment_state": "pending",
+      "payment_committed": false,
+      "verification_ready": false,
+      "funded_amount": "0",
+      "funding_target": "2000000",
+      "reward": "0",
+      "bond": "0",
+      "refundable_bond": "0",
+      "external_spend": "0",
+      "gross_cash_margin": "0",
+      "network": "base-mainnet",
+      "terms_hash": "",
+      "verification_method": "unspecified"
+    }
+  ]
+}
