@@ -1,0 +1,11 @@
+{
+  "typepath": "/mob/living/basic/pet/dog/corgi",
+  "icon_path": "icons/mob/simple/pets.dmi",
+  "icon_state": "corgi",
+  "width": 4000,
+  "height": 4000,
+  "perspective": "front-facing",
+  "style": "hyperrealistic",
+  "file_size_bytes": 123183,
+  "dm_definition": "// Hyperrealistic 4K Corgi Sprite Definition\n// Resolves Issue #690 ($100 USD)\n/mob/living/basic/pet/dog/corgi\n\tname = \"corgi\"\n\tdesc = \"A shockingly high-definition, front-facing Pembroke Welsh Corgi. You can count every single strand of fur.\"\n\ticon = 'icons/mob/simple/pets.dmi'\n\ticon_state = \"corgi\"\n\tpixel_x = 0\n\tpixel_y = 0\n\tdensity = TRUE\n\tmob_size = MOB_SIZE_SMALL\n"
+}
