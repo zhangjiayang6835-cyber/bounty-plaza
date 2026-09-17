@@ -1,0 +1,20 @@
+{
+  "name": "omni-boxy-guard",
+  "version": "1.0.0",
+  "description": "Boxy pre-emptive PR closing guard, humor review engine, and settlement runtime",
+  "main": "src/boxy_guard.js",
+  "scripts": {
+    "test": "node test/boxy_guard.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "boxy",
+    "bot",
+    "code-review",
+    "whitelist",
+    "humor-detection",
+    "settlement"
+  ],
+  "author": "Universal Bounty Fleet",
+  "license": "MIT"
+}

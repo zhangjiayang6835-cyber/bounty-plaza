@@ -1,0 +1,13 @@
+[MAIN]
+max-line-length=120
+
+[DESIGN]
+max-attributes=20
+max-locals=25
+max-returns=12
+min-public-methods=1
+max-args=10
+max-positional-arguments=10
+
+[MESSAGES CONTROL]
+disable=too-few-public-methods

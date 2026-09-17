@@ -1,0 +1,3 @@
+"""
+OmniBlocks packages namespace module.
+"""
