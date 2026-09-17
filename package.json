@@ -1,0 +1,19 @@
+{
+  "name": "omni-universe",
+  "version": "1.0.0",
+  "description": "OmniBlocks Universe simulation engine and cosmological settlement runtime",
+  "main": "src/omni_universe.js",
+  "scripts": {
+    "test": "node test/omni_universe.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "universe",
+    "cosmology",
+    "physics",
+    "simulation",
+    "n-body"
+  ],
+  "author": "Universal Bounty Fleet",
+  "license": "MIT"
+}
