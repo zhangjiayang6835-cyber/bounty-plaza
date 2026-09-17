@@ -1,0 +1,10 @@
+{
+  "name": "bounty-plaza",
+  "version": "1.0.0",
+  "description": "Hello World implementation",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js"
+  }
+}
