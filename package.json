@@ -1,0 +1,17 @@
+{
+  "name": "bounty-plaza-hello-world",
+  "version": "1.0.0",
+  "description": "Production-grade Hello World engine for Bounty Plaza and OmniBlocks",
+  "main": "hello_world.js",
+  "scripts": {
+    "start": "node hello_world.js",
+    "test": "node --test test/hello_world.test.js"
+  },
+  "keywords": [
+    "hello-world",
+    "bounty",
+    "omniblocks"
+  ],
+  "author": "s6pa1rta3n-lab",
+  "license": "MIT"
+}
