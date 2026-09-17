@@ -3,3 +3,6 @@ data/coin*.db.bak
 *.pyc
 __pycache__/
 .env
+*.sqlite3
+data/*.sqlite3
+.pytest_cache/
