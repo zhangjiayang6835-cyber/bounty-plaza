@@ -1,0 +1,95 @@
+{
+  "schema_version": "agent-bounties/activation-reconciliation-v1",
+  "source_type": "canonical_base",
+  "factory_canonical": false,
+  "factory": [
+    {
+      "contract_address": "0x1111111111111111111111111111111111111111",
+      "status": "claimable"
+    },
+    {
+      "contract_address": "0x2222222222222222222222222222222222222222",
+      "status": "claimed"
+    },
+    {
+      "contract_address": "0x3333333333333333333333333333333333333333",
+      "status": "submitted"
+    },
+    {
+      "contract_address": "0x4444444444444444444444444444444444444444",
+      "status": "verifying"
+    },
+    {
+      "contract_address": "0x5555555555555555555555555555555555555555",
+      "status": "claimed",
+      "canonical": true
+    },
+    {
+      "contract_address": "0x6666666666666666666666666666666666666666",
+      "status": "failed"
+    },
+    {
+      "contract_address": "0x7777777777777777777777777777777777777777",
+      "status": "settled"
+    }
+  ],
+  "feed": [
+    {
+      "contract_address": "0x1111111111111111111111111111111111111111",
+      "status": "claimable"
+    },
+    {
+      "contract_address": "0x2222222222222222222222222222222222222222",
+      "status": "claimed"
+    },
+    {
+      "contract_address": "0x3333333333333333333333333333333333333333",
+      "status": "submitted"
+    },
+    {
+      "contract_address": "0x4444444444444444444444444444444444444444",
+      "status": "verifying"
+    },
+    {
+      "contract_address": "0x5555555555555555555555555555555555555555",
+      "status": "claimed"
+    }
+  ],
+  "expected_decisions": {
+    "0x1111111111111111111111111111111111111111": {
+      "result": "resume",
+      "status": "claimable",
+      "should_run_planner": true
+    },
+    "0x2222222222222222222222222222222222222222": {
+      "result": "resume",
+      "status": "claimed",
+      "should_run_planner": true
+    },
+    "0x3333333333333333333333333333333333333333": {
+      "result": "resume",
+      "status": "submitted",
+      "should_run_planner": true
+    },
+    "0x4444444444444444444444444444444444444444": {
+      "result": "resume",
+      "status": "verifying",
+      "should_run_planner": true
+    },
+    "0x5555555555555555555555555555555555555555": {
+      "result": "already_canonical",
+      "status": "claimed",
+      "should_run_planner": false
+    },
+    "0x6666666666666666666666666666666666666666": {
+      "result": "terminal",
+      "status": "failed",
+      "should_run_planner": false
+    },
+    "0x7777777777777777777777777777777777777777": {
+      "result": "terminal",
+      "status": "settled",
+      "should_run_planner": false
+    }
+  }
+}
