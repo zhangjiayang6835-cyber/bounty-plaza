@@ -1,0 +1,1 @@
+print("MCP child bounty seed request acknowledged.")
