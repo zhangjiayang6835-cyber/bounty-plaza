@@ -41,7 +41,9 @@
     "赏金已到管理员账户"
   ],
   "min_bounty_usd": 25,
+  "max_bounty_usd": 100000,
   "min_bounty_label": "$25 以下不接",
+  "max_bounty_label": "$100,000 以上需人工审核",
   "bounty_to_coin_rate": 1.25,
   "bounty_to_coin_label": "1 USD = 1.25 积分",
   "winner_payout_ratio": 0.9,
@@ -56,5 +58,17 @@
     "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
   },
   "min_redeem": 1,
-  "min_redeem_label": "无最低兑换限制"
+  "min_redeem_label": "无最低兑换限制",
+  "validation": {
+    "max_reward_usd": 100000,
+    "require_technical_description": true,
+    "min_description_length": 50,
+    "block_keywords": [
+      "backflip",
+      "follow my account",
+      "subscribe",
+      "like and share"
+    ],
+    "require_actionable_task": true
+  }
 }
