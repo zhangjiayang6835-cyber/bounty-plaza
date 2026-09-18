@@ -1,0 +1,19 @@
+{
+  "name": "omni-backflip",
+  "version": "1.0.0",
+  "description": "OmniBlocks GitHub follow verifier, backflip biomechanics telemetry engine, and arbitrary-precision settlement runtime",
+  "main": "src/omni_backflip.js",
+  "scripts": {
+    "test": "node test/omni_backflip.test.js"
+  },
+  "keywords": [
+    "omniblocks",
+    "github",
+    "kinematics",
+    "backflip",
+    "biomechanics",
+    "settlement"
+  ],
+  "author": "Universal Bounty Fleet",
+  "license": "MIT"
+}
