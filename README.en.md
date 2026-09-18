@@ -59,4 +59,30 @@ See [RULES.en.md](RULES.en.md) for:
 
 ---
 
+### Pick Up
+> If you successfully solve the task, please submit a pull request on GitHub.
+
+### Questions
+> If you have any questions, please ask them in the comments section.
+
+### Solutions
+> After submitting your solution, please provide a link to the solution in the comments section.
+
+### Anti-Cheating
+> Any attempt to cheat will be detected and penalized.
+
+### Open Source License
+> MIT
+
+### Privacy Policy
+> View [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
+
+### Copyright
+> View [COPYRIGHT.md](COPYRIGHT.md)
+
+### Other
+> View [OTHER.md](OTHER.md)
+
+---
+
 > ⚠️ All bounties come from third-party platforms. Contributors must comply with each platform's rules.

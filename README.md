@@ -96,4 +96,30 @@
 
 ---
 
+### 抓取 / Pick Up
+> 如果你成功解决了任务，请在 GitHub 上提交一个拉取请求。
+
+### 问题 / Questions
+> 如果你有任何问题，请在评论区提出。
+
+### 解决方案 / Solutions
+> 提交解决方案后，请在评论区提供解决方案的链接。
+
+### 抗作弊 / Anti-Cheating
+> 任何尝试作弊会被发现并处罚。
+
+### 开源许可证 / Open Source License
+> MIT
+
+### 隐私政策 / Privacy Policy
+> 查看 [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
+
+### 版权声明 / Copyright
+> 查看 [COPYRIGHT.md](COPYRIGHT.md)
+
+### 其他 / Other
+> 查看 [OTHER.md](OTHER.md)
+
+---
+
 > 💡 有问题？在 Issue 中评论或联系管理员。
