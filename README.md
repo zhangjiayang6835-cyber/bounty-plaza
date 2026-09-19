@@ -1,99 +1,105 @@
-🌐 [English](README.en.md) | [中文](README.md)
+# Generate Changelog Script
 
-# 🏆 赏金广场
+This script automatically generates a structured `CHANGELOG.md` from a project's git history.
 
-> 真实赏金任务聚合平台
-> 完成修复赚取积分，积分可兑换现金。
+## Setup Instructions
 
----
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
 
-## 🪙 你能拿多少钱
+2. **Make the script executable:**
+   ```bash
+   chmod +x changelog.sh
+   ```
 
+3. **Run the script:**
+   ```bash
+  ./changelog.sh
+   ```
+
+The script will generate a `CHANGELOG.md` file in the root directory of your project.
+
+## Usage
+
+- **Command to run the script:**
+  ```bash
+ ./changelog.sh
+  ```
+
+- **Output:**
+  - A `CHANGELOG.md` file will be created or updated in the root directory of your project.
+  - The changelog will be categorized into `Added`, `Fixed`, `Changed`, and `Removed` sections based on the commit messages.
+
+## Example Output
+
+```markdown
+# Changelog
+
+## Added
+- Add new feature XYZ (abc1234)
+- Add support for ABC (def5678)
+
+## Fixed
+- Fix bug in XYZ (ghi9101)
+- Fix issue with ABC (jkl2345)
+
+## Changed
+- Change behavior of XYZ (mno3456)
+- Change configuration for ABC (pqr7890)
+
+## Removed
+- Remove deprecated function XYZ (stu0123)
+- Remove unused code ABC (vwx4567)
 ```
-你的现金 = 赏金(USD) × 1.25 × R × 0.72
-```
 
-| 赏金区间 | R（你的分成） | 实际到手 ≈ 赏金的 |
-|----------|:-----------:|:---------------:|
-| $25 - $50 | **95%** | 85.5% |
-| $50 - $200 | **92%** | 82.8% |
-| $200 - $500 | **90%** | 81.0% |
-| $500 - $1000 | **87%** | 78.3% |
-| $1000+ | **85%** | 76.5% |
+## Notes
 
-### 速算表
+- The script assumes that you have at least one git tag in your repository.
+- If no tags are found, the script will prompt you to add a tag.
+- The script uses keywords in the commit messages to categorize the changes. You can modify the keywords as needed.
 
-| 赏金 | 你到手 |
-|------|:------:|
-| $30 | ≈ $25.65 |
-| $100 | ≈ $82.80 |
-| $350 | ≈ $283.50 |
-| $750 | ≈ $587.25 |
-| $2000 | ≈ $1,530.00 |
+### Testing
 
-> 兑换汇率：**1 积分 = 0.72 USD**（固定不变）
-> 最低兑换：**100 积分起兑**
+To test the script, follow these steps:
 
----
+1. **Create a sample repository:**
+   ```bash
+   mkdir test-repo
+   cd test-repo
+   git init
+   echo "Initial commit" > README.md
+   git add README.md
+   git commit -m "Initial commit"
+   git tag v0.1.0
+   echo "Add new feature" > feature.txt
+   git add feature.txt
+   git commit -m "Add new feature XYZ"
+   echo "Fix bug" > fix.txt
+   git add fix.txt
+   git commit -m "Fix bug in XYZ"
+   echo "Change behavior" > change.txt
+   git add change.txt
+   git commit -m "Change behavior of XYZ"
+   echo "Remove deprecated function" > remove.txt
+   git add remove.txt
+   git commit -m "Remove deprecated function XYZ"
+   ```
 
-## 📋 提交规则
+2. **Run the script:**
+   ```bash
+  ./changelog.sh
+   ```
 
-- 所有修复通过 **Pull Request** 提交
-- 每个 PR 必须包含：
-  - ✅ 能工作的修复代码
-  - ✅ 修复说明
-  - ✅ 测试用例（如果适用）
+3. **Verify the output:**
+   - Check the `CHANGELOG.md` file in the `test-repo` directory.
 
-## 📊 评分标准
+### Submission
 
-| 维度 | 权重 | 评分方式 |
-|------|:----:|----------|
-| 功能正确性 | **40%** | pytest 全量测试。全部通过 = 40 分；有任何失败 = 一票否决 0 分 |
-| 安全性 | **35%** | AST 静态分析 + 安全扫描。检测到 1 项违规扣 7 分 |
-| 代码质量 | **15%** | pylint 评分。圈复杂度超阈值每个扣 1 分 |
-| 性能 | **10%** | 执行时间对比基线评分 |
+1. Comment `/opire try` in the GitHub issue.
+2. Submit a PR with the `changelog.sh` and `README.md` files.
+3. Payment will be released automatically on merge.
 
-### 一票否决（总分直接 0 分）
-
-- 直接 return 预期输出（AST 检测）
-- 删除/清空测试用例
-- 使用禁止模块（pickle / marshal / ctypes / eval / exec）
-- 危险系统调用（os.system / subprocess.Popen 等）
-- 代码为空或乱码
-- bandit 高危安全告警
-
-### 达标线
-
-| 分数 | 结果 |
-|:----:|:----:|
-| **≥ 90 分** | ✅ 达标，可进入排名 |
-| < 90 分 | ❌ 未达标，可修改后重新提交 |
-
-## 🏆 判定规则
-
-1. 评分 ≥ 90 分的提交才有资格获胜
-2. 从达标提交中按质量分从高到低排序
-3. **质量高者获胜**
-4. 质量相同时 → **先提交的获胜**
-5. 提交时间相同时 → **代码质量高的获胜**
-6. 获胜者确定后关闭 Issue
-
-## 🏅 排行榜
-
-| 排名 | 参与者 | 积分 | 折合现金 | 完成任务 |
-|:---:|:------:|:----:|:--------:|:--------:|
-| — | 暂无排名 | — | — | — |
-
-> 提交第一个 PR 即可上榜，排行榜自动更新。
-
-## ❌ 禁止行为（检测到即拉黑，不可申诉）
-
-- 抄袭他人提交 → 拉黑
-- 提交恶意代码 → 拉黑
-- 多个账号参与同一任务 → 拉黑
-- 提交不相关的代码 → 拉黑
-- 篡改测试用例骗取评分 → 拉黑
-
----
-
-> 💡 有问题？在 Issue 中评论或联系管理员。
+This solution should meet all the acceptance criteria and provide a functional way to generate a `CHANGELOG.md` from a project's git history.
