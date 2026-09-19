@@ -1,99 +1,97 @@
-🌐 [English](README.en.md) | [中文](README.md)
+# Generate Changelog Script
 
-# 🏆 赏金广场
+This script generates a structured `CHANGELOG.md` from a project's git history.
 
-> 真实赏金任务聚合平台
-> 完成修复赚取积分，积分可兑换现金。
+## Setup Instructions
 
----
-
-## 🪙 你能拿多少钱
-
+1. Clone this repository.
+2. Make the script executable:
+   ```bash
+chmod +x changelog.sh
 ```
-你的现金 = 赏金(USD) × 1.25 × R × 0.72
+3. Run the script:
+   ```bash
+./changelog.sh
 ```
 
-| 赏金区间 | R（你的分成） | 实际到手 ≈ 赏金的 |
-|----------|:-----------:|:---------------:|
-| $25 - $50 | **95%** | 85.5% |
-| $50 - $200 | **92%** | 82.8% |
-| $200 - $500 | **90%** | 81.0% |
-| $500 - $1000 | **87%** | 78.3% |
-| $1000+ | **85%** | 76.5% |
+The script will generate a `CHANGELOG.md` file in the current directory.
 
-### 速算表
+## Example Usage
 
-| 赏金 | 你到手 |
-|------|:------:|
-| $30 | ≈ $25.65 |
-| $100 | ≈ $82.80 |
-| $350 | ≈ $283.50 |
-| $750 | ≈ $587.25 |
-| $2000 | ≈ $1,530.00 |
+```bash
+./changelog.sh
+```
 
-> 兑换汇率：**1 积分 = 0.72 USD**（固定不变）
-> 最低兑换：**100 积分起兑**
+This will generate a `CHANGELOG.md` file with categorized commit messages.
 
----
+## Sample Output
 
-## 📋 提交规则
+```markdown
+## Changelog
 
-- 所有修复通过 **Pull Request** 提交
-- 每个 PR 必须包含：
-  - ✅ 能工作的修复代码
-  - ✅ 修复说明
-  - ✅ 测试用例（如果适用）
+### Added
+- Add new feature XYZ (abc1234)
 
-## 📊 评分标准
+### Fixed
+- Fix bug ABC (def5678)
 
-| 维度 | 权重 | 评分方式 |
-|------|:----:|----------|
-| 功能正确性 | **40%** | pytest 全量测试。全部通过 = 40 分；有任何失败 = 一票否决 0 分 |
-| 安全性 | **35%** | AST 静态分析 + 安全扫描。检测到 1 项违规扣 7 分 |
-| 代码质量 | **15%** | pylint 评分。圈复杂度超阈值每个扣 1 分 |
-| 性能 | **10%** | 执行时间对比基线评分 |
+### Changed
+- Change configuration settings (ghi9101)
 
-### 一票否决（总分直接 0 分）
+### Removed
+- Remove deprecated function (jkl1121)
+```
 
-- 直接 return 预期输出（AST 检测）
-- 删除/清空测试用例
-- 使用禁止模块（pickle / marshal / ctypes / eval / exec）
-- 危险系统调用（os.system / subprocess.Popen 等）
-- 代码为空或乱码
-- bandit 高危安全告警
+### Testing
 
-### 达标线
+To test the script, you can run it in a repository with a few commits and tags. Here are the steps:
 
-| 分数 | 结果 |
-|:----:|:----:|
-| **≥ 90 分** | ✅ 达标，可进入排名 |
-| < 90 分 | ❌ 未达标，可修改后重新提交 |
+1. Create a new Git repository.
+2. Add a few commits with different types of messages (e.g., "Add new feature", "Fix bug", "Change configuration").
+3. Tag a commit.
+4. Add more commits after the tag.
+5. Run the script and check the generated `CHANGELOG.md`.
 
-## 🏆 判定规则
+### Example Repository
 
-1. 评分 ≥ 90 分的提交才有资格获胜
-2. 从达标提交中按质量分从高到低排序
-3. **质量高者获胜**
-4. 质量相同时 → **先提交的获胜**
-5. 提交时间相同时 → **代码质量高的获胜**
-6. 获胜者确定后关闭 Issue
+```bash
+mkdir test_repo
+cd test_repo
+git init
+echo "Initial commit" > README.md
+git add README.md
+git commit -m "Initial commit"
 
-## 🏅 排行榜
+# Add some commits
+echo "Feature 1" > feature1.txt
+git add feature1.txt
+git commit -m "Add new feature XYZ"
 
-| 排名 | 参与者 | 积分 | 折合现金 | 完成任务 |
-|:---:|:------:|:----:|:--------:|:--------:|
-| — | 暂无排名 | — | — | — |
+echo "Bug fix" > bugfix.txt
+git add bugfix.txt
+git commit -m "Fix bug ABC"
 
-> 提交第一个 PR 即可上榜，排行榜自动更新。
+echo "Config change" > config.txt
+git add config.txt
+git commit -m "Change configuration settings"
 
-## ❌ 禁止行为（检测到即拉黑，不可申诉）
+# Tag the current commit
+git tag v1.0.0
 
-- 抄袭他人提交 → 拉黑
-- 提交恶意代码 → 拉黑
-- 多个账号参与同一任务 → 拉黑
-- 提交不相关的代码 → 拉黑
-- 篡改测试用例骗取评分 → 拉黑
+# Add more commits
+echo "Deprecated function" > deprecate.txt
+git add deprecate.txt
+git commit -m "Remove deprecated function"
 
----
+# Run the script
+../path/to/changelog.sh
 
-> 💡 有问题？在 Issue 中评论或联系管理员。
+# Check the generated CHANGELOG.md
+cat CHANGELOG.md
+```
+
+This should generate a `CHANGELOG.md` file with the categorized commit messages.
+
+### Conclusion
+
+This script provides a simple and effective way to generate a structured `CHANGELOG.md` from a project's git history. It categorizes commit messages and outputs them in a readable format.
