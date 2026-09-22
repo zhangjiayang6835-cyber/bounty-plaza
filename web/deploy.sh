@@ -5,6 +5,11 @@
 
 set -e
 
+# Verify required commands are available
+for cmd in tar scp ssh mktemp; do
+  command -v $cmd >/dev/null 2>&1 || { echo "Error: $cmd is not installed or not in PATH"; exit 1; }
+done
+
 SERVER="${DEPLOY_SERVER:?请设置 DEPLOY_SERVER 环境变量（IP 地址）}"
 PORT="${DEPLOY_PORT:-9000}"
 USER="${DEPLOY_USER:?请设置 DEPLOY_USER 环境变量（SSH 用户名）}"
@@ -13,7 +18,10 @@ echo "🚀 部署 Bounty Plaza 兑换系统到 $SERVER:$PORT"
 
 # 1. 打包本地文件
 echo "📦 打包文件..."
-tar czf /tmp/bounty-plaza-web.tar.gz \
+# Use a portable temporary file instead of a fixed /tmp path (Windows Git Bash may not have /tmp)
+TMP_TAR=$(mktemp /tmp/bounty-plaza-web-XXXXXX.tar.gz) || { echo "Failed to create temporary tar file"; exit 1; }
+# The trailing "2>/dev/null || true" keeps the script from failing if the data/ directory is empty
+tar czf "$TMP_TAR" \
   web/app.py \
   web/requirements.txt \
   scripts/coin.py \
@@ -22,10 +30,12 @@ tar czf /tmp/bounty-plaza-web.tar.gz \
 
 # 2. 上传到服务器
 echo "📤 上传到服务器..."
-scp /tmp/bounty-plaza-web.tar.gz "$USER@$SERVER:/opt/bounty-plaza/"
+scp "$TMP_TAR" "$USER@$SERVER:/opt/bounty-plaza/"
+# Clean up local temporary file
+rm -f "$TMP_TAR"
 ssh "$USER@$SERVER" "mkdir -p /opt/bounty-plaza && tar xzf /opt/bounty-plaza/bounty-plaza-web.tar.gz -C /opt/bounty-plaza"
 
-# 3. 安装依赖
+# 3. 安装 Python 依赖
 echo "📦 安装 Python 依赖..."
 ssh "$USER@$SERVER" "cd /opt/bounty-plaza/web && pip install -r requirements.txt -q"
 
@@ -52,7 +62,7 @@ SERVICEEOF"
 echo "🚀 启动服务..."
 ssh "$USER@$SERVER" "systemctl daemon-reload && systemctl enable bounty-plaza && systemctl restart bounty-plaza"
 
-# 6. 开放防火墙
+# 6. 开放防火墙端口
 echo "🔓 开放端口 $PORT..."
 ssh "$USER@$SERVER" "ufw allow $PORT/tcp 2>/dev/null || firewall-cmd --add-port=$PORT/tcp --permanent 2>/dev/null || echo '防火墙配置跳过'"
 
