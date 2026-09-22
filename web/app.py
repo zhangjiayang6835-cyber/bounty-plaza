@@ -2,7 +2,7 @@
 """
 bounty-plaza 自助兑换系统 Web 服务
 
-贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
+亏损者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
 
 启动:
     cd web && pip install -r requirements.txt && python app.py
@@ -13,7 +13,7 @@ bounty-plaza 自助兑换系统 Web 服务
 import sys
 import os
 
-# 确保能找到 coin.py（上一级 scripts/ 目录）
+# 确保能找到 coin.py（上一层 scripts 目录）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
 from fastapi import FastAPI, HTTPException
@@ -82,7 +82,7 @@ def create_redeem(req: RedeemRequest):
     )
     req_id = cur.lastrowid
 
-    # 自动批准 & 扣余额
+    # 自动批准 & 扣除余额
     prev_hash = coin.get_last_hash(conn)
     tx_data = {
         "tx_type": "redeem", "from_user": req.username, "to_user": None,
@@ -179,6 +179,21 @@ def get_config():
         "rate_label": f"1 积分 = ${coin.RATE:.2f} USD",
         "min_redeem": coin.MIN_REDEEM,
         "min_redeem_label": f"最低兑换 {coin.MIN_REDEEM} 积分币",
+    }
+
+
+# ── 新增 SaaS 集成占位接口 ──
+
+@app.post("/saas")
+def add_saas(payload: dict):
+    """Placeholder endpoint for future SaaS integration with Boxy.
+    Currently accepts any JSON payload and returns a success message.
+    """
+    # In a real implementation this would trigger provisioning of the SaaS service.
+    return {
+        "status": "ok",
+        "message": "SaaS integration endpoint received payload",
+        "received": payload,
     }
 
 
