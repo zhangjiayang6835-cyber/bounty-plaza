@@ -2,7 +2,7 @@
 """
 bounty-plaza 自助兑换系统 Web 服务
 
-贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
+赎回者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
 
 启动:
     cd web && pip install -r requirements.txt && python app.py
@@ -13,10 +13,10 @@ bounty-plaza 自助兑换系统 Web 服务
 import sys
 import os
 
-# 确保能找到 coin.py（上一级 scripts/ 目录）
+# 确保能找到 coin.py（上一层 scripts 目录）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import coin  # 直接导入 coin.py 的模块
@@ -48,7 +48,7 @@ class RedeemRequest(BaseModel):
 
 @app.get("/balance/{username}")
 def get_balance(username: str):
-    """查询余额和折合现金"""
+    """查询余额和折算现金"""
     conn = coin.get_db()
     balance = coin.get_balance(conn, username)
     conn.close()
@@ -62,8 +62,16 @@ def get_balance(username: str):
 
 
 @app.post("/redeem")
-def create_redeem(req: RedeemRequest):
+def create_redeem(req: RedeemRequest, request: Request):
     """自助兑换：自动校验并批准"""
+    # ── 账户所有权校验 ──
+    # 通过请求头 X-Username 表示调用者身份，必须与请求体中的 username 一致。
+    caller = request.headers.get("X-Username")
+    if not caller:
+        raise HTTPException(status_code=401, detail="Missing X-Username header for authentication")
+    if caller != req.username:
+        raise HTTPException(status_code=403, detail="Username mismatch: caller does not own the account")
+
     if req.amount < coin.MIN_REDEEM:
         raise HTTPException(status_code=400, detail=f"最低兑换 {coin.MIN_REDEEM} 积分币")
 
@@ -82,7 +90,7 @@ def create_redeem(req: RedeemRequest):
     )
     req_id = cur.lastrowid
 
-    # 自动批准 & 扣余额
+    # 自动批准 & 扣除余额
     prev_hash = coin.get_last_hash(conn)
     tx_data = {
         "tx_type": "redeem", "from_user": req.username, "to_user": None,
