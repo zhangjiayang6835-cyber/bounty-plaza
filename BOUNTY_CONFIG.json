@@ -4,7 +4,7 @@
     "github.com"
   ],
   "pricing": {
-    "formula": "C实得美元 = A × P × (1 - 10%). 汇率 0.72 = 0.9/1.25 恒成立 (A和P约掉)",
+    "formula": "C实得美元 = A × P × (1 - 10%). 汇率 0.72 = 0.9/1.25 逐成 (A和P约束)",
     "tiers": [
       {
         "max_usd": 50,
@@ -38,23 +38,32 @@
     "被判定为获胜者",
     "管理员已向上游提 PR",
     "上游已合并 PR",
-    "赏金已到管理员账户"
+    "奖励已到管理员账户"
   ],
   "min_bounty_usd": 25,
   "min_bounty_label": "$25 以下不接",
   "bounty_to_coin_rate": 1.25,
   "bounty_to_coin_label": "1 USD = 1.25 积分",
   "winner_payout_ratio": 0.9,
-  "winner_payout_label": "贡献者实得 90%",
+  "winner_payout_label": "获奖者实得 90%",
   "coin_to_cash_rate": 0.72,
-  "coin_to_cash_label": "1 积分 = 0.72 USD (推导值: 0.9/1.25)",
+  "coin_to_cash_label": "1 积分 = 0.72 USD (推广值: 0.9/1.25)",
   "platform_fee_pct": 0.1,
-  "platform_fee_label": "扣除贡献者应得的 10%",
+  "platform_fee_label": "平台抽取奖励的 10%",
   "treasury": {
     "usdt_bep20": "0x321984374e41e1c8ba3e2b87ab050828cffd25c2",
     "network": "BSC (BEP-20)",
     "note": "USDT 充值地址（BEP-20），提现时请确保目标地址也使用 BEP-20 网络"
   },
   "min_redeem": 1,
-  "min_redeem_label": "无最低兑换限制"
+  "min_redeem_label": "无最小兑换限制",
+  "bounties": [
+    {
+      "id": 882,
+      "title": "Break the NFH Wake holder gate",
+      "reward_usd": 25,
+      "status": "open",
+      "description": "Find a way to emit a holder‑gated mission/receipt when no fresh direct‑owner heartbeat exists."
+    }
+  ]
 }
