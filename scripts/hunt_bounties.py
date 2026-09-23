@@ -114,7 +114,7 @@ Medium
 def is_real_external(item):
     """排除自己的仓库 + 防止循环重复创建"""
     title = item.get("title", "")
-    if title.count("[Bounty]") > 1:  # 防止嵌套重复 [Bounty] [Bounty] [Bounty]...
+    if title.startswith("[Bounty]"):
         return False
     return is_not_own_repo(item)
 
