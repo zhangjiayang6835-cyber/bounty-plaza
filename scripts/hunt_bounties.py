@@ -9,29 +9,32 @@ REPO = "zhangjiayang6835-cyber/bounty-plaza"
 SEARCH_QUERY = "label:bounty state:open is:issue sort:created -user:zhangjiayang6835-cyber"
 
 # 真实货币正则
-REAL_MONEY = re.compile(r"""\$\s?[\d,]+(?:\.\d{1,2})?|
-    \d+[\s,]*(?:USDT|USDC|DAI|ETH|BTC|USD|BUSD)|
-    bounty\s*(?::|of)?\s*\$\s*\d+""", re.I | re.X)
+REAL_MONEY = re.compile(r"""\$\s?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|
+    (?<![\d,.])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?[\s,]*(?:USDT|USDC|DAI|ETH|BTC|USD|BUSD)\b|
+    bounty\s*(?::|of)?\s*\$\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?""", re.I | re.X)
 
 def extract_amounts(text):
     """从文本中提取所有符合条件的最低金额"""
     amounts = []
-    for m in re.finditer(r'\$\s?(\d[\d,]*)', text):
+    for m in re.finditer(r'\$\s?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)', text):
         try:
-            amounts.append(int(m.group(1).replace(',', '')))
+            val = float(m.group(1).replace(',', ''))
+            amounts.append(int(round(val)))
         except ValueError:
             pass
-    for m in re.finditer(r'(\d+)\s*(USDT|USDC|DAI|ETH|BTC|USD|BUSD)', text, re.I):
+    for m in re.finditer(r'(?<![\d,.])((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*(?:USDT|USDC|DAI|ETH|BTC|USD|BUSD)\b', text, re.I):
         try:
-            amounts.append(int(m.group(1)))
+            val = float(m.group(1).replace(',', ''))
+            amounts.append(int(round(val)))
         except ValueError:
             pass
-    for m in re.finditer(r'bounty\s*(?::|of)?\s*\$\s*(\d[\d,]*)', text, re.I):
+    for m in re.finditer(r'bounty\s*(?::|of)?\s*\$\s*((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)', text, re.I):
         try:
-            amounts.append(int(m.group(1).replace(',', '')))
+            val = float(m.group(1).replace(',', ''))
+            amounts.append(int(round(val)))
         except ValueError:
             pass
-    return amounts
+    return list(dict.fromkeys(amounts))
 
 # 虚拟代币关键词 — 匹配标题+正文后 150 字内无真实金额则排除
 VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|badge|achievement", re.I)
@@ -73,7 +76,9 @@ def get_existing_sources():
     return sources
 
 def create_issue(item, amount):
-    title = f"[Bounty] {item['title'][:80]}"
+    raw_title = item.get("title", "")
+    clean_title = re.sub(r"^(?:\[bounty\]\s*)+", "", raw_title, flags=re.I).strip()
+    title = f"[Bounty] {clean_title[:80]}"
     body_template = f"""### 赏金平台 / Platform
 GitHub
 
@@ -113,9 +118,6 @@ Medium
 
 def is_real_external(item):
     """排除自己的仓库 + 防止循环重复创建"""
-    title = item.get("title", "")
-    if title.count("[Bounty]") > 1:  # 防止嵌套重复 [Bounty] [Bounty] [Bounty]...
-        return False
     return is_not_own_repo(item)
 
 def is_not_own_repo(item):
