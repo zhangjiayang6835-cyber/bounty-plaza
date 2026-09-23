@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-bounty-plaza 自助兑换系统 Web 服务
+bounty-plaza 自助兑换系统 Web 服助
 
-贡献者可通过 HTTP 接口自助查询余额、发起兑换、查看历史。
+贡献者可通迄过 HTTP 接口自助查询余额、发起兑换、查看历史。
 
 启动:
     cd web && pip install -r requirements.txt && python app.py
@@ -16,7 +16,7 @@ import os
 # 确保能找到 coin.py（上一级 scripts/ 目录）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import coin  # 直接导入 coin.py 的模块
@@ -46,8 +46,17 @@ class RedeemRequest(BaseModel):
 
 # ── 接口 ──
 
+# Simple authentication dependency
+async def verify_token(x_token: str = Header(None)):
+    # In a real scenario, validate the token against a database or secret
+    # For this demo, we accept any non-empty token as authenticated
+    if x_token is None or x_token == "":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return x_token
+
+
 @app.get("/balance/{username}")
-def get_balance(username: str):
+def get_balance(username: str, token: str = Depends(verify_token)):
     """查询余额和折合现金"""
     conn = coin.get_db()
     balance = coin.get_balance(conn, username)
@@ -62,7 +71,7 @@ def get_balance(username: str):
 
 
 @app.post("/redeem")
-def create_redeem(req: RedeemRequest):
+def create_redeem(req: RedeemRequest, token: str = Depends(verify_token)):
     """自助兑换：自动校验并批准"""
     if req.amount < coin.MIN_REDEEM:
         raise HTTPException(status_code=400, detail=f"最低兑换 {coin.MIN_REDEEM} 积分币")
@@ -110,7 +119,7 @@ def create_redeem(req: RedeemRequest):
 
 
 @app.get("/redeem/{redeem_id}")
-def get_redeem_status(redeem_id: int):
+def get_redeem_status(redeem_id: int, token: str = Depends(verify_token)):
     """查询兑换状态"""
     conn = coin.get_db()
     cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ?", (redeem_id,))
@@ -131,7 +140,7 @@ def get_redeem_status(redeem_id: int):
 
 
 @app.get("/history/{username}")
-def get_history(username: str):
+def get_history(username: str, token: str = Depends(verify_token)):
     """查询兑换历史"""
     conn = coin.get_db()
     cur = conn.execute(
@@ -154,7 +163,7 @@ def get_history(username: str):
 
 
 @app.get("/ledger")
-def get_ledger():
+def get_ledger(token: str = Depends(verify_token)):
     """排行榜"""
     conn = coin.get_db()
     cur = conn.execute("SELECT username, balance FROM accounts WHERE balance > 0 ORDER BY balance DESC")
@@ -172,7 +181,7 @@ def get_ledger():
 
 
 @app.get("/config")
-def get_config():
+def get_config(token: str = Depends(verify_token)):
     """系统配置和汇率"""
     return {
         "rate": coin.RATE,
