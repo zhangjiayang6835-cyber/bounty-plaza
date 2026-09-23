@@ -1,0 +1,11 @@
+{
+  "bounty_type": "api_coding",
+  "title": "Seed a paid API child bounty",
+  "solver_reward": "0.90",
+  "claim_bond": "0.10",
+  "total_funding": "1.00",
+  "verifier": "deterministic_module",
+  "network": "base-mainnet",
+  "funding_deadline": "2026-10-11T00:00:00+00:00",
+  "description": "Complete API endpoint integration to trigger canonical settlement."
+}
