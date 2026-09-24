@@ -1,0 +1,61 @@
+// FreeCAD macro for flower-shaped rainwater collector
+// Parameters:
+// - petal_count: 6-12 (default 8)
+// - diameter: 600-1200mm (default 800)
+// - height: 300-600mm (default 400)
+
+import FreeCAD as App
+import Part
+import PartDesign
+
+# Create new document
+Doc = App.newDocument("TinacoFlowerCollector")
+PartDesign.makeDocument(Doc.Name)
+
+# Parameters
+petal_count = 8
+diameter = 800
+h_height = 400
+petal_thickness = 5
+
+# Base circle
+base = Doc.addObject("Part::Circle", "Base")
+base.Radius = diameter/2
+base.X = 0
+base.Y = 0
+base.Z = 0
+
+# Create petal profile
+petal_angle = 360/petal_count
+petal_arc = Part.makeArcOfCircle(
+    Part.Circle(Part.Point(0,0,0), Part.Vector(0,0,1), diameter/2),
+    -petal_angle/2, petal_angle/2
+)
+petal_profile = Part.makePolygon([
+    Part.Point(0, -diameter/2, 0),
+    Part.Point(diameter/2*0.866, -diameter/4, 0),
+    Part.Point(0, diameter/2, 0)
+])
+
+# Extrude petals
+petals = []
+for i in range(petal_count):
+    rotation = App.Rotation(App.Vector(0,0,1), -petal_angle*i)
+    rotated_profile = petal_profile.copy().rotate(rotation)
+    petal = Part.makePrism(rotated_profile, Part.Vector(0,0,h_height))
+    petal = petal.cut(Part.makeCylinder(Part.Circle(Part.Point(0,0,0), Part.Vector(0,0,1), diameter/2), h_height))
+    petals.append(petal)
+
+# Combine all petals
+flower = Part.Fuse(petals)
+
+# Create support structure
+support = Part.makeBox(diameter*0.9, diameter*0.9, h_height*0.3)
+support.translate(Part.Vector(0,0,-h_height*0.15))
+
+# Final assembly
+collector = flower.fuse(support)
+
+# Add to document
+Doc.getObject("Body").Shape = collector
+Gui.SendMsgToActiveView("ViewFit")
