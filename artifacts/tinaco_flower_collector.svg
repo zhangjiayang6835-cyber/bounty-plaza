@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 850" width="100%" height="100%" style="background-color: #0b1120; font-family: monospace;">
+<defs>
+  <style>
+    .dim-line { stroke: #38bdf8; stroke-width: 1.5; stroke-dasharray: 4,4; }
+    .dim-text { fill: #38bdf8; font-size: 13px; font-weight: bold; }
+    .body-line { stroke: #34d399; stroke-width: 2.2; fill: none; }
+    .petal-fill { fill: #064e3b; fill-opacity: 0.45; stroke: #10b981; stroke-width: 1.8; }
+    .core-fill { fill: #1e3a8a; fill-opacity: 0.55; stroke: #60a5fa; stroke-width: 2.0; }
+    .section-fill { fill: #312e81; fill-opacity: 0.4; stroke: #a78bfa; stroke-width: 2.0; }
+    .title-text { fill: #f8fafc; font-size: 16px; font-weight: bold; }
+    .sub-text { fill: #94a3b8; font-size: 12px; }
+  </style>
+</defs>
+<rect x="15" y="15" width="1170" height="820" fill="none" stroke="#475569" stroke-width="2"/>
+<rect x="25" y="25" width="1150" height="800" fill="none" stroke="#334155" stroke-width="1"/>
+<text x="50" y="65" class="title-text">VIEW A: TOP (PLAN) VIEW - CATCHMENT PETALS & CORE</text>
+<path d="M 384.2 380.0 L 514.0 380.0 Q 513.7 443.6 468.9 488.9 L 377.1 397.1 Z" class="petal-fill"/>
+<path d="M 377.1 397.1 L 468.9 488.9 Q 423.6 533.7 360.0 534.0 L 360.0 404.2 Z" class="petal-fill"/>
+<path d="M 360.0 404.2 L 360.0 534.0 Q 296.4 533.7 251.1 488.9 L 342.9 397.1 Z" class="petal-fill"/>
+<path d="M 342.9 397.1 L 251.1 488.9 Q 206.3 443.6 206.0 380.0 L 335.8 380.0 Z" class="petal-fill"/>
+<path d="M 335.8 380.0 L 206.0 380.0 Q 206.3 316.4 251.1 271.1 L 342.9 362.9 Z" class="petal-fill"/>
+<path d="M 342.9 362.9 L 251.1 271.1 Q 296.4 226.3 360.0 226.0 L 360.0 355.8 Z" class="petal-fill"/>
+<path d="M 360.0 355.8 L 360.0 226.0 Q 423.6 226.3 468.9 271.1 L 377.1 362.9 Z" class="petal-fill"/>
+<path d="M 377.1 362.9 L 468.9 271.1 Q 513.7 316.4 514.0 380.0 L 384.2 380.0 Z" class="petal-fill"/>
+<circle cx="360" cy="380" r="154.0" fill="none" stroke="#38bdf8" stroke-width="2"/>
+<circle cx="360" cy="380" r="24.2" class="core-fill"/>
+<circle cx="360" cy="380" r="12.1" fill="#0284c7" stroke="#e0f2fe" stroke-width="1.8"/>
+<circle cx="409.2" cy="380.0" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<circle cx="384.6" cy="422.6" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<circle cx="335.4" cy="422.6" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<circle cx="310.8" cy="380.0" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<circle cx="335.4" cy="337.4" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<circle cx="384.6" cy="337.4" r="5.5" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.5"/>
+<line x1="166.0" y1="564.0" x2="554.0" y2="564.0" class="dim-line"/>
+<text x="275" y="584.0" class="dim-text">DIAMETER = 1400 mm</text>
+<text x="680" y="65" class="title-text">VIEW B: SECTION A-A ELEVATION & TINACO ADAPTER</text>
+<path d="M 656.0 379.9 L 844.8 420.0 L 862.4 458.4 L 862.4 516.0 L 897.6 516.0 L 897.6 458.4 L 915.2 420.0 L 1104.0 379.9" class="body-line"/>
+<rect x="790.0" y="435.0" width="36" height="50" fill="#f59e0b" fill-opacity="0.6" stroke="#fbbf24" stroke-width="1.5"/>
+<rect x="934.0" y="435.0" width="36" height="50" fill="#f59e0b" fill-opacity="0.6" stroke="#fbbf24" stroke-width="1.5"/>
+<line x1="808.0" y1="485.0" x2="952.0" y2="485.0" class="dim-line"/>
+<text x="780" y="505" class="dim-text">TINACO RIM = 450 mm</text>
+<text x="930.2" y="399.9346605783499" class="dim-text">SLOPE = 12.0 DEG</text>
+<rect x="720" y="710" width="445" height="105" fill="#1e293b" stroke="#64748b" stroke-width="1.8"/>
+<line x1="720" y1="745" x2="1165" y2="745" stroke="#475569" stroke-width="1"/>
+<line x1="720" y1="780" x2="1165" y2="780" stroke="#475569" stroke-width="1"/>
+<line x1="940" y1="710" x2="940" y2="815" stroke="#475569" stroke-width="1"/>
+<text x="730" y="734" class="title-text">TINACO RAINWATER COLLECTOR</text>
+<text x="730" y="765" class="sub-text">DOC: CAD-TNC-FLW-1633</text>
+<text x="730" y="802" class="sub-text">ORGANIZATION: s6pa1rta3n-lab</text>
+<text x="950" y="734" class="sub-text">SCALE: 1:10 | REV: 1.0</text>
+<text x="950" y="765" class="sub-text">TOLERANCE: ISO 2768-m</text>
+<text x="950" y="802" class="sub-text">MATERIAL: FOOD-GRADE HDPE</text>
+</svg>

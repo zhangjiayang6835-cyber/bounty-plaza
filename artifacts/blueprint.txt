@@ -1,0 +1,22 @@
+================================================================================
+      PARAMETRIC FLOWER-SHAPED RAINWATER COLLECTOR FOR TINACO - REV 1.0         
+================================================================================
+                 \                                            /                 
+                  \   <- SLOPE: 12.0 DEG (GRAVITY DRAINAGE) ->   /                  
+                   \                                        /                   
+  OUTER RIM:        \________________                      /       OUTER RIM:   
+  OD = 1400 mm          \              /                    OD = 1400 mm
+                      \  FUNNEL:     /                                          
+                       \ OD = 220 mm /                                          
+                        |          |                                            
+     [CLAMP BRACKET] ===|  DRAIN   |=== [CLAMP BRACKET]                         
+     ADAPTER COLLAR:    |  BORE    |    TINACO TANK RIM: 450 mm             
+     FIT: 400-650 mm      |  110 mm  |    (EPDM SANITARY SEAL GASKET)  
+                        |          |                                            
+                        |          |    CENTRAL DOWNSPOUT TUBE                  
+                        |    ||    |    (FEEDS INTO TINACO NECK)                
+                        \____||____/                                            
+                             \/                                                 
+--------------------------------------------------------------------------------
+ SPECIFICATIONS: 8 Petals | Catchment: 1.54 m2 | HDPE Density: 0.95 g/cm3
+================================================================================
