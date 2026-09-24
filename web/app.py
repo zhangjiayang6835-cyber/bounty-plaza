@@ -36,6 +36,58 @@ app.add_middleware(
 )
 
 
+# ── DAXDA 5 域递归悬赏配置 (Bounty Plaza #645) ──
+DAXDA_OVERVIEW = "DAXDA is a recursive, self-similar bounty architecture designed to incentivize multi-domain cryptographic, topological, and protocol-level security proofs and implementations."
+
+DAXDA_BOUNTIES = [
+    {
+        "id": "daxda-cl164",
+        "domain": "Cl(16,4)",
+        "title": "Clifford Algebra Cl(16,4) Signature Scheme Verification",
+        "value_usd": 7500,
+        "overview": DAXDA_OVERVIEW,
+        "validation_checks": 9,
+        "status": "active"
+    },
+    {
+        "id": "daxda-containment",
+        "domain": "Containment",
+        "title": "Zero-Knowledge State Containment & Isolation Framework",
+        "value_usd": 8000,
+        "overview": DAXDA_OVERVIEW,
+        "validation_checks": 9,
+        "status": "active"
+    },
+    {
+        "id": "daxda-da13",
+        "domain": "DA13",
+        "title": "DA13 Protocol Cryptographic Primitives Extension",
+        "value_usd": 7000,
+        "overview": DAXDA_OVERVIEW,
+        "validation_checks": 9,
+        "status": "active"
+    },
+    {
+        "id": "daxda-chrono",
+        "domain": "Chrono",
+        "title": "Chronological State Verification & Time-Lock Encryption",
+        "value_usd": 7500,
+        "overview": DAXDA_OVERVIEW,
+        "validation_checks": 9,
+        "status": "active"
+    },
+    {
+        "id": "daxda-mmpibench",
+        "domain": "MMPIBench",
+        "title": "MMPIBench Adversarial Benchmark & Evaluation Suite",
+        "value_usd": 7000,
+        "overview": DAXDA_OVERVIEW,
+        "validation_checks": 9,
+        "status": "active"
+    }
+]
+
+
 # ── 数据模型 ──
 
 class RedeemRequest(BaseModel):
@@ -179,6 +231,17 @@ def get_config():
         "rate_label": f"1 积分 = ${coin.RATE:.2f} USD",
         "min_redeem": coin.MIN_REDEEM,
         "min_redeem_label": f"最低兑换 {coin.MIN_REDEEM} 积分币",
+    }
+
+
+@app.get("/daxda/bounties")
+def get_daxda_bounties():
+    """获取 DAXDA 5 域递归悬赏列表 (Bounty Plaza #645)"""
+    return {
+        "bounty_plaza": "Plaza-645",
+        "total_value_usd": sum(b["value_usd"] for b in DAXDA_BOUNTIES),
+        "count": len(DAXDA_BOUNTIES),
+        "bounties": DAXDA_BOUNTIES
     }
 
 
