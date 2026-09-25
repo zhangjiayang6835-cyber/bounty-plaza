@@ -17,6 +17,7 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -36,6 +37,29 @@ def get_db():
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
+
+
+def _ensure_column(conn, table: str, column: str, col_type: str):
+    """前向迁移（forward-only）：列不存在时才 ALTER TABLE ADD COLUMN。
+    SQLite 的 ALTER 不支持 IF NOT EXISTS，故先用 PRAGMA 探测。
+    新列始终可空：存量行保持 NULL，语义与有效性均不受影响。"""
+    cols = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in cols:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+
+
+def validate_fee(fee):
+    """校验实际手续费（issue #1660：与封顶估值并列记录的真实费用）。
+    返回 None 表示合法；否则返回错误描述字符串。绝不抛出异常。"""
+    if fee is None:
+        return None
+    if isinstance(fee, bool) or not isinstance(fee, (int, float)):
+        return "手续费必须是数值"
+    if math.isnan(fee) or math.isinf(fee):
+        return "手续费必须是有限数值（拒绝 NaN/Inf）"
+    if fee < 0:
+        return "手续费不能为负数"
+    return None
 
 
 def init_db():
@@ -82,6 +106,10 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_tx_status ON transactions(status);
         CREATE INDEX IF NOT EXISTS idx_tx_created ON transactions(created_at);
     """)
+    # issue #1660 前向迁移：新增可空 fee_actual 列，记录真实手续费，
+    # 与封顶估值 coin_value / amount 并列存储；估值逻辑保持不变。
+    _ensure_column(conn, "transactions", "fee_actual", "REAL")
+    _ensure_column(conn, "redeem_requests", "fee_actual", "REAL")
     conn.commit()
     conn.close()
 
@@ -233,7 +261,7 @@ def cmd_approve(args):
             print(f"ERROR: 兑换请求 #{args.id} 不存在或已被处理")
             return 1
 
-        cur = conn.execute("SELECT username, amount, coin_value FROM redeem_requests WHERE id = ?", (args.id,))
+        cur = conn.execute("SELECT username, amount, coin_value, address FROM redeem_requests WHERE id = ?", (args.id,))
         req = cur.fetchone()
         username = req["username"]
         amount = req["amount"]
@@ -279,6 +307,13 @@ def cmd_approve(args):
 def cmd_pay(args):
     conn = get_db()
     try:
+        # issue #1660：打款时真实手续费已确定，先校验再落账，绝不因脏输入崩溃
+        fee = getattr(args, "fee", None)
+        fee_err = validate_fee(fee)
+        if fee_err:
+            print(f"ERROR: {fee_err}")
+            return 1
+
         cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
         req = cur.fetchone()
         if not req:
@@ -289,36 +324,31 @@ def cmd_pay(args):
                 print(f"ERROR: 兑换请求 #{args.id} 不存在或已处理")
             return 1
 
-        conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
+        # 真实手续费与封顶估值并列记录；coin_value（估值）保持原样不动
+        conn.execute(
+            "UPDATE redeem_requests SET status = 'paid', fee_actual = COALESCE(?, fee_actual), updated_at = datetime('now') WHERE id = ?",
+            (fee, args.id)
+        )
         cur2 = conn.execute("SELECT * FROM transactions WHERE from_user = ? AND amount = ? AND status = 'approved' ORDER BY id DESC LIMIT 1", (req["username"], req["amount"]))
         tx = cur2.fetchone()
         if tx:
-            conn.execute("UPDATE transactions SET status = 'completed' WHERE id = ?", (tx["id"],))
+            conn.execute("UPDATE transactions SET status = 'completed', fee_actual = COALESCE(?, fee_actual) WHERE id = ?", (fee, tx["id"]))
         conn.commit()
 
+        coin_value = req["coin_value"]
         if getattr(args, 'json', False):
             import json as _json
-            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(req.get("coin_value", req["amount"] * 0.72), 2), "status": "paid"}))
+            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(coin_value, 2), "fee_actual": fee, "status": "paid"}))
         else:
-            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${req.get('coin_value', req['amount'] * 0.72):.2f}")
+            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${coin_value:.2f}")
+            if fee is not None:
+                print(f"   实际手续费: ${fee:.6f}（封顶估值 ${coin_value:.2f} 保持不变）")
     except Exception as e:
         conn.rollback()
         print(f"ERROR: {e}")
         return 1
     finally:
         conn.close()
-    return 0
-    conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
-    req = cur.fetchone()
-    if not req:
-        print(f"ERROR: 兑换请求 #{args.id} 不存在或未批准")
-        return 1
-    conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
-    conn.execute("UPDATE transactions SET status = 'completed' WHERE reason = ?", (f"兑换请求 #{args.id}",))
-    conn.commit()
-    conn.close()
-    print(f"✅ 兑换 #{args.id} 已标记为已支付")
     return 0
 
 
@@ -377,7 +407,9 @@ def cmd_history(args):
         print("暂无兑换记录")
         return 0
     for row in rows:
-        print(f"#{row['id']:>4} {row['username']:<20} {row['amount']:>8}积分币 = ${row['coin_value']:<6.2f} [{row['status']:<8}] {row['address'][:30]:<30} {row['created_at'][:19]}")
+        fee = row["fee_actual"] if "fee_actual" in row.keys() else None
+        fee_str = f" | 实付手续费 ${fee:.6f}" if fee is not None else ""
+        print(f"#{row['id']:>4} {row['username']:<20} {row['amount']:>8}积分币 = ${row['coin_value']:<6.2f} [{row['status']:<8}] {row['address'][:30]:<30} {row['created_at'][:19]}{fee_str}")
     return 0
 
 
@@ -411,6 +443,7 @@ def main():
     p = sub.add_parser("pay", help="标记已打款")
     p.add_argument("--id", type=int, required=True)
     p.add_argument("--json", action="store_true", help="JSON 格式输出")
+    p.add_argument("--fee", type=float, default=None, help="实际网络/支付手续费（美元），与封顶估值并列记录")
     p.add_argument("--note", default="", help="备注")
 
     p = sub.add_parser("reject", help="拒绝兑换")
