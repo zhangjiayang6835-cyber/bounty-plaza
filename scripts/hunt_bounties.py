@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """hunt_bounties.py — 自动搜索 GitHub 真实赏金任务并发布到 bounty-plaza"""
 
-import json, os, re, sys, urllib.request
+import json, os, re, sys, urllib.request, urllib.error
 from datetime import datetime, timezone
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
@@ -14,7 +14,9 @@ REAL_MONEY = re.compile(r"""\$\s?[\d,]+(?:\.\d{1,2})?|
     bounty\s*(?::|of)?\s*\$\s*\d+""", re.I | re.X)
 
 def extract_amounts(text):
-    """从文本中提取所有符合条件的最低金额"""
+    """从文本中提取所有符合条件的最低金额（对 None/非字符串输入安全）"""
+    if not isinstance(text, str) or not text:
+        return []
     amounts = []
     for m in re.finditer(r'\$\s?(\d[\d,]*)', text):
         try:
@@ -37,16 +39,24 @@ def extract_amounts(text):
 VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|badge|achievement", re.I)
 
 def search_github():
-    """搜索最近 30 天的 bounty Issue"""
-    since = (datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    """搜索最近 30 天的 bounty Issue（网络/JSON 异常时安全返回空列表）"""
     q = f"{SEARCH_QUERY} created:>2026-05-20"
     url = f"https://api.github.com/search/issues?q={urllib.request.quote(q)}&sort=created&order=desc&per_page=50"
     req = urllib.request.Request(url, headers={"Authorization": f"token {GH_TOKEN}"})
-    data = json.loads(urllib.request.urlopen(req).read())
-    return data.get("items", [])
+    try:
+        data = json.loads(urllib.request.urlopen(req).read())
+    except (urllib.error.URLError, ValueError, OSError) as e:
+        print(f"  ⚠️ 搜索失败: {e}")
+        return []
+    if not isinstance(data, dict):
+        return []
+    items = data.get("items", [])
+    return items if isinstance(items, list) else []
 
 def is_real_money(item):
-    body = (item.get("title", "") + "\n" + (item.get("body") or ""))
+    if not isinstance(item, dict):
+        return False
+    body = (item.get("title") or "") + "\n" + (item.get("body") or "")
     # 必须包含真实货币模式
     if not REAL_MONEY.search(body):
         return False
@@ -60,20 +70,28 @@ def is_real_money(item):
     return max(amounts) >= 25
 
 def get_existing_sources():
-    """获取 bounty-plaza 已有的 source_url"""
+    """获取 bounty-plaza 已有的 source_url（网络/JSON 异常时安全返回空集合）"""
     url = f"https://api.github.com/repos/{REPO}/issues?labels=bounty&state=open&per_page=100"
     req = urllib.request.Request(url, headers={"Authorization": f"token {GH_TOKEN}"})
-    data = json.loads(urllib.request.urlopen(req).read())
+    try:
+        data = json.loads(urllib.request.urlopen(req).read())
+    except (urllib.error.URLError, ValueError, OSError) as e:
+        print(f"  ⚠️ 获取已有 Issue 失败: {e}")
+        return set()
+    if not isinstance(data, list):
+        return set()
     sources = set()
     for issue in data:
-        body = issue.get("body", "")
+        if not isinstance(issue, dict):
+            continue
+        body = issue.get("body") or ""
         m = re.search(r"(?:原始链接|source.?url)[:\s]+(https?://[^\s\n]+)", body, re.I)
         if m:
             sources.add(m.group(1).rstrip("/"))
     return sources
 
 def create_issue(item, amount):
-    title = f"[Bounty] {item['title'][:80]}"
+    title = f"[Bounty] {(item.get('title') or '')[:80]}"
     body_template = f"""### 赏金平台 / Platform
 GitHub
 
@@ -81,9 +99,9 @@ GitHub
 {item['html_url']}
 
 ### 漏洞描述 / Description
-{item.get('title')}
+{item.get('title') or ''}
 
-{item.get('body', '')[:2000]}
+{(item.get('body') or '')[:2000]}
 
 ### 积分币奖励 / Coin Reward
 {int(amount * 1.25)} coins
@@ -113,14 +131,16 @@ Medium
 
 def is_real_external(item):
     """排除自己的仓库 + 防止循环重复创建"""
-    title = item.get("title", "")
+    if not isinstance(item, dict):
+        return False
+    title = item.get("title") or ""
     if title.count("[Bounty]") > 1:  # 防止嵌套重复 [Bounty] [Bounty] [Bounty]...
         return False
     return is_not_own_repo(item)
 
 def is_not_own_repo(item):
     """排除我们自己的仓库（虚拟任务）"""
-    url = item.get("html_url", "")
+    url = item.get("html_url") or ""
     for owner in ["zhangjiayang6835-cyber", "zhangjiayang6835"]:
         if f"github.com/{owner}/" in url:
             return False
@@ -140,8 +160,10 @@ def main():
 
     created = 0
     for item in items:
-        url = item["html_url"].rstrip("/")
-        if url in existing:
+        if not isinstance(item, dict):
+            continue
+        url = (item.get("html_url") or "").rstrip("/")
+        if not url or url in existing:
             continue
         if not is_real_external(item):
             continue
@@ -149,12 +171,16 @@ def main():
             continue
 
         body = item.get("body") or ""
-        title = item.get("title", "")
-        amounts = extract_amounts(title + chr(92) + "n" + body)
+        title = item.get("title") or ""
+        amounts = extract_amounts(title + "\n" + body)
         amount = max(amounts) if amounts else 0
 
-        num = create_issue(item, amount)
-        print(f"  ✅ #{num}: {item['title'][:50]} — ${amount}")
+        try:
+            num = create_issue(item, amount)
+        except (urllib.error.URLError, ValueError, KeyError, OSError) as e:
+            print(f"  ⚠️ 创建失败 {url}: {e}")
+            continue
+        print(f"  ✅ #{num}: {title[:50]} — ${amount}")
         created += 1
         existing.add(url)
 
