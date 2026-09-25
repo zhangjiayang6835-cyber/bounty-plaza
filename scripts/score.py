@@ -171,12 +171,18 @@ def score_quality(code_file: str) -> tuple:
         return 0, "pylint 未安装或执行失败"
 
 
-def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
-    """性能评分，执行时间对比基线"""
+def score_performance(code: str, baseline_sec: float = 1.0) -> tuple:
+    """性能评分，执行时间对比基线
+
+    参数 ``code`` 是已读入内存的代码文本（与 score_security 使用的是同一份），
+    这样可以避免再次读盘导致 TOCTOU，同时让本函数可独立测试。
+    """
+    if not code or not code.strip():
+        return 0, "执行失败: 代码为空"
     try:
         start = time.time()
-        result = subprocess.run(
-            ["python", "-c", code],
+        subprocess.run(
+            [sys.executable, "-c", code],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
@@ -231,7 +237,8 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
     correctness_score, correctness_note = score_correctness(test_dir)
     security_score, security_note = score_security([], code)
     quality_score, quality_note = score_quality(code_file)
-    perf_score, perf_note = score_performance(code_file)
+    # 传入内存中的代码，而不是再次读盘（TOCTOU），同时修复 NameError
+    perf_score, perf_note = score_performance(code)
 
     total = correctness_score + security_score + quality_score + perf_score
 
