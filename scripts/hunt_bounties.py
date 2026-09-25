@@ -2,6 +2,15 @@
 """hunt_bounties.py — 自动搜索 GitHub 真实赏金任务并发布到 bounty-plaza"""
 
 import json, os, re, sys, urllib.request
+# Status Meter integration
+try:
+    from scripts.status_meter import update_readme_status_meter
+except ImportError:
+    try:
+        from status_meter import update_readme_status_meter
+    except ImportError:
+        update_readme_status_meter = None
+
 from datetime import datetime, timezone
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
