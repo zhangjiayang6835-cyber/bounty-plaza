@@ -130,6 +130,17 @@ def cmd_balance(args):
 
 
 def cmd_transfer(args):
+    # 前置校验：金额必须为正整数，且不能给自己转账
+    if not isinstance(args.amount, int) or isinstance(args.amount, bool) or args.amount <= 0:
+        print(f"ERROR: 转账金额必须为正整数（收到: {args.amount}）")
+        return 1
+    if not args.from_user or not args.to_user:
+        print("ERROR: 发送方和接收方用户名不能为空")
+        return 1
+    if args.from_user == args.to_user:
+        print("ERROR: 不能给自己转账")
+        return 1
+
     conn = get_db()
     try:
         ensure_account(conn, args.from_user)
@@ -171,14 +182,22 @@ def cmd_transfer(args):
 
 
 def cmd_redeem(args):
+    # 前置校验：先校验入参，再查余额，避免无意义的负值/空地址进入账务流程
+    if not isinstance(args.amount, int) or isinstance(args.amount, bool) or args.amount < 1:
+        print(f"ERROR: 金额必须大于 0（收到: {args.amount}）")
+        return 1
+    if not args.user:
+        print("ERROR: 用户名不能为空")
+        return 1
+    if not args.address or not str(args.address).strip():
+        print("ERROR: 收款地址不能为空")
+        return 1
+
     conn = get_db()
     try:
         balance = get_balance(conn, args.user)
         if balance < args.amount:
             print(f"ERROR: {args.user} 余额不足（{balance} < {args.amount}）")
-            return 1
-        if args.amount < 1:  # 无最低限制
-            print(f"ERROR: 金额必须大于 0")
             return 1
 
         cash_value = args.amount * RATE
@@ -233,7 +252,7 @@ def cmd_approve(args):
             print(f"ERROR: 兑换请求 #{args.id} 不存在或已被处理")
             return 1
 
-        cur = conn.execute("SELECT username, amount, coin_value FROM redeem_requests WHERE id = ?", (args.id,))
+        cur = conn.execute("SELECT username, amount, coin_value, address FROM redeem_requests WHERE id = ?", (args.id,))
         req = cur.fetchone()
         username = req["username"]
         amount = req["amount"]
@@ -296,29 +315,20 @@ def cmd_pay(args):
             conn.execute("UPDATE transactions SET status = 'completed' WHERE id = ?", (tx["id"],))
         conn.commit()
 
+        # sqlite3.Row 没有 .get()，先转成 dict 再做带默认值的读取
+        req = dict(req)
+        cash_value = req.get("coin_value", req["amount"] * RATE)
         if getattr(args, 'json', False):
             import json as _json
-            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(req.get("coin_value", req["amount"] * 0.72), 2), "status": "paid"}))
+            print(_json.dumps({"ok": True, "id": args.id, "username": req["username"], "amount": req["amount"], "cash_value": round(cash_value, 2), "status": "paid"}))
         else:
-            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${req.get('coin_value', req['amount'] * 0.72):.2f}")
+            print(f"✅ 兑换 #{args.id} 已标记为已支付: {req['username']} ${cash_value:.2f}")
     except Exception as e:
         conn.rollback()
         print(f"ERROR: {e}")
         return 1
     finally:
         conn.close()
-    return 0
-    conn = get_db()
-    cur = conn.execute("SELECT * FROM redeem_requests WHERE id = ? AND status = 'approved'", (args.id,))
-    req = cur.fetchone()
-    if not req:
-        print(f"ERROR: 兑换请求 #{args.id} 不存在或未批准")
-        return 1
-    conn.execute("UPDATE redeem_requests SET status = 'paid', updated_at = datetime('now') WHERE id = ?", (args.id,))
-    conn.execute("UPDATE transactions SET status = 'completed' WHERE reason = ?", (f"兑换请求 #{args.id}",))
-    conn.commit()
-    conn.close()
-    print(f"✅ 兑换 #{args.id} 已标记为已支付")
     return 0
 
 
