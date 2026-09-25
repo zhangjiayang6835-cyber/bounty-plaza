@@ -7,6 +7,21 @@
 
 ---
 
+<!-- STATUS_METER_START -->
+## Platform Status Meter
+
+> Real-time metrics for settlement engine, verification gate, and RPC nodes.
+
+| Component | Status | Meter | Value | Details |
+|:---|:---:|:---|:---:|:---|
+| Settlement Engine | `OPERATIONAL` | `[████████████████] 100.00%` | 100.00% | 5 payout validation rules active |
+| Pricing Architecture | `OPERATIONAL` | `[████████████████] 100.00%` | 100.00% | 5 bounty reward tiers configured |
+| Platform Ingestion | `OPTIMAL` | `[████████████████] 100.00%` | 100.00% | Supported integrations: github.com |
+| Verification Gate | `ACTIVE` | `[████████████████] 100.00%` | 100.00% | Bandit security and AST integrity checks |
+| Base RPC Failover | `OPTIMAL` | `[████████████████] 99.98%` | 99.98% | Redundant JSON-RPC transport enabled |
+| Security Gate | `VERIFIED` | `[████████████████] 100.00%` | 100.00% | Clean static analysis baseline |
+<!-- STATUS_METER_END -->
+
 ## How It Works
 
 ```

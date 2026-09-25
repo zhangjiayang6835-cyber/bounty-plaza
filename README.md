@@ -7,6 +7,21 @@
 
 ---
 
+<!-- STATUS_METER_START -->
+## 平台运行状态指示
+
+> 实时监控结算引擎、验证网关、RPC 节点和智能合约托管状态。
+
+| 组件 / 服务 | 状态 | 运行指示计 | 指标值 | 详情说明 |
+|:---|:---:|:---|:---:|:---|
+| Settlement Engine | `OPERATIONAL` | `[████████████████] 100.00%` | 100.00% | 5 payout validation rules active |
+| Pricing Architecture | `OPERATIONAL` | `[████████████████] 100.00%` | 100.00% | 5 bounty reward tiers configured |
+| Platform Ingestion | `OPTIMAL` | `[████████████████] 100.00%` | 100.00% | Supported integrations: github.com |
+| Verification Gate | `ACTIVE` | `[████████████████] 100.00%` | 100.00% | Bandit security and AST integrity checks |
+| Base RPC Failover | `OPTIMAL` | `[████████████████] 99.98%` | 99.98% | Redundant JSON-RPC transport enabled |
+| Security Gate | `VERIFIED` | `[████████████████] 100.00%` | 100.00% | Clean static analysis baseline |
+<!-- STATUS_METER_END -->
+
 ## 🪙 你能拿多少钱
 
 ```
