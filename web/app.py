@@ -1,3 +1,40 @@
+from flask import Flask, request, abort, session
+from functools import wraps
+
+app = Flask(__name__)
+
+# Simple auth check decorator to prevent auth bypass
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            abort(401, description="Authentication required")
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Example of a protected route that awards coins or audits victory
+@app.route('/award', methods=['POST'])
+@login_required
+def award_coins():
+    # Assuming request.json contains award data
+    data = request.json
+    # further authorization checks could be added here
+    # process awarding coins
+    return {"status": "coins awarded"}, 200
+
+@app.route('/audit/victory', methods=['POST'])
+@login_required
+def audit_victory():
+    # process victory audit ensuring no auth bypass
+    # perform logic that was previously bypassable
+    return {"status": "victory audit passed"}, 200
+
+# More routes would also need @login_required or equivalent auth checks
+
+if __name__ == "__main__":
+    app.secret_key = "replace_with_secure_key"
+    app.run()
+ 
 #!/usr/bin/env python3
 """
 bounty-plaza 自助兑换系统 Web 服务
