@@ -1,0 +1,20 @@
+# Core Anchor program for the staking reward pool (issue #1300).
+[package]
+name = "core"
+version = "0.1.0"
+description = "Solana Anchor staking pool core (Q64.64 reward accrual)"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "core"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+
+[dependencies]
+anchor-lang = "0.30.1"
