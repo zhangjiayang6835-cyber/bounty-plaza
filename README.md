@@ -97,3 +97,7 @@
 ---
 
 > 💡 有问题？在 Issue 中评论或联系管理员。
+
+## ⚠️ 注意
+
+该仓库仅容纳 bounty-platform 工具。分布式 LayerNorm/RMSNorm 2D-核网格实现位于 Tenstorrent tt-metal 仓库（https://github.com/tenstorrent/tt-metal）。请将任何代码正确性相关问题抄到对应的上游仓库。
