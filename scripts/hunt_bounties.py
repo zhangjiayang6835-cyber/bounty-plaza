@@ -38,8 +38,8 @@ VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|
 
 def search_github():
     """搜索最近 30 天的 bounty Issue"""
-    since = (datetime.now(timezone.utc).strftime("%Y-%m-%d"))
-    q = f"{SEARCH_QUERY} created:>2026-05-20"
+    since = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+    q = f"{SEARCH_QUERY} created:>{since}"
     url = f"https://api.github.com/search/issues?q={urllib.request.quote(q)}&sort=created&order=desc&per_page=50"
     req = urllib.request.Request(url, headers={"Authorization": f"token {GH_TOKEN}"})
     data = json.loads(urllib.request.urlopen(req).read())
