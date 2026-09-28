@@ -22,6 +22,8 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+from pathlib import Path
+import shutil
 
 
 def api(method: str, path: str, data: dict = None) -> dict:
@@ -69,38 +71,92 @@ def ensure_fork(upstream: str) -> str:
     sys.exit(1)
 
 
+def compile_templates(input_dir: Path, output_dir: Path, strict: bool = True):
+    """
+    渲染所有模板文件。
+    扫描 `input_dir` 中的所有 `.jsonte` 和 `.jinja` 文件，渲染内容并写入 `output_dir`。
+    保留相对路径，但改变扩展名为 `.json`。
+    如果渲染失败，抛出强表的异常。
+    """
+    from jinja2 import Environment, FileSystemLoader, StrictUndefined
+
+    env = Environment(
+        loader=FileSystemLoader(input_dir),
+        undefined=StrictUndefined if strict else None,
+    )
+
+    for template_path in input_dir.rglob("*"):
+        if template_path.suffix not in (".jsonte", ".jinja"):
+            continue
+
+        try:
+            template = env.get_template(str(template_path.relative_to(input_dir)))
+            rendered = template.render()
+
+            output_path = output_dir / template_path.relative_to(input_dir).with_suffix(".json")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(rendered)
+        except Exception as e:
+            raise Exception(f"Failed to render {template_path}: {str(e)}") from e
+
+
 def apply_and_pr(fork: str, upstream: str, branch: str, code_file: str, message: str, target_file: str):
     """在 fork 上创建分支、提交代码、提 PR"""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Clone fork
-        subprocess.run(["git", "clone", f"https://github.com/{fork}.git", tmpdir], capture_output=True, check=True)
+    temp_dir = Path.cwd() / "_temp" / f"build_{os.getpid()}"
+    src_dir = Path.cwd() / "src"
+    dest_dir = Path("com.mojang/development_behavior_packs")
 
-        # Create branch
-        subprocess.run(["git", "-C", tmpdir, "checkout", "-b", branch], capture_output=True, check=True)
+    try:
+        # Phase 1: Static Copy
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        for item in src_dir.glob("*"):
+            if item.suffix not in (".jsonte", ".jinja"):
+                if item.is_dir():
+                    shutil.copytree(item, temp_dir / item.name)
+                else:
+                    shutil.copy2(item, temp_dir)
 
-        # Copy winning code to target file
-        import shutil
-        dest = os.path.realpath(os.path.join(tmpdir, target_file))
-        allowed = os.path.realpath(tmpdir)
-        if not dest.startswith(allowed):
-            raise ValueError(f"目标文件路径不在允许的目录中: {target_file}")
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        shutil.copy2(code_file, dest)
+        # Phase 2: Template Expansion
+        compile_templates(src_dir, temp_dir, strict=True)
 
-        # Git add, commit, push
-        subprocess.run(["git", "-C", tmpdir, "add", target_file], capture_output=True, check=True)
-        subprocess.run(["git", "-C", tmpdir, "commit", "-m", message], capture_output=True, check=True)
-        subprocess.run(["git", "-C", tmpdir, "push", "origin", branch], capture_output=True, check=True)
+        # Phase 3: Atomic Sync
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(temp_dir, dest_dir, dirs_exist_ok=True)
 
-    # Create PR
-    pr = api("POST", f"/repos/{upstream}/pulls", {
-        "title": message,
-        "head": f"{fork.split('/')[0]}:{branch}",
-        "base": "main",
-        "body": f"🤖 由 bounty-plaza 自动提交\n\n此修复由 bounty-plaza 贡献者完成，已通过自动评分（≥90 分）。",
-    })
-    print(f"  PR 已创建: {pr.get('html_url', '?')}")
-    return pr.get("number")
+        # Git operations
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Clone fork
+            subprocess.run(["git", "clone", f"https://github.com/{fork}.git", tmpdir], capture_output=True, check=True)
+
+            # Create branch
+            subprocess.run(["git", "-C", tmpdir, "checkout", "-b", branch], capture_output=True, check=True)
+
+            # Copy winning code to target file
+            dest = os.path.realpath(os.path.join(tmpdir, target_file))
+            allowed = os.path.realpath(tmpdir)
+            if not dest.startswith(allowed):
+                raise ValueError(f"目标文件路径不在允许的目录中: {target_file}")
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            shutil.copy2(code_file, dest)
+
+            # Git add, commit, push
+            subprocess.run(["git", "-C", tmpdir, "add", target_file], capture_output=True, check=True)
+            subprocess.run(["git", "-C", tmpdir, "commit", "-m", message], capture_output=True, check=True)
+            subprocess.run(["git", "-C", tmpdir, "push", "origin", branch], capture_output=True, check=True)
+
+        # Create PR
+        pr = api("POST", f"/repos/{upstream}/pulls", {
+            "title": message,
+            "head": f"{fork.split('/')[0]}:{branch}",
+            "base": "main",
+            "body": f"🤖 由 bounty-plaza 自动提交\n\n此修复由 bounty-plaza 贡献者完成，已通过自动评分（≥90 分）。",
+        })
+        print(f"  PR 已创建: {pr.get('html_url', '?')}")
+        return pr.get("number")
+    finally:
+        # Cleanup
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir)
 
 
 def main():
