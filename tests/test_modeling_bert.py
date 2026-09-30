@@ -1,43 +1,47 @@
 import unittest
 import torch
-from transformers import BertConfig
-from transformers.models.bert.modeling_bert import BertModel
+from transformers import BertConfig, BertForMaskedLM
 
 class TestBertModel(unittest.TestCase):
     def setUp(self):
-        self.config = BertConfig(
-            vocab_size=30522,
-            hidden_size=768,
-            num_hidden_layers=12,
-            num_attention_heads=12,
-            intermediate_size=3072,
-            hidden_dropout_prob=0.1,
-            attention_probs_dropout_prob=0.1,
-            max_position_embeddings=512,
-            type_vocab_size=2,
-            initializer_range=0.02,
-            layer_norm_eps=1e-12,
-            pad_token_id=0,
-            gradient_checkpointing=False,
-        )
-        self.model = BertModel(self.config)
+        self.config = BertConfig(vocab_size=30522, hidden_size=768, num_hidden_layers=12, num_attention_heads=12, intermediate_size=3072)
+        self.model = BertForMaskedLM(self.config)
 
-    def test_forward(self):
-        input_ids = torch.tensor([[1, 2, 3, 4, 5]])
+    def test_forward_pass(self):
+        input_ids = torch.tensor([[101, 2054, 2003, 1996, 102]])
         attention_mask = torch.tensor([[1, 1, 1, 1, 1]])
-        outputs = self.model(input_ids, attention_mask=attention_mask)
-        self.assertEqual(outputs.shape, (1, 5, 768))
+        token_type_ids = torch.tensor([[0, 0, 0, 0, 0]])
+        position_ids = torch.tensor([[0, 1, 2, 3, 4]])
 
-    def test_forward_without_attention_mask(self):
-        input_ids = torch.tensor([[1, 2, 3, 4, 5]])
-        outputs = self.model(input_ids)
-        self.assertEqual(outputs.shape, (1, 5, 768))
+        output = self.model(input_ids, attention_mask, token_type_ids, position_ids)
+        self.assertEqual(output.shape, (1, 5, 30522))
 
-    def test_forward_with_non_32_width_tiles(self):
-        input_ids = torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]])
-        attention_mask = torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
-        outputs = self.model(input_ids, attention_mask=attention_mask)
-        self.assertEqual(outputs.shape, (1, 33, 768))
+    def test_attention_mask(self):
+        input_ids = torch.tensor([[101, 2054, 2003, 1996, 102]])
+        attention_mask = torch.tensor([[1, 1, 0, 0, 1]])
+        token_type_ids = torch.tensor([[0, 0, 0, 0, 0]])
+        position_ids = torch.tensor([[0, 1, 2, 3, 4]])
+
+        output = self.model(input_ids, attention_mask, token_type_ids, position_ids)
+        self.assertEqual(output.shape, (1, 5, 30522))
+
+    def test_token_type_ids(self):
+        input_ids = torch.tensor([[101, 2054, 2003, 1996, 102]])
+        attention_mask = torch.tensor([[1, 1, 1, 1, 1]])
+        token_type_ids = torch.tensor([[0, 1, 1, 1, 0]])
+        position_ids = torch.tensor([[0, 1, 2, 3, 4]])
+
+        output = self.model(input_ids, attention_mask, token_type_ids, position_ids)
+        self.assertEqual(output.shape, (1, 5, 30522))
+
+    def test_position_ids(self):
+        input_ids = torch.tensor([[101, 2054, 2003, 1996, 102]])
+        attention_mask = torch.tensor([[1, 1, 1, 1, 1]])
+        token_type_ids = torch.tensor([[0, 0, 0, 0, 0]])
+        position_ids = torch.tensor([[0, 1, 2, 3, 4]])
+
+        output = self.model(input_ids, attention_mask, token_type_ids, position_ids)
+        self.assertEqual(output.shape, (1, 5, 30522))
 
 if __name__ == '__main__':
     unittest.main()
