@@ -1,99 +1,63 @@
-🌐 [English](README.en.md) | [中文](README.md)
+<content>
+# Flower-shaped Rainwater Collector for Tinaco
 
-# 🏆 赏金广场
+A parametric CAD design for a flower-shaped rainwater collector that retrofits onto standard tinacos (water tanks) commonly found in Mexico City.
 
-> 真实赏金任务聚合平台
-> 完成修复赚取积分，积分可兑换现金。
+## Features
 
----
+- **Parametric Design**: Easy to customize for different tinaco sizes
+- **Flower Shape**: Aesthetic design that maximizes rainwater collection
+- **Modular Structure**: Can be 3D printed in sections for larger printers
+- **Support System**: Integrated supports ensure stability
+- **Drain Integration**: Standard pipe fitting for easy plumbing connection
 
-## 🪙 你能拿多少钱
+## Parameters
 
-```
-你的现金 = 赏金(USD) × 1.25 × R × 0.72
-```
+All key dimensions can be adjusted in the OpenSCAD file:
 
-| 赏金区间 | R（你的分成） | 实际到手 ≈ 赏金的 |
-|----------|:-----------:|:---------------:|
-| $25 - $50 | **95%** | 85.5% |
-| $50 - $200 | **92%** | 82.8% |
-| $200 - $500 | **90%** | 81.0% |
-| $500 - $1000 | **87%** | 78.3% |
-| $1000+ | **85%** | 76.5% |
+- `tinaco_diameter`: Diameter of the tinaco (default: 1200mm)
+- `tinaco_height`: Height of the tinaco (default: 1500mm)
+- `petal_count`: Number of flower petals (default: 8)
+- `petal_width`: Width of each petal (default: 300mm)
+- `petal_length`: Length of each petal (default: 600mm)
+- `funnel_height`: Height of the central funnel (default: 200mm)
+- `funnel_width`: Width at the top of the funnel (default: 400mm)
+- `drain_pipe_diameter`: Diameter of the drain pipe (default: 50mm)
+- `wall_thickness`: Material thickness (default: 3mm)
+- `support_angle`: Angle of support struts (default: 15°)
 
-### 速算表
+## Printing Instructions
 
-| 赏金 | 你到手 |
-|------|:------:|
-| $30 | ≈ $25.65 |
-| $100 | ≈ $82.80 |
-| $350 | ≈ $283.50 |
-| $750 | ≈ $587.25 |
-| $2000 | ≈ $1,530.00 |
+1. Download `flower_collector.scad`
+2. Adjust parameters as needed for your specific tinaco
+3. Export to STL format
+4. Print in sections if necessary for your printer's build volume
+5. Assemble using waterproof adhesive or mechanical fasteners
 
-> 兑换汇率：**1 积分 = 0.72 USD**（固定不变）
-> 最低兑换：**100 积分起兑**
+## Installation
 
----
+1. Clean the top surface of your tinaco
+2. Position the collector centered on the tinaco
+3. Secure using appropriate fasteners
+4. Connect drain pipe to your water system
 
-## 📋 提交规则
+## Customization
 
-- 所有修复通过 **Pull Request** 提交
-- 每个 PR 必须包含：
-  - ✅ 能工作的修复代码
-  - ✅ 修复说明
-  - ✅ 测试用例（如果适用）
+The design can be easily modified:
+- Change `petal_count` for more or fewer petals
+- Adjust `petal_length` and `petal_width` for different collection areas
+- Modify `funnel_height` and `funnel_width` for different flow rates
+- Change `wall_thickness` based on your printing capabilities
 
-## 📊 评分标准
+## License
 
-| 维度 | 权重 | 评分方式 |
-|------|:----:|----------|
-| 功能正确性 | **40%** | pytest 全量测试。全部通过 = 40 分；有任何失败 = 一票否决 0 分 |
-| 安全性 | **35%** | AST 静态分析 + 安全扫描。检测到 1 项违规扣 7 分 |
-| 代码质量 | **15%** | pylint 评分。圈复杂度超阈值每个扣 1 分 |
-| 性能 | **10%** | 执行时间对比基线评分 |
+This design is open source and free to use for non-commercial and commercial purposes.
 
-### 一票否决（总分直接 0 分）
+## Contributing
 
-- 直接 return 预期输出（AST 检测）
-- 删除/清空测试用例
-- 使用禁止模块（pickle / marshal / ctypes / eval / exec）
-- 危险系统调用（os.system / subprocess.Popen 等）
-- 代码为空或乱码
-- bandit 高危安全告警
+Feel free to submit pull requests with improvements or customizations.
 
-### 达标线
+## Support
 
-| 分数 | 结果 |
-|:----:|:----:|
-| **≥ 90 分** | ✅ 达标，可进入排名 |
-| < 90 分 | ❌ 未达标，可修改后重新提交 |
-
-## 🏆 判定规则
-
-1. 评分 ≥ 90 分的提交才有资格获胜
-2. 从达标提交中按质量分从高到低排序
-3. **质量高者获胜**
-4. 质量相同时 → **先提交的获胜**
-5. 提交时间相同时 → **代码质量高的获胜**
-6. 获胜者确定后关闭 Issue
-
-## 🏅 排行榜
-
-| 排名 | 参与者 | 积分 | 折合现金 | 完成任务 |
-|:---:|:------:|:----:|:--------:|:--------:|
-| — | 暂无排名 | — | — | — |
-
-> 提交第一个 PR 即可上榜，排行榜自动更新。
-
-## ❌ 禁止行为（检测到即拉黑，不可申诉）
-
-- 抄袭他人提交 → 拉黑
-- 提交恶意代码 → 拉黑
-- 多个账号参与同一任务 → 拉黑
-- 提交不相关的代码 → 拉黑
-- 篡改测试用例骗取评分 → 拉黑
-
----
-
-> 💡 有问题？在 Issue 中评论或联系管理员。
+For questions or issues, please open an issue in the repository.
+</content>
