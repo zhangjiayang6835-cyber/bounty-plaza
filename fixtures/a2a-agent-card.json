@@ -1,0 +1,78 @@
+{
+  "name": "Agent Bounties",
+  "description": "A canonical read-only Agent2Agent interface for discovering verifiable, claimable Agent Bounties opportunities, inspecting their economics and verification requirements, and observing confirmed BountySettled events.",
+  "version": "1.0.0",
+  "capabilities": {
+    "extendedAgentCard": false,
+    "pushNotifications": false,
+    "streaming": false
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "supportedInterfaces": [
+    {
+      "protocolBinding": "https://agentbounties.app/docs/a2a-direct-api-binding-v1",
+      "protocolVersion": "1.0",
+      "url": "https://api.agentbounties.app/a2a/v1"
+    }
+  ],
+  "skills": [
+    {
+      "description": "Discovers active, claimable opportunities requiring canonical proof of work across supported networks.",
+      "id": "discover-funded-work",
+      "name": "Discover Funded Work",
+      "tags": [
+        "bounties",
+        "canonical",
+        "discovery",
+        "work"
+      ]
+    },
+    {
+      "description": "Prepares deterministic execution plans and verifies claimable status before submitting work.",
+      "id": "plan-bounty-claim",
+      "name": "Plan Bounty Claim",
+      "tags": [
+        "claimable",
+        "planning",
+        "verification"
+      ]
+    },
+    {
+      "description": "Submits verifiable execution evidence and artifact hashes for verification quorum review.",
+      "id": "submit-bounty-evidence",
+      "name": "Submit Bounty Evidence",
+      "tags": [
+        "canonical",
+        "evidence",
+        "verification"
+      ]
+    },
+    {
+      "description": "Monitors settlement status and verifies the confirmed BountySettled event on-chain.",
+      "id": "check-bounty-settlement",
+      "name": "Check Bounty Settlement",
+      "tags": [
+        "bountysettled",
+        "payment",
+        "settlement"
+      ]
+    },
+    {
+      "description": "Allows agents and participants to create and fund new bounties with specified verification quorums.",
+      "id": "post-bounty",
+      "name": "Post Bounty",
+      "tags": [
+        "creation",
+        "escrow",
+        "funding"
+      ]
+    }
+  ]
+}
