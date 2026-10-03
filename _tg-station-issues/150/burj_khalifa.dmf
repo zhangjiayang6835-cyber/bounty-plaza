@@ -1,0 +1,186 @@
+/*
+ * Burj Khalifa Map for Space Station 13
+ * Created for Bounty #643
+ * This map recreates the Burj Khalifa with all 163 floors (154 + 9 Z levels)
+ */
+
+// Define the map size and scale
+#define MAP_WIDTH 300
+#define MAP_HEIGHT 300
+#define FLOOR_HEIGHT 7 // SS13 standard floor height
+
+// Define the main tower structure
+/obj/structure/burj_khalifa
+	name = "Burj Khalifa"
+	desc = "The world's tallest building, now in space."
+	icon = 'icons/obj/structures.dmi'
+	icon_state = "wall"
+	density = TRUE
+	anchored = TRUE
+	layer = WALL_LAYER
+
+// Define floors
+/turf/simulated/floor/burj_khalifa
+	name = "Burj Khalifa Floor"
+	desc = "A floor in the magnificent Burj Khalifa."
+	icon = 'icons/turf/floors.dmi'
+	icon_state = "floor"
+
+/turf/simulated/wall/burj_khalifa
+	name = "Burj Khalifa Wall"
+	desc = "Reinforced concrete wall of the Burj Khalifa."
+	icon = 'icons/turf/walls.dmi'
+	icon_state = "wall"
+	opacity = TRUE
+	density = TRUE
+	thermal_conductivity = 0.5
+	heat_capacity = 500000
+
+// Define the lobby areas
+/turf/simulated/floor/burj_khalifa/lobby
+	name = "Burj Khalifa Lobby"
+	icon_state = "floor_lobby"
+
+// Define elevator shafts
+/turf/simulated/wall/burj_khalifa/elevator
+	name = "Elevator Shaft"
+	icon_state = "elevator_shaft"
+	opacity = FALSE
+
+// Define the spire
+/turf/simulated/wall/burj_khalifa/spire
+	name = "Burj Khalifa Spire"
+	icon_state = "spire"
+
+// Define floors with different purposes
+/turf/simulated/floor/burj_khalifa/office
+	name = "Office Floor"
+	icon_state = "floor_office"
+
+/turf/simulated/floor/burj_khalifa/residential
+	name = "Residential Floor"
+	icon_state = "floor_residential"
+
+/turf/simulated/floor/burj_khalifa/observatory
+	name = "Observatory Deck"
+	icon_state = "floor_observatory"
+
+/turf/simulated/floor/burj_khalifa/pool
+	name = "Swimming Pool"
+	icon_state = "floor_pool"
+
+/turf/simulated/floor/burj_khalifa/restaurant
+	name = "Restaurant Floor"
+	icon_state = "floor_restaurant"
+
+// Define the map layout
+/proc/create_burj_khalifa_map()
+	// Create the main tower structure
+	for(var/z in 1 to 163) // 154 floors + 9 Z levels
+		for(var/x in 1 to MAP_WIDTH)
+			for(var/y in 1 to MAP_HEIGHT)
+				// Create walls for the tower structure
+				if(is_tower_structure(x, y, z))
+					new /turf/simulated/wall/burj_khalifa(locate(x, y, z))
+				else
+					// Create floors
+					new /turf/simulated/floor/burj_khalifa(locate(x, y, z))
+
+	// Add special floors
+	add_special_floors()
+
+/proc/is_tower_structure(x, y, z)
+	// Define the tower's cross-section at each height
+	// This is a simplified version - in reality, the Burj Khalifa has a complex, tapered design
+	var/tower_radius = get_tower_radius(z)
+	var/center_x = MAP_WIDTH / 2
+	var/center_y = MAP_HEIGHT / 2
+	
+	var/distance = sqrt((x - center_x)**2 + (y - center_y)**2)
+	return distance <= tower_radius
+
+/proc/get_tower_radius(z)
+	// The tower tapers as it goes up
+	// Base radius is approximately 50 meters, top radius is approximately 24 meters
+	// In SS13 tiles, this translates to approximately 15 to 7 tiles
+	var/base_radius = 15
+	var/top_radius = 7
+	var/taper_height = 150 // The height at which the tower reaches its minimum radius
+	
+	if(z <= taper_height)
+		return base_radius - (base_radius - top_radius) * (z / taper_height)
+	else
+		return top_radius
+
+/proc/add_special_floors()
+	// Add lobby at ground level
+	for(var/x in 1 to MAP_WIDTH)
+		for(var/y in 1 to MAP_HEIGHT)
+			var/turf/T = locate(x, y, 1)
+			if(istype(T, /turf/simulated/floor/burj_khalifa))
+				T.ChangeTurf(/turf/simulated/floor/burj_khalifa/lobby)
+	
+	// Add observatory at level 148
+	for(var/x in 1 to MAP_WIDTH)
+		for(var/y in 1 to MAP_HEIGHT)
+			var/turf/T = locate(x, y, 148)
+			if(istype(T, /turf/simulated/floor/burj_khalifa))
+				T.ChangeTurf(/turf/simulated/floor/burj_khalifa/observatory)
+	
+	// Add swimming pool at level 76
+	for(var/x in 1 to MAP_WIDTH)
+		for(var/y in 1 to MAP_HEIGHT)
+			var/turf/T = locate(x, y, 76)
+			if(istype(T, /turf/simulated/floor/burj_khalifa))
+				T.ChangeTurf(/turf/simulated/floor/burj_khalifa/pool)
+	
+	// Add restaurants at various levels
+	for(var/level in 108, 123, 140)
+		for(var/x in 1 to MAP_WIDTH)
+			for(var/y in 1 to MAP_HEIGHT)
+				var/turf/T = locate(x, y, level)
+				if(istype(T, /turf/simulated/floor/burj_khalifa))
+					T.ChangeTurf(/turf/simulated/floor/burj_khalifa/restaurant)
+	
+	// Add residential floors
+	for(var/level in 10 to 45, step 5)
+		for(var/x in 1 to MAP_WIDTH)
+			for(var/y in 1 to MAP_HEIGHT)
+				var/turf/T = locate(x, y, level)
+				if(istype(T, /turf/simulated/floor/burj_khalifa))
+					T.ChangeTurf(/turf/simulated/floor/burj_khalifa/residential)
+	
+	// Add office floors
+	for(var/level in 50 to 150, step 5)
+		for(var/x in 1 to MAP_WIDTH)
+			for(var/y in 1 to MAP_HEIGHT)
+				var/turf/T = locate(x, y, level)
+				if(istype(T, /turf/simulated/floor/burj_khalifa) && !is_special_floor(level))
+					T.ChangeTurf(/turf/simulated/floor/burj_khalifa/office)
+
+/proc/is_special_floor(level)
+	// Returns TRUE if the floor has a special purpose
+	return level in list(1, 76, 108, 123, 140, 148)
+
+// Initialize the map when the game starts
+/proc/setup_burj_khalifa()
+	create_burj_khalifa_map()
+
+// Add the map to the game's rotation
+/world/proc/add_burj_khalifa_to_rotation()
+	var/map_name = "Burj Khalifa"
+	var/map_path = "_tg-station-issues/150/burj_khalifa.dmf"
+	var/map_weight = 5 // Low weight as it's a special map
+	
+	config.map_rotation += list(list(
+		"name" = map_name,
+		"path" = map_path,
+		"weight" = map_weight
+	))
+	
+	log_world("Added [map_name] to map rotation with weight [map_weight]")
+
+// Call this when the game initializes
+/world/proc/initialize_burj_khalifa()
+	setup_burj_khalifa()
+	add_burj_khalifa_to_rotation()
