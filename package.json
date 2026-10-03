@@ -1,0 +1,29 @@
+{
+  "name": "tg-station-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript transpilation of TG Station codebase",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "typescript",
+    "byond",
+    "tg-station",
+    "game",
+    "ss13"
+  ],
+  "author": "TG Station Community",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5"
+  }
+}
