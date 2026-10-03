@@ -1,0 +1,19 @@
+```dm
+// Pilot types
+#define PILOT_TYPE_HUMAN 1
+#define PILOT_TYPE_MMI 2
+#define PILOT_TYPE_POSITRONIC 3
+#define PILOT_TYPE_AI 4
+
+// Pilot restrictions
+#define PILOT_RESTRICTION_NONE 0
+#define PILOT_RESTRICTION_COMBAT 1
+#define PILOT_RESTRICTION_SEALED 2
+#define PILOT_RESTRICTION_ENVIRONMENT 3
+
+// Pilot effects
+#define PILOT_EFFECT_DAMAGE 1
+#define PILOT_EFFECT_STUN 2
+#define PILOT_EFFECT_UNCONSCIOUS 3
+#define PILOT_EFFECT_DEATH 4
+```

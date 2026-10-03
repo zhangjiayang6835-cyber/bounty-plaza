@@ -1,0 +1,44 @@
+```dm
+// Mecha thermal defines
+#define MECHA_DEFAULT_TEMP_THRESHOLD 300 // Kelvin
+#define MECHA_EMERGENCY_TEMP_THRESHOLD 500 // Kelvin
+#define MECHA_BASE_HEAT_DISSIPATION 0.5 // Heat units per tick
+#define MECHA_RADIATOR_MULTIPLIER 2.0
+#define MECHA_FAN_MULTIPLIER 1.5
+
+// Mecha tier defines
+#define MECHA_TIER_BASIC 1
+#define MECHA_TIER_ADVANCED 2
+#define MECHA_TIER_ELITE 3
+
+#define MECHA_BASE_COMPLEXITY 20
+#define MECHA_TIER_COMPLEXITY_BONUS 10
+
+#define MECHA_BASE_SERVO_SPEED 1.0
+#define MECHA_SERVO_SPEED_MULTIPLIER 0.2
+
+#define MECHA_BASE_CAPACITOR_DELAY 10 // deciseconds
+#define MECHA_CAPACITOR_DELAY_REDUCTION 2
+
+// Mecha heat generation
+#define MECHA_HEAT_STRafe 1.0
+#define MECHA_HEAT_MODULE_BASIC 0.5
+#define MECHA_HEAT_MODULE_HEAVY 1.5
+#define MECHA_HEAT_OVERCLOCK 2.0
+
+// Mecha movement speeds
+#define MECHA_BASIC_SPEED 3
+#define MECHA_ADVANCED_SPEED 4
+#define MECHA_ELITE_SPEED 5
+
+// Mecha damage states
+#define MECHA_DAMAGE_NONE 0
+#define MECHA_DAMAGE_MINOR 1
+#define MECHA_DAMAGE_MODERATE 2
+#define MECHA_DAMAGE_MAJOR 3
+#define MECHA_DAMAGE_CRITICAL 4
+
+// Mecha visibility when sealed
+#define MECHA_SEALED_VISIBILITY_DEGRADATION 0.6
+#define MECHA_CAMERA_BEACON_FOV 120
+```
