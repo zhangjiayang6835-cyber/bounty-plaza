@@ -1,0 +1,52 @@
+{
+  "name": "Burj Khalifa",
+  "description": "A fully recreated Burj Khalifa in Space Station 13 with all 163 floors (154 + 9 Z levels). This map includes the tower's distinctive Y-shaped floor plan, tapering design, and various functional areas including offices, residential spaces, restaurants, an observatory, and swimming pools.",
+  "version": "1.0.0",
+  "author": "Bounty Team",
+  "created_for": "Issue #150",
+  "bounty_id": "643",
+  "floors": 163,
+  "special_areas": [
+    {
+      "name": "Lobby",
+      "floor": 1,
+      "description": "Grand entrance lobby with marble floors and high ceilings"
+    },
+    {
+      "name": "Swimming Pool",
+      "floor": 76,
+      "description": "Outdoor swimming pool with panoramic views"
+    },
+    {
+      "name": "Restaurant Floor",
+      "floor": 108,
+      "description": "Fine dining restaurant with city views"
+    },
+    {
+      "name": "Restaurant Floor",
+      "floor": 123,
+      "description": "Casual dining area"
+    },
+    {
+      "name": "Restaurant Floor",
+      "floor": 140,
+      "description": "International cuisine restaurant"
+    },
+    {
+      "name": "Observatory",
+      "floor": 148,
+      "description": "Public observation deck with telescopes"
+    }
+  ],
+  "features": [
+    "Realistic tapered design",
+    "Y-shaped floor plan",
+    "Elevator shafts",
+    "Multiple functional areas",
+    "Spire structure at the top",
+    "Exterior balconies on certain floors"
+  ],
+  "compatibility": "Compatible with Space Station 13 -tg-station branch",
+  "dependencies": [],
+  "notes": "This map is designed to run smoothly on most servers. Performance has been optimized by limiting the number of turfs while maintaining the building's iconic shape."
+}
