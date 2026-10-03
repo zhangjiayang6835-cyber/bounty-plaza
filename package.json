@@ -1,0 +1,26 @@
+<content>
+{
+  "name": "bounty-plaza",
+  "version": "1.0.0",
+  "description": "Bounty Plaza platform for security researchers",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "keywords": ["bounty", "security", "vulnerability", "platform"],
+  "author": "Bounty Plaza Team",
+  "license": "MIT"
+}
+</content>
