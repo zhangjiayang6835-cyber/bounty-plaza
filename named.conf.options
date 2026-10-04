@@ -1,0 +1,44 @@
+options {
+    directory "/var/cache/bind";
+    
+    // Allow only recursive queries from trusted networks
+    allow-recursion { 192.168.0.0/16; 10.0.0.0/8; 172.16.0.0/12; localhost; };
+    allow-query { any; };
+    
+    // Restrict zone transfers to only slave servers
+    allow-transfer { 192.168.1.100; 192.168.1.101; key "dns-transfer-key"; };
+    allow-query { any; };
+    
+    // Enable DNSSEC
+    dnssec-validation auto;
+    dnssec-enable yes;
+    
+    // Bind to specific interfaces
+    listen-on { 127.0.0.1; 192.168.1.1; };
+    listen-on-v6 { ::1; };
+};
+
+// TSIG key for secure zone transfers
+key "dns-transfer-key" {
+    algorithm hmac-sha256;
+    secret "YourSecureTSIGKeyHere=";
+};
+
+// Split-horizon configuration for internal zones
+view "internal" {
+    match-clients { 192.168.0.0/16; 10.0.0.0/8; 172.16.0.0/12; localhost; };
+    zone "internal.example.com" {
+        type master;
+        file "/etc/bind/db.internal.example.com";
+    };
+    recursion yes;
+};
+
+view "external" {
+    match-clients { any; };
+    zone "example.com" {
+        type master;
+        file "/etc/bind/db.example.com";
+    };
+    recursion no;
+};
