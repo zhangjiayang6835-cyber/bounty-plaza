@@ -1,0 +1,19 @@
+;
+; BIND data file for 1.168.192.in-addr.arpa (reverse zone)
+;
+$TTL    86400
+@       IN      SOA     ns1.example.com. admin.example.com. (
+                              1         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         86400 )        ; Negative Cache TTL
+;
+@       IN      NS      ns1.example.com.
+@       IN      NS      ns2.example.com.
+
+1       IN      PTR     router.example.com.
+10      IN      PTR     internal.example.com.
+20      IN      PTR     db.example.com.
+30      IN      PTR     app.example.com.
+100     IN      PTR     www-internal.example.com.

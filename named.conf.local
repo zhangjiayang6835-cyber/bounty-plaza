@@ -1,0 +1,44 @@
+//
+// Do any local configuration here
+//
+// Consider adding the 1918 zones referenced in RFC 1918
+// - 10.0.0.0/8
+// - 172.16.0.0/12
+// - 192.168.0.0/16
+// - 169.254.0.0/16
+//
+
+// Master zone configuration with TSIG
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com";
+    
+    // Allow zone transfer only with TSIG
+    allow-transfer { key "slave-key"; };
+    
+    // Allow zone updates only with TSIG
+    allow-update { key "update-key"; };
+};
+
+// Slave zone configuration
+zone "internal.example.com" {
+    type slave;
+    file "/var/cache/bind/db.internal.example.com";
+    
+    // Master server with TSIG
+    masters { key "slave-key" 192.168.1.100; };
+};
+
+// Split-horizon DNS zone for RPZ
+zone "rpz.example.com" {
+    type master;
+    file "/etc/bind/db.rpz.example.com";
+    response-policy zone "rpz.example.com";
+};
+
+// Internal network zone (split-horizon)
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.192.168.1";
+    allow-transfer { key "slave-key"; };
+};

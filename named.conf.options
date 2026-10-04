@@ -1,0 +1,41 @@
+options {
+    directory "/var/cache/bind";
+    
+    // Restrict zone transfers to only authorized slave servers
+    allow-transfer { 
+        key "slave-key"; 
+        localhost; 
+        localnets; 
+    };
+    
+    // Enable TSIG for secure zone transfers
+    tkey-gssapi-keytab "/etc/bind/krb5.keytab";
+    
+    // Enable DNSSEC
+    dnssec-enable yes;
+    dnssec-validation auto;
+    
+    // Split-horizon DNS configuration
+    response-policy { 
+        "rpz.example.com"; 
+    };
+    
+    // Additional security settings
+    recursion no;
+    allow-query { localhost; localnets; };
+    allow-query-cache { localhost; localnets; };
+    
+    // Logging for security events
+    logging {
+        channel security {
+            file "/var/log/bind/security.log" versions 3 size 1m;
+            severity info;
+            print-time yes;
+            print-category yes;
+            print-severity yes;
+        };
+        category security {
+            security;
+        };
+    };
+};
