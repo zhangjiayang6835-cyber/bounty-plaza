@@ -85,3 +85,8 @@
 ---
 
 > 有疑问？在 Issue 中评论或联系管理员。
+
+
+## Example Usage
+
+Resolved parameter handling for issue #1728.
