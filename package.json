@@ -1,0 +1,13 @@
+{
+  "name": "web-cache-deception-fix",
+  "version": "1.0.0",
+  "description": "Fix for Web Cache Deception vulnerability",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.0.0"
+  }
+}
