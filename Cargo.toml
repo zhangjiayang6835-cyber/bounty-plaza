@@ -1,0 +1,17 @@
+<content>
+[package]
+name = "bounty-plaza"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
+hex = "0.4"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "rsa_bench"
+harness = false
+</content>
