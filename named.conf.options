@@ -1,0 +1,31 @@
+options {
+    directory "/var/cache/bind";
+    
+    // Allow only recursive queries from trusted networks
+    allow-recursion { 127.0.0.1; 10.0.0.0/8; 192.168.0.0/16; 172.16.0.0/12; };
+    allow-query { any; };
+    
+    // Disable zone transfers by default
+    allow-transfer { none; };
+    
+    // Enable DNSSEC
+    dnssec-validation auto;
+    
+    // Use modern crypto algorithms
+    ed25519 yes;
+};
+
+// Define TSIG key for secure zone transfers
+key "transfer-key" {
+    algorithm hmac-sha256;
+    secret "YourSecureTSIGKeyHere=";
+};
+
+// Controls for rndc
+controls {
+    inet 127.0.0.1 port 953 allow { 127.0.0.1; };
+    keys { "rndc-key"; };
+};
+
+// Include zone configuration files
+include "/etc/bind/named.conf.zones";

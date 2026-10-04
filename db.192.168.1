@@ -1,0 +1,18 @@
+;
+; BIND reverse data file for 192.168.1.0/24
+;
+$TTL    604800
+@       IN      SOA     ns1.internal.example.com. admin.internal.example.com. (
+                              1         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns1.internal.example.com.
+10      IN      PTR     ns1.internal.example.com.
+20      IN      PTR     mail.internal.example.com.
+30      IN      PTR     www.internal.example.com.
+40      IN      PTR     db.internal.example.com.
+50      IN      PTR     server1.internal.example.com.
+60      IN      PTR     server2.internal.example.com.
