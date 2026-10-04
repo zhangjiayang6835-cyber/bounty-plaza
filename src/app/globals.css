@@ -1,0 +1,48 @@
+/* 
+  Global styles with proper content-type headers
+  This file will be cached by CDN but is safe to cache
+*/
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #10b981;
+  --background-color: #ffffff;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}

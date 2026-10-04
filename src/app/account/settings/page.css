@@ -1,0 +1,23 @@
+/*
+  This is a fake CSS file to demonstrate the vulnerability
+  In a real application, this would be a regular page component
+  but we're creating a .css file to show how the vulnerability could be exploited
+*/
+
+/*
+  IMPORTANT: This file should NOT be cached by CDN
+  In a real application, this would be a regular page component
+  but we're creating a .css file to demonstrate the vulnerability
+*/
+
+/*
+  This is a fake CSS file that would contain sensitive information
+  In a real application, this would be a regular page component
+  but we're creating a .css file to show how the vulnerability could be exploited
+*/
+
+/*
+  This is a fake CSS file that would contain sensitive information
+  In a real application, this would be a regular page component
+  but we're creating a .css file to show how the vulnerability could be exploited
+*/

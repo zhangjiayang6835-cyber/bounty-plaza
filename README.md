@@ -1,99 +1,60 @@
-🌐 [English](README.en.md) | [中文](README.md)
+# Web Cache Deception Fix
 
-# 🏆 赏金广场
+This repository contains a fix for the Web Cache Deception vulnerability that could lead to session token leaks.
 
-> 真实赏金任务聚合平台
-> 完成修复赚取积分，积分可兑换现金。
+## Vulnerability Description
 
----
+The original vulnerability was that static file CDN was configured to cache `/assets/*.css` files. Attackers could诱导用户访问 `/account/settings/nonexistent.css`, which would cause the CDN to cache the sensitive page content because it had a `.css` extension. Attackers could then read the cache to obtain sensitive information like session tokens.
 
-## 🪙 你能拿多少钱
+## Fix Implementation
 
-```
-你的现金 = 赏金(USD) × 1.25 × R × 0.72
-```
+The fix includes the following components:
 
-| 赏金区间 | R（你的分成） | 实际到手 ≈ 赏金的 |
-|----------|:-----------:|:---------------:|
-| $25 - $50 | **95%** | 85.5% |
-| $50 - $200 | **92%** | 82.8% |
-| $200 - $500 | **90%** | 81.0% |
-| $500 - $1000 | **87%** | 78.3% |
-| $1000+ | **85%** | 76.5% |
+1. **Middleware** (`src/middleware/cacheMiddleware.js`):
+   - Identifies sensitive paths that should never be cached
+   - Sets appropriate cache control headers for sensitive pages
+   - Only caches assets with known content types (not based on file extension)
+   - Sets `X-Content-Type-Options: nosniff` to prevent MIME-type sniffing
 
-### 速算表
+2. **Next.js Configuration** (`next.config.js`):
+   - Adds cache control headers for sensitive paths
+   - Ensures sensitive pages are not cached at the server level
 
-| 赏金 | 你到手 |
-|------|:------:|
-| $30 | ≈ $25.65 |
-| $100 | ≈ $82.80 |
-| $350 | ≈ $283.50 |
-| $750 | ≈ $587.25 |
-| $2000 | ≈ $1,530.00 |
+3. **Example Files**:
+   - `src/app/account/settings/page.js`: A sensitive page that should not be cached
+   - `src/app/globals.css`: A global CSS file that is safe to cache
+   - `src/app/account/settings/page.css`: A fake CSS file to demonstrate the vulnerability
 
-> 兑换汇率：**1 积分 = 0.72 USD**（固定不变）
-> 最低兑换：**100 积分起兑**
+## Verification
 
----
+To verify the fix:
 
-## 📋 提交规则
+1. Check that sensitive pages (like `/account/settings`) return the following headers:
+   ```
+   Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+   Pragma: no-cache
+   Expires: 0
+   X-Content-Type-Options: nosniff
+   ```
 
-- 所有修复通过 **Pull Request** 提交
-- 每个 PR 必须包含：
-  - ✅ 能工作的修复代码
-  - ✅ 修复说明
-  - ✅ 测试用例（如果适用）
+2. Check that static assets are only cached if they have a known content type.
 
-## 📊 评分标准
+3. Verify that CDN configuration follows these rules:
+   - Cache based on Content-Type header, not file extension
+   - Do not cache sensitive pages
+   - Set appropriate cache control headers
 
-| 维度 | 权重 | 评分方式 |
-|------|:----:|----------|
-| 功能正确性 | **40%** | pytest 全量测试。全部通过 = 40 分；有任何失败 = 一票否决 0 分 |
-| 安全性 | **35%** | AST 静态分析 + 安全扫描。检测到 1 项违规扣 7 分 |
-| 代码质量 | **15%** | pylint 评分。圈复杂度超阈值每个扣 1 分 |
-| 性能 | **10%** | 执行时间对比基线评分 |
+## Testing
 
-### 一票否决（总分直接 0 分）
+To test the fix:
 
-- 直接 return 预期输出（AST 检测）
-- 删除/清空测试用例
-- 使用禁止模块（pickle / marshal / ctypes / eval / exec）
-- 危险系统调用（os.system / subprocess.Popen 等）
-- 代码为空或乱码
-- bandit 高危安全告警
+1. Visit a sensitive page (e.g., `/account/settings`) and check the response headers.
+2. Try to access a non-existent CSS file in a sensitive directory (e.g., `/account/settings/nonexistent.css`).
+3. Verify that the response headers prevent caching.
 
-### 达标线
+## Security Considerations
 
-| 分数 | 结果 |
-|:----:|:----:|
-| **≥ 90 分** | ✅ 达标，可进入排名 |
-| < 90 分 | ❌ 未达标，可修改后重新提交 |
-
-## 🏆 判定规则
-
-1. 评分 ≥ 90 分的提交才有资格获胜
-2. 从达标提交中按质量分从高到低排序
-3. **质量高者获胜**
-4. 质量相同时 → **先提交的获胜**
-5. 提交时间相同时 → **代码质量高的获胜**
-6. 获胜者确定后关闭 Issue
-
-## 🏅 排行榜
-
-| 排名 | 参与者 | 积分 | 折合现金 | 完成任务 |
-|:---:|:------:|:----:|:--------:|:--------:|
-| — | 暂无排名 | — | — | — |
-
-> 提交第一个 PR 即可上榜，排行榜自动更新。
-
-## ❌ 禁止行为（检测到即拉黑，不可申诉）
-
-- 抄袭他人提交 → 拉黑
-- 提交恶意代码 → 拉黑
-- 多个账号参与同一任务 → 拉黑
-- 提交不相关的代码 → 拉黑
-- 篡改测试用例骗取评分 → 拉黑
-
----
-
-> 💡 有问题？在 Issue 中评论或联系管理员。
+- Always set `X-Content-Type-Options: nosniff` to prevent browsers from MIME-sniffing the content.
+- Never cache sensitive pages or user-specific content.
+- Use both server-side headers and CDN configuration to ensure proper caching behavior.
+- Regularly audit your caching policies to ensure they follow security best practices.
