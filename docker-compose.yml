@@ -1,17 +1,37 @@
 version: '3.8'
 
 services:
-  web:
-    build:
-      context: .
-      dockerfile: web/Dockerfile
+  dns-server:
+    build: ./dns-server
+    container_name: dns-server
     ports:
-      - "127.0.0.1:8080:8080"
-    environment:
-      - BOUNTY_API_KEY=${BOUNTY_API_KEY:-}
-      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
-      - BINANCE_API_KEY=${BINANCE_API_KEY:-}
-      - BINANCE_SECRET_KEY=${BINANCE_SECRET_KEY:-}
+      - "53:53/tcp"
+      - "53:53/udp"
+    networks:
+      - internal-network
     volumes:
-      - ./data:/app/data
-    restart: unless-stopped
+      - dns-data:/etc/bind
+
+  # Slave DNS server for testing
+  dns-slave:
+    image: bind:9.16
+    container_name: dns-slave
+    command: >
+      bash -c "echo 'include \"/etc/bind/keys.conf\";' > /etc/bind/named.conf &&
+      echo 'zone \"example.com\" { type slave; file \"/etc/bind/slave/db.example.com\"; masters { 192.168.1.10; }; allow-notify { key slave-key; }; };' >> /etc/bind/named.conf &&
+      named -g"
+    networks:
+      - internal-network
+    volumes:
+      - slave-data:/etc/bind
+
+networks:
+  internal-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+
+volumes:
+  dns-data:
+  slave-data:

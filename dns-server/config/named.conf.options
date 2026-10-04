@@ -1,0 +1,21 @@
+options {
+    directory "/var/cache/bind";
+    
+    # Allow only recursive queries from trusted networks
+    allow-recursion { 192.168.1.0/24; 10.0.0.0/8; };
+    allow-query { any; };
+    
+    # Disable zone transfers to unauthorized servers
+    allow-transfer { none; };
+    
+    # Enable DNSSEC
+    dnssec-enable yes;
+    dnssec-validation auto;
+    
+    # Bind version is hidden for security
+    version "not available";
+    hostname "not available";
+    
+    # Reduce EDNS0 UDP buffer size to mitigate DNS amplification
+    edns-udp-size 1232;
+};
