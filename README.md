@@ -36,6 +36,22 @@
 
 ---
 
+## 🔗 钱包集成 / Wallet Integration
+
+import { FreighterAdapter, signAndSubmit } from "./src";
+
+const wallet = new FreighterAdapter();
+if (wallet.isAvailable()) {
+  const publicKey = await wallet.connect();
+  const result = await signAndSubmit(tx, wallet, {
+    networkPassphrase: "Test SDF Network ; September 2015",
+  });
+}
+
+- `FreighterAdapter`：基于 `@stellar/freighter-api`
+- `StellarKitAdapter`：基于 `@creit.tech/stellar-wallets-kit`
+- 两者均为 `peerDependencies`，未安装时会抛出描述性错误
+
 ## 📋 提交规则
 
 - 所有修复通过 **Pull Request** 提交
