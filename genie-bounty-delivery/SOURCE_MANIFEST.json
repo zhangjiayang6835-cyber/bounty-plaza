@@ -1,0 +1,28 @@
+{
+  "schema": "genie.bounty-source-package.v1",
+  "source_issue_url": "https://github.com/tenstorrent/tt-metal/issues/58228",
+  "source_base_sha": "565a49e1428dc905c44e931b11ba20254190d2e0",
+  "changed_files": [
+    "tests/ttnn/unit_tests/operations/eltwise/test_div_ops.py",
+    "tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h",
+    "tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h",
+    "tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h",
+    "tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h",
+    "ttnn/cpp/ttnn/operations/eltwise/binary/device/binary_composite_op.cpp"
+  ],
+  "cursor_elapsed_s": 146.28,
+  "cursor_exit_code": 0,
+  "competition": {
+    "open_or_recent_prs": 1,
+    "items": [
+      {
+        "number": 1700,
+        "title": "AI Agent Fix for Issue #1697",
+        "state": "open",
+        "user": "alienvisitor8675-bit"
+      }
+    ]
+  },
+  "generated_at": 1791249414.3529434,
+  "truth_note": "Local/source patch package for provider scoring; not proof of upstream merge or payment."
+}

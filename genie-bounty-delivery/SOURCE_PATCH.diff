@@ -1,0 +1,399 @@
+diff --git a/tests/ttnn/unit_tests/operations/eltwise/test_div_ops.py b/tests/ttnn/unit_tests/operations/eltwise/test_div_ops.py
+index 28f73c039e..ba0f12573a 100644
+--- a/tests/ttnn/unit_tests/operations/eltwise/test_div_ops.py
++++ b/tests/ttnn/unit_tests/operations/eltwise/test_div_ops.py
+@@ -185,6 +185,100 @@ def test_div_no_nan_fp32(device):
+     assert_with_ulp(expected_result=torch_output, actual_result=output, ulp_threshold=1, allow_nonfinite=True)
+ 
+ 
++@pytest.mark.parametrize("op", [ttnn.div_no_nan, ttnn.divide])
++def test_div_fp32_quotient_refinement(device, op):
++    # Scale both adversarial pairs across the normal exponent range. Refining
++    # unscaled operands loses a subnormal residual even when a, b and a/b are normal.
++    a = torch.tensor([0x4F518358, 0x3FCF913C], dtype=torch.int32).view(torch.float32).double()
++    b = torch.tensor([0x4EDD39E7, 0x3FE28788], dtype=torch.int32).view(torch.float32).double()
++    shifts = torch.arange(-126, 127)[:, None] - torch.tensor([31, 0])
++    a, b = torch.ldexp(a, shifts).float().flatten(), torch.ldexp(b, shifts).float().flatten()
++    normal = (a >= torch.finfo(torch.float32).tiny) & (b >= torch.finfo(torch.float32).tiny)
++    a, b = a[normal], b[normal]
++    a, b = torch.cat([a, -a, a, -a]), torch.cat([b, b, -b, -b])
++    a, b = a.repeat(2)[:2048].reshape(64, 32), b.repeat(2)[:2048].reshape(64, 32)
++    input_a = ttnn.from_torch(a, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    input_b = ttnn.from_torch(b, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    actual = ttnn.to_torch(op(input_a, input_b))
++    expected = (a.double() / b.double()).float()
++    assert_with_ulp(expected_result=expected, actual_result=actual, ulp_threshold=1)
++
++
++@pytest.mark.parametrize("op", [ttnn.div_no_nan, ttnn.divide])
++def test_div_fp32_random_exponents(device, op):
++    generator = torch.Generator().manual_seed(58228)
++    a = torch.randint(0x00800000, 0x7F800000, (65536,), generator=generator, dtype=torch.int32).view(torch.float32)
++    b = torch.randint(0x00800000, 0x7F800000, (65536,), generator=generator, dtype=torch.int32).view(torch.float32)
++    a[::2], b[::3] = -a[::2], -b[::3]
++    expected = (a.double() / b.double()).float()
++    normal = torch.isfinite(expected) & (expected.abs() >= torch.finfo(torch.float32).tiny)
++    # Keep a fixed, tile-aligned shape without making accuracy claims about FTZ results.
++    a, b = torch.where(normal, a, 1.0).reshape(2048, 32), torch.where(normal, b, 1.0).reshape(2048, 32)
++    expected = (a.double() / b.double()).float()
++    input_a = ttnn.from_torch(a, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    input_b = ttnn.from_torch(b, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    actual = ttnn.to_torch(op(input_a, input_b))
++    assert_with_ulp(expected_result=expected, actual_result=actual, ulp_threshold=1)
++
++
++@pytest.mark.parametrize("op", [ttnn.div_no_nan, ttnn.divide])
++def test_div_fp32_mantissa_refinement(device, op):
++    # Sweep near the reciprocal seed's worst error, varying both mantissas.
++    # With one reciprocal Newton step, a separately rounded residual multiply
++    # on Wormhole fails this at 2 ULP.
++    bits = torch.arange(1 << 18, dtype=torch.int32)
++    a = (((bits * 1664525 + 1013904223) & 0x7FFFFF) | 0x3F800000).view(torch.float32).reshape(8192, 32)
++    b = (bits | 0x3F800000).view(torch.float32).reshape(8192, 32)
++    expected = (a.double() / b.double()).float()
++    input_a = ttnn.from_torch(a, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    input_b = ttnn.from_torch(b, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    actual = ttnn.to_torch(op(input_a, input_b))
++    assert_with_ulp(expected_result=expected, actual_result=actual, ulp_threshold=1)
++
++
++@pytest.mark.parametrize("op", [ttnn.div_no_nan, ttnn.divide])
++def test_div_fp32_exponent_boundaries(device, op):
++    limits = torch.finfo(torch.float32)
++    values = torch.tensor([limits.tiny, 2.0 * limits.tiny, 0.5, 1.0, 2.0, limits.max / 2, limits.max, 2.0**64])
++    a, b = torch.meshgrid(values, values, indexing="ij")
++    a, b = a.flatten().repeat(16).reshape(32, 32), b.flatten().repeat(16).reshape(32, 32)
++    a[::2], b[::3] = -a[::2], -b[::3]
++    expected = (a.double() / b.double()).float()
++    # Subnormal results flush to zero on these architectures.
++    expected = torch.where(expected.abs() < limits.tiny, 0.0, expected)
++    input_a = ttnn.from_torch(a, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    input_b = ttnn.from_torch(b, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    actual = ttnn.to_torch(op(input_a, input_b))
++    assert_with_ulp(expected_result=expected, actual_result=actual, ulp_threshold=1, allow_nonfinite=True)
++
++
++@pytest.mark.parametrize("op", [ttnn.div_no_nan, ttnn.divide])
++def test_div_fp32_special_values(device, op):
++    tiny = torch.finfo(torch.float32).tiny
++    values = torch.tensor(
++        [0.0, -0.0, 1.0, -1.0, 0.5, -0.5, tiny, -tiny, tiny / 2, -tiny / 2, 2.0**-149, -(2.0**-149)]
++        + [float("inf"), -float("inf"), float("nan"), -float("nan")]
++    )
++    a, b = torch.meshgrid(values, values, indexing="ij")
++    a, b = a.flatten().repeat(4).reshape(32, 32), b.flatten().repeat(4).reshape(32, 32)
++    # Subnormal inputs flush to sign-preserving zero. No normal pair here has a subnormal
++    # quotient, whose zero sign differs by architecture; exponent_boundaries covers those.
++    flush = lambda x: torch.where(x.abs() < tiny, torch.copysign(torch.zeros_like(x), x), x)
++    expected = flush(a) / flush(b)
++    if op == ttnn.div_no_nan:
++        # eqz compares exactly, so subnormal divisors keep division's flushed result.
++        expected = torch.where(b == 0, 0.0, expected)
++    # SFPU multiplication produces positive zero for exact zero results.
++    expected = torch.where(expected == 0, 0.0, expected)
++    input_a = ttnn.from_torch(a, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    input_b = ttnn.from_torch(b, dtype=ttnn.float32, layout=ttnn.TILE_LAYOUT, device=device)
++    actual = ttnn.to_torch(op(input_a, input_b))
++    assert torch.equal(torch.isnan(actual), torch.isnan(expected))
++    non_nan = ~torch.isnan(expected)
++    assert torch.equal(actual[non_nan], expected[non_nan])
++    assert torch.equal(torch.signbit(actual[non_nan]), torch.signbit(expected[non_nan]))
++
++
+ @pytest.mark.parametrize("val_a, val_b", [(0.5, 0.0), (-0.5, 0.0), (0.0, 0.0)])
+ @pytest.mark.parametrize("dtype", ["float32", "bfloat16"])
+ @pytest.mark.parametrize("approx", [True, False])
+@@ -637,10 +731,10 @@ def test_div_int32_float_scalar_promotion_nonfinite(device, rounding_mode, scala
+     expected = ttnn.to_torch(ttnn.div(fp32_input, scalar, rounding_mode=rounding_mode))
+     assert result.dtype == ttnn.float32
+     torch.testing.assert_close(ttnn.to_torch(result), expected, rtol=0, atol=0, equal_nan=True)
+-    # Native FP32 division currently returns NaN for infinite divisors. Promotion
+-    # must match that path; fixing its infinity handling is a separate kernel change.
+-    if abs(scalar) != float("inf"):
+-        golden = torch.div(torch_input.float(), scalar, rounding_mode=rounding_mode)
++    golden = torch.div(torch_input.float(), scalar, rounding_mode=rounding_mode)
++    # PyTorch's floor division by infinity differs from flooring the quotient;
++    # the comparison against native FP32 above covers that existing behavior.
++    if abs(scalar) != float("inf") or rounding_mode != "floor":
+         torch.testing.assert_close(ttnn.to_torch(result), golden, rtol=0, atol=0, equal_nan=True)
+ 
+ 
+diff --git a/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h b/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
+index e92664ee12..965debc3e1 100644
+--- a/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
++++ b/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
+@@ -244,30 +244,56 @@ inline void calculate_sfpu_binary_div(
+         sfpi::vFloat in0 = sfpi::dst_reg[dst_index_in0 * dst_tile_size_sfpi];
+         sfpi::vFloat in1 = sfpi::dst_reg[dst_index_in1 * dst_tile_size_sfpi];
+ 
+-        sfpi::vFloat r = sfpu_reciprocal_iter<2>(in1);
+-        sfpi::vFloat result = in0 * r;
++        sfpi::vFloat result;
+         if constexpr (is_fp32_dest_acc_en) {
+-            // Skip quotient refinement when in0*r is already non-finite.
+-            // If in0*r = +/-inf, then the residual e = in0 - (+/-inf)*in1 = -/+inf and
+-            // result + e*r = inf + (-inf) = NaN, which would corrupt IEEE overflow behavior.
+-            v_if(sfpi::is_finite(result)) {
+-                // Residual (Markstein) refinement removes the double-rounding of in0 * round(1/in1).
+-                // The residual subtraction is exact under Sterbenz's lemma.
+-                sfpi::vFloat e = in0 - result * in1;
+-                result = result + e * r;
++            // Refine signed mantissas with magnitudes in [1, 2), so neither the
++            // reciprocal nor the residual underflows, then restore the exponent.
++            sfpi::vFloat ma = sfpi::setexp(in0, 127);
++            sfpi::vFloat mb = sfpi::setexp(in1, 127);
++            // The hardware seed needs one Newton step before quotient refinement.
++            sfpi::vFloat r = sfpu_reciprocal_iter<1, true>(mb);
++            sfpi::vFloat q = ma * r;
++            sfpi::vFloat residual = ma - q * mb;
++            q = q + residual * r;
++
++            sfpi::vInt ea = sfpi::exexp(in0, sfpi::ExponentMode::Biased);
++            // eb is unbiased, which absorbs the bias in exponent below.
++            sfpi::vInt eb = sfpi::exexp(in1);
++            // Split exponent restoration between two factors. Their product
++            // supplies hardware overflow/underflow handling, while power-of-two
++            // scaling is exact for normal results.
++            sfpi::vInt exponent = ea - eb + sfpi::exexp(q, sfpi::ExponentMode::Biased);
++            sfpi::vInt half = sfpi::as<sfpi::vInt>(sfpi::as<sfpi::vUInt>(exponent) >> 1);
++            result = sfpi::setexp(q, half) * sfpi::setexp(sfpi::vFloat(1.0f), exponent - half);
++
++            // For exceptional inputs only the reciprocal's sign and zero/Inf
++            // classification matter. Inverting its exponent gives Inf for zero,
++            // zero for Inf/NaN, and a finite nonzero scale for every normal divisor.
++            // Zero scales would hide NaN divisors, so add an all-ones NaN bit
++            // pattern where |in1| > +Inf in sign-magnitude order, and +0 elsewhere.
++            // Normal inputs have biased exponents in [1, 254], or unbiased exponents
++            // in [-126, 127]; zero/subnormal and Inf/NaN fall outside. Each bound is a
++            // sign test on SFPIADD, and the compares narrow lanes without SFPAND.
++            v_if(!(ea >= 1 && ea < 255 && eb >= -126 && eb < 128)) {
++                sfpi::vFloat scale = sfpi::setman(sfpi::as<sfpi::vFloat>(~sfpi::as<sfpi::vInt>(in1)), 0);
++                sfpi::vFloat nan_divisor = sfpi::vFloat(__builtin_rvtt_sfpgt(
++                    sfpi::setsgn(in1, 0).get(), sfpi::vFloat(std::numeric_limits<float>::infinity()).get(), 8));
++                // Inverting in1 also inverts the scale's sign, so negate the product.
++                result = nan_divisor - in0 * scale;
+             }
+             v_endif;
+-        }
+-
+-        v_if(in1 == 0) {
+-            v_if(in0 == 0) { result = std::numeric_limits<float>::quiet_NaN(); }
+-            v_else {
+-                result = std::numeric_limits<float>::infinity();
+-                result = sfpi::copysgn(result, in0);
++        } else {
++            result = in0 * sfpu_reciprocal_iter<2>(in1);
++            v_if(in1 == 0) {
++                v_if(in0 == 0) { result = std::numeric_limits<float>::quiet_NaN(); }
++                v_else {
++                    result = std::numeric_limits<float>::infinity();
++                    result = sfpi::copysgn(result, in0);
++                }
++                v_endif;
+             }
+             v_endif;
+         }
+-        v_endif;
+ 
+         if constexpr (!is_fp32_dest_acc_en) {
+             // software RNE approach:
+diff --git a/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h b/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
+index 2c58555205..eed4a7eab5 100644
+--- a/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
++++ b/tt_metal/hw/ckernels/blackhole/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
+@@ -18,7 +18,8 @@ namespace ckernel {
+ namespace sfpu {
+ 
+ // Computes the reciprocal of a floating point value x.
+-template <int max_iter = 2>
++// normalized=true requires a finite input with magnitude in [1, 2).
++template <int max_iter = 2, bool normalized = false>
+ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat x) {
+     // sfpi::approx_recip(x) will return ±0 for x = ±inf or x ≥ ±2**126, and ±inf for x = ±0.
+     sfpi::vFloat y = sfpi::approx_recip(x);
+@@ -31,7 +32,14 @@ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat x) {
+         // Equivalently, we could use v_if (t >= 2.0) instead, but SFPI doesn't support SFPLE/SFPGT at the moment.
+         sfpi::vFloat t = x * y - sfpi::vConstFloatPrgm0;
+ 
+-        if constexpr (max_iter > 1) {
++        if constexpr (normalized) {
++            // Normalized operands cannot trigger the exceptional reciprocal cases.
++            y = y * -t - 0.0f;
++            if constexpr (max_iter > 1) {
++                t = x * y - sfpi::vConstFloatPrgm0;
++                y = y * -t - 0.0f;
++            }
++        } else if constexpr (max_iter > 1) {
+             sfpi::vFloat y1 = y * -t - 0.0f;
+             // If t=NaN, then t>=0.  This check consumes the SFPNOP slot of the preceding SFPMAD.
+             v_if(t < 0) {
+diff --git a/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h b/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
+index 139c19ec90..5c8b2419b4 100644
+--- a/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
++++ b/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_binary.h
+@@ -232,30 +232,59 @@ inline void calculate_sfpu_binary_div(
+         sfpi::vFloat in0 = sfpi::dst_reg[dst_index_in0 * dst_tile_size_sfpi];
+         sfpi::vFloat in1 = sfpi::dst_reg[dst_index_in1 * dst_tile_size_sfpi];
+ 
+-        sfpi::vFloat r = sfpu_reciprocal_iter<2>(in1);
+-        sfpi::vFloat result = in0 * r;
++        sfpi::vFloat result;
+         if constexpr (is_fp32_dest_acc_en) {
+-            // Skip quotient refinement when in0*r is already non-finite.
+-            // If in0*r = +/-inf, then the residual e = in0 - (+/-inf)*in1 = -/+inf and
+-            // result + e*r = inf + (-inf) = NaN, which would corrupt IEEE overflow behavior.
+-            v_if(sfpi::is_finite(result)) {
+-                // Residual (Markstein) refinement removes the double-rounding of in0 * round(1/in1).
+-                // The residual subtraction is exact under Sterbenz's lemma.
+-                sfpi::vFloat e = in0 - result * in1;
+-                result = result + e * r;
++            // Refine signed mantissas with magnitudes in [1, 2), so neither the
++            // reciprocal nor the residual underflows, then restore the exponent.
++            sfpi::vFloat ma = sfpi::setexp(in0, 127);
++            sfpi::vFloat mb = sfpi::setexp(in1, 127);
++            // One Newton step suffices when the residual uses a single multiply-add.
++            sfpi::vFloat r = sfpu_reciprocal_iter<1, true>(mb);
++            sfpi::vFloat q = ma * r;
++            // Wormhole SFPMAD has no subtract modifier: negate an operand first.
++            sfpi::vFloat residual = ma + q * (-mb);
++            q = q + residual * r;
++
++            sfpi::vInt ea = sfpi::exexp(in0, sfpi::ExponentMode::Biased);
++            // eb is unbiased, which absorbs the bias in exponent below.
++            sfpi::vInt eb = sfpi::exexp(in1);
++            // Split exponent restoration between two factors. Their product
++            // supplies hardware overflow/underflow handling, while power-of-two
++            // scaling is exact for normal results.
++            sfpi::vInt exponent = ea - eb + sfpi::exexp(q, sfpi::ExponentMode::Biased);
++            sfpi::vInt half = sfpi::as<sfpi::vInt>(sfpi::as<sfpi::vUInt>(exponent) >> 1);
++            result = sfpi::setexp(q, half) * sfpi::setexp(sfpi::vFloat(1.0f), exponent - half);
++
++            // For exceptional inputs only the reciprocal's sign and zero/Inf
++            // classification matter. Inverting its exponent gives Inf for zero,
++            // zero for Inf/NaN, and a finite nonzero scale for every normal divisor.
++            // XOR inverts the exponent but keeps the divisor's sign, avoiding a copysgn.
++            // Normal inputs have biased exponents in [1, 254], or unbiased exponents
++            // in [-126, 127]; zero/subnormal and Inf/NaN fall outside. Each bound is a
++            // sign test on SFPIADD, and the compares narrow lanes without SFPAND.
++            v_if(!(ea >= 1 && ea < 255 && eb >= -126 && eb < 128)) {
++                sfpi::vInt inf_bits = 0x7f800000;
++                // Clear the mantissa first so XOR can reuse the scale register.
++                sfpi::vInt scale_bits = sfpi::as<sfpi::vInt>(sfpi::setman(in1, 0));
++                sfpi::vFloat scale = sfpi::as<sfpi::vFloat>(scale_bits ^ inf_bits);
++                result = in0 * scale;
++                // The zero scale would hide NaN divisors, so propagate them.
++                v_and(sfpi::as<sfpi::vInt>(sfpi::setsgn(in1, 0)) > inf_bits);
++                result = in1;
+             }
+             v_endif;
+-        }
+-
+-        v_if(in1 == 0) {
+-            v_if(in0 == 0) { result = std::numeric_limits<float>::quiet_NaN(); }
+-            v_else {
+-                result = std::numeric_limits<float>::infinity();
+-                result = sfpi::copysgn(result, in0);
++        } else {
++            result = in0 * sfpu_reciprocal_iter<2>(in1);
++            v_if(in1 == 0) {
++                v_if(in0 == 0) { result = std::numeric_limits<float>::quiet_NaN(); }
++                v_else {
++                    result = std::numeric_limits<float>::infinity();
++                    result = sfpi::copysgn(result, in0);
++                }
++                v_endif;
+             }
+             v_endif;
+         }
+-        v_endif;
+ 
+         if constexpr (!is_fp32_dest_acc_en) {
+             // software RNE approach:
+diff --git a/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h b/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
+index 8a553873c5..8f96589a98 100644
+--- a/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
++++ b/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_recip.h
+@@ -20,14 +20,21 @@ namespace sfpu {
+ // max_iter = 1: sufficient for bfloat16/float16 precision (≤0.5 ulps).
+ // max_iter = 0: this has the same effect as max_iter=1 at the moment;
+ //               it may be replaced with a cheaper approximation in future.
+-template <int max_iter = 2>
++// normalized=true requires a finite input with magnitude in [1, 2).
++template <int max_iter = 2, bool normalized = false>
+ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat in) {
+     // Combines the sign and exponent of -1.0 with the mantissa of `in`.
+     // Scale the input value to the range [1.0, 2.0), and make it negative.
+     // If in ≠ ±0 and in ≠ ±inf, then x = in * 2**(127-in.Exp).
+     // If in = ±0 or in = ±inf, then x = ±1.
+     // Then negative_x = -x.
+-    sfpi::vFloat negative_x = sfpi::copyman(-1.0f, in);
++    sfpi::vFloat negative_x;
++    if constexpr (normalized) {
++        // The exponent is already 127; only the sign needs changing.
++        negative_x = sfpi::setsgn(in, 1);
++    } else {
++        negative_x = sfpi::copyman(-1.0f, in);
++    }
+ 
+     // Quadratic initial estimate: y = k2 - k1*x + k0*x**2.
+     sfpi::vFloat y = sfpi::vConstFloatPrgm1 + sfpi::vConstFloatPrgm0 * negative_x;
+@@ -42,13 +49,19 @@ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat in) {
+     // Not only is 255-in.Exp more efficient via SFPNOT, but it also ensures
+     // that in.Exp == 0 results in ±inf, and in.Exp == 255 results in ±0.
+     // See the scale factor adjustment via scale*0.5 below for further details.
+-    sfpi::vUInt scale_bits = ~sfpi::as<sfpi::vUInt>(in);
++    sfpi::vUInt scale_bits;
++    if constexpr (!normalized) {
++        scale_bits = ~sfpi::as<sfpi::vUInt>(in);
++    }
+ 
+     // Continue with quadratic estimate.
+     y = sfpi::vConstFloatPrgm2 + y * negative_x;
+ 
+     // Scale factor: set mantissa to zero.
+-    sfpi::vFloat scale = sfpi::setman(sfpi::as<sfpi::vFloat>(scale_bits), 0);
++    sfpi::vFloat scale;
++    if constexpr (!normalized) {
++        scale = sfpi::setman(sfpi::as<sfpi::vFloat>(scale_bits), 0);
++    }
+ 
+     // First iteration of Newton-Raphson: t = 1.0 - x*y.
+     sfpi::vFloat t = 1.0f + negative_x * y;
+@@ -57,7 +70,9 @@ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat in) {
+     // If scale = ±inf, then scale*0.5 = ±inf and scale.Exp=255.
+     // If scale = ±0, then scale*0.5 = 0 and scale.Exp=0.
+     // Otherwise, scale.Exp = scale.Exp-1 = 255-in.Exp-1 = 254-in.Exp.
+-    scale *= 0.5f;
++    if constexpr (!normalized) {
++        scale *= 0.5f;
++    }
+ 
+     // Continue Newton-Raphson: y = y + y*t.
+     y = y + y * t;
+@@ -69,7 +84,9 @@ sfpi_inline sfpi::vFloat sfpu_reciprocal_iter(const sfpi::vFloat in) {
+     }
+ 
+     // Apply scaling factor, and set sign to match input.
+-    y = y * scale;
++    if constexpr (!normalized) {
++        y = y * scale;
++    }
+     y = sfpi::copysgn(y, in);
+ 
+     return y;
+diff --git a/ttnn/cpp/ttnn/operations/eltwise/binary/device/binary_composite_op.cpp b/ttnn/cpp/ttnn/operations/eltwise/binary/device/binary_composite_op.cpp
+index 365a98279d..6aae4e1f83 100644
+--- a/ttnn/cpp/ttnn/operations/eltwise/binary/device/binary_composite_op.cpp
++++ b/ttnn/cpp/ttnn/operations/eltwise/binary/device/binary_composite_op.cpp
+@@ -647,11 +647,6 @@ Tensor div_no_nan(
+ }
+ 
+ Tensor div_no_nan(const Tensor& input_a, const Tensor& input_b, const std::optional<MemoryConfig>& output_mem_config) {
+-    if (input_a.dtype() == DataType::FLOAT32 && input_b.dtype() == DataType::FLOAT32) {
+-        // Not using SFPU div op here since inf/nan handling is not required
+-        Tensor div_result = ttnn::multiply(input_a, ttnn::reciprocal(input_b), std::nullopt, output_mem_config);
+-        return ttnn::where(ttnn::eqz(input_b, output_mem_config), 0.0f, div_result);
+-    }
+     Tensor div_result = ttnn::divide(input_a, input_b, std::nullopt, output_mem_config);
+     return ttnn::where(ttnn::eqz(input_b, output_mem_config), 0.0f, div_result);
+ }
