@@ -1,0 +1,16 @@
+{
+  "transaction_id": "RED-1605-OSME",
+  "issue_reference": "#1605",
+  "status": "PENDING_PAYMENT",
+  "details": {
+    "username": "osme-sosirius-ship-it",
+    "amount": 72000,
+    "currency": "PLATFORM_TOKEN",
+    "recipient_address": "osmesirius@gmail.com",
+    "timestamp": "2023-10-27T10:00:00Z"
+  },
+  "audit": {
+    "processed_by": "Genesis-0",
+    "verification_source": "GitHub Issue [Redeem] daxda bounty 1605"
+  }
+}
