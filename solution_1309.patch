@@ -1,0 +1,12 @@
+diff --git a/scripts/commands/inspect.ts b/scripts/commands/inspect.ts
+--- a/scripts/commands/inspect.ts
++++ b/scripts/commands/inspect.ts
+@@ -23,7 +23,7 @@ import { CustomCommand } from '@minecraft/server';
+ export default function registerInspectCommand() {
+-    CustomCommandRegistry.registerCommand('/engine:inspect', new CustomCommand({
++    CustomCommandRegistry.registerCommand('/engine:inspect', new CustomCommand('/engine:inspect', {
+         run(command, sender) {
+             // Command logic here
+         }
+     }));
+ }
