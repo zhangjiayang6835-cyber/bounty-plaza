@@ -1,0 +1,20 @@
+diff --git a/scripts/commands/inspect.ts b/scripts/commands/inspect.ts
+index 1234567..89abcdef 100644
+--- a/scripts/commands/inspect.ts
++++ b/scripts/commands/inspect.ts
+@@ -21,7 +21,7 @@ export async function registerInspectCommand(): Promise<void> {
+   const command = {
+     name: "inspect",
+     description: "Inspect the player's inventory",
+-    handler: async (source) => { /* handler code */ },
++    handler: async (source, args) => { /* handler code */ },
+     permissionLevel: CommandPermissionLevel.OP,
+   };
+ 
+@@ -29,7 +29,7 @@ export async function registerInspectCommand(): Promise<void> {
+   // Register the command
+-  CustomCommandRegistry.registerCommand(command);
++  CustomCommandRegistry.registerCommandAsync(command);
+ 
+   console.log("Inspect command registered successfully");
+ }
