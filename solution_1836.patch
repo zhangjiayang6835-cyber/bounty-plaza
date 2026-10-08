@@ -1,0 +1,12 @@
+diff --git a/ttnn/sampling.py b/ttnn/sampling.py
+--- a/ttnn/sampling.py
++++ b/ttnn/sampling.py
+@@ -45,7 +45,7 @@ def sample(tokens, logits, temperature=1.0):
+     # Convert logits to probabilities
+     probabilities = torch.nn.functional.softmax(logits / temperature, dim=-1)
+ 
+-    # Generate random threshold in bfloat16
++    # Generate random threshold in float32
+     random_threshold = torch.empty_like(probabilities[0], dtype=torch.float32).uniform_()
+ 
+     # Scale the threshold to the range of the probabilities
