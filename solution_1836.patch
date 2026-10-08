@@ -1,0 +1,12 @@
+diff --git a/ttnn/sampling.py b/ttnn/sampling.py
+--- a/ttnn/sampling.py
++++ b/ttnn/sampling.py
+@@ -30,7 +30,7 @@ def sample_from_distribution(probs, num_samples):
+     # Convert probs to bfloat16 for efficiency and precision
+     probs_bf16 = probs.to(torch.bfloat16)
+ 
+-    # Generate random threshold with bfloat16 resolution
++    # Generate random threshold with full FP32 resolution
+     random_threshold = torch.empty(probs_bf16.size(), dtype=torch.bfloat16, device=probs_bf16.device).uniform_(0, 1)
+ 
+     # Compare and sample tokens
