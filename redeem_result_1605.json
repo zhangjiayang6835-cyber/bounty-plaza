@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "redeem_id": 1605,
+  "username": "osmesirius-ship-it",
+  "amount": 72000,
+  "coin_value": 51840.0,
+  "address": "bc1qqg3ahwhrtskau4k2nlg6hwa938ret2783uu0zs",
+  "status": "pending",
+  "note": "GitHub Issue #1605"
+}
