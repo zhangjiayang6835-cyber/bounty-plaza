@@ -1,87 +1,32 @@
-🌐 [English](REWARD_POLICY.en.md) | [中文](REWARD_POLICY.md)
+# Bounty Reward Policy
 
-# 💰 代币兑换规则
+## Exchange Rules
 
-> 你完成赏金任务赚取积分币，积分币可兑换为现金。
-> 下面是你能拿到多少钱的计算方式。
+1. **Claiming a Bounty**  
+   Comment `/claim` on the issue to lock the task for 24 hours. If no one else has claimed it within that window, your claim expires and the bounty becomes available again.
 
----
+2. **Submitting a PR**  
+   - The PR must address the issue description directly.
+   - All tests must pass.
+   - Code must follow the project's style guidelines.
 
-## 快速换算表
+3. **Reward Distribution**  
+   - **Coin Reward:** Awarded upon successful merge, as specified in the bounty listing.
+   - **Real Reward (USD):** Processed by the bounty sponsor according to their discretion.
 
-| 赏金金额 | 你能拿到的现金 |
-|----------|:-------------:|
-| $30 | **≈ $25.65** |
-| $50 | **≈ $44.40** |
-| $100 | **≈ $82.80** |
-| $200 | **≈ $165.60** |
-| $500 | **≈ $405.00** |
-| $1000 | **≈ $783.00** |
-| $2000 | **≈ $1,530.00** |
+4. **Dispute Resolution**  
+   If a bounty submitter believes a merged PR does not satisfy the requirements, they may open a dispute issue within 7 days of merge.
 
----
+5. **Fraud Prevention**  
+   - Duplicate or low-effort submissions (e.g., whitespace changes, documentation typos on high-difficulty bounties) may be rejected.
+   - Bounties marked as joke/troll issues are not eligible for rewards.
 
-## 计算公式
+6. **Wallet Address**  
+   All reward payments are sent to:  
+   `0x96eE7904BdCd8a82c71B4FFc3362C96b1Aae03e0` (Base / EVM)
 
-```
-你的现金 = 赏金(USD) × 1.25 × R × 0.72
-```
+## Terms
 
-### R 值取决于赏金金额
-
-| 赏金区间 | R（你的分成） |
-|----------|:-----------:|
-| $25 - $50 | **95%** |
-| $50 - $200 | **92%** |
-| $200 - $500 | **90%** |
-| $500 - $1000 | **87%** |
-| $1000+ | **85%** |
-
-### 简化速算
-
-| 赏金 | 你拿到 |
-|:----:|:------:|
-| $30 | **≈ $25.65** |
-| $100 | **≈ $82.80** |
-| $350 | **≈ $283.50** |
-| $750 | **≈ $587.25** |
-| $2000 | **≈ $1,530.00** |
-
-### 一步到位
-
-| 赏金区间 | 你实际能拿到 **赏金的** |
-|----------|:--------------------:|
-| $25-$50 | **≈ 85.5%** |
-| $50-$200 | **≈ 82.8%** |
-| $200-$500 | **≈ 81.0%** |
-| $500-$1000 | **≈ 78.3%** |
-| $1000+ | **≈ 76.5%** |
-
----
-
-## 参数说明
-
-| 参数 | 数值 | 含义 |
-|------|:----:|------|
-| 标价汇率 | **1 USD = 1.25 积分** | 赏金进来按此换算成积分标价 |
-| 平台扣点 | **10%** | 平台从你应得中扣除的服务费 |
-| 兑换汇率 | **1 积分 = 0.72 USD** | 积分兑换现金的固定汇率 |
-
-> 0.72 是由 (1 - 10%) ÷ 1.25 推导得出，固定不变。
-
----
-
-## 完整流程示例
-
-以 $100 赏金任务为例：
-
-```
-① 任务标价 100 × 1.25 = 125 积分
-② 你完成修复，评分达标 → 获胜
-③ 你获得 125 × 92% = 115 积分
-④ 提现：115 × 0.72 = $82.80 到你的账户
-```
-
----
-
-> 有疑问？在 Issue 中评论或联系管理员。
+- By claiming a bounty, you agree to these terms.
+- Rewards are final upon distribution.
+- The platform is not responsible for sponsor payment failures.
