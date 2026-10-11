@@ -1,5 +1,8 @@
-data/coins.db.bak
-data/coin*.db.bak
-*.pyc
-__pycache__/
+node_modules/
+dist/
 .env
+.env.local
+*.log
+.DS_Store
+coverage/
+.next/
