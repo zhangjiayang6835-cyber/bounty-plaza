@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """hunt_bounties.py — 自动搜索 GitHub 真实赏金任务并发布到 bounty-plaza"""
 
-import json, os, re, sys, urllib.request
+import json, os, re, sys, urllib.request, urllib.parse
 from datetime import datetime, timezone
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
@@ -40,7 +40,7 @@ def search_github():
     """搜索最近 30 天的 bounty Issue"""
     since = (datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     q = f"{SEARCH_QUERY} created:>2026-05-20"
-    url = f"https://api.github.com/search/issues?q={urllib.request.quote(q)}&sort=created&order=desc&per_page=50"
+    url = f"https://api.github.com/search/issues?q={urllib.parse.quote(q)}&sort=created&order=desc&per_page=50"
     req = urllib.request.Request(url, headers={"Authorization": f"token {GH_TOKEN}"})
     data = json.loads(urllib.request.urlopen(req).read())
     return data.get("items", [])
