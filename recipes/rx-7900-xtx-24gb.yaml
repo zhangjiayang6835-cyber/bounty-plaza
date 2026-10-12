@@ -1,0 +1,22 @@
+name: rx-7900-xtx-24gb
+description: Optimized recipe for AMD Radeon RX 7900 XTX 24GB
+hardware:
+  gpu: rx-7900-xtx-24gb
+  vram: 24gb
+  backend: llama.cpp
+parameters:
+  n_gpu_layers: 80
+  n_ctx: 131072
+  rope_freq_base: 1000000
+  threads: 12
+  flash_attn: true
+  quantization: Q4_K_M
+performance_target:
+  tokens_per_second: 15
+  context_window: 128k
+checks:
+  - loads
+  - answers
+  - thinks
+  - tool_calls
+  - recall_full_window
