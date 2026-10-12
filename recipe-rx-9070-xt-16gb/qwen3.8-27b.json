@@ -1,0 +1,29 @@
+{
+  "name": "qwen3.8-27b",
+  "card": "rx-9070-xt-16gb",
+  "model_id": "Qwen/Qwen3.8-27B",
+  "quantization": "IQ3_S",
+  "context_length": 131072,
+  "engine": "llama.cpp",
+  "profile": "amd-16gb-27b",
+  "tests": {
+    "load": true,
+    "answer": true,
+    "think": true,
+    "tool_call": true,
+    "recall": true,
+    "speed_tok_per_sec": 15
+  },
+  "commands": {
+    "serve": "llama-server -m ./Qwen3.8-27B-IQ3_S.gguf -c 131072 -ngl 99 --host 0.0.0.0 --port 8080",
+    "test_load": "curl -s http://localhost:8080/health",
+    "test_answer": "curl -s -X POST http://localhost:8080/completions -H 'Content-Type: application/json' -d '{\"prompt\": \"What is the capital of France?\", \"n_predict\": 50}'",
+    "test_think": "curl -s -X POST http://localhost:8080/completions -H 'Content-Type: application/json' -d '{\"prompt\": \"Solve this step by step: If a train travels 60km in 1 hour, how far does it travel in 2.5 hours?\", \"n_predict\": 200}'",
+    "test_tool": "curl -s -X POST http://localhost:8080/completions -H 'Content-Type: application/json' -d '{\"prompt\": \"Call the weather function for London with temperature unit celsius\", \"n_predict\": 100}'",
+    "test_recall": "curl -s -X POST http://localhost:8080/completions -H 'Content-Type: application/json' -d '{\"prompt\": \"<|begin_of_text|>\" + \"Once upon a time there was a very long story... \" * 500 + \"What was the main character's name?\", \"n_predict\": 50}'"
+  },
+  "memory_mb": 14500,
+  "gpu_layers": 99,
+  "threads": 8,
+  "notes": "Optimized for RX 9070 XT 16GB / RX 7600 XT 16GB / RX 6800 XT 16GB with Qwen3.8-27B IQ3_S quantization supporting 128K context"
+}
