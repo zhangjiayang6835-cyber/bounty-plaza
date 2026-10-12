@@ -1,0 +1,11 @@
+{
+  "name": "Intel Arc B580 12GB",
+  "vendor": "intel",
+  "match": "Intel(R) Arc(TM) B580 Graphics",
+  "vram_gb": 12,
+  "capabilities": {
+    "fp16": true,
+    "bf16": true,
+    "int8": true
+  }
+}
