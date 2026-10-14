@@ -1,0 +1,3 @@
+{"timestamp": "2026-06-19T04:15:22.105Z", "level": "INFO", "service": "payment-gateway", "message": "Captured authorized charge", "tx_id": "tx_994812", "amount_cents": 2500, "currency": "USD"}
+{"timestamp": "2026-06-19T04:15:23.882Z", "level": "WARN", "service": "risk-engine", "message": "Velocity score elevated for merchant", "merchant_id": "m_441", "score": 0.84}
+{"timestamp": "2026-06-19T04:15:25.001Z", "level": "ERROR", "service": "settlement-worker", "message": "Failed RPC timeout to Base node", "error_code": "ETIMEDOUT", "retry_count": 3}
