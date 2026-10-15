@@ -10,16 +10,16 @@ bounty-plaza 自助兑换系统 Web 服务
 浏览器打开 http://localhost:8080/docs 查看 API 文档
 """
 
-import sys
 import os
+import sys
 
 # 确保能找到 coin.py（上一级 scripts/ 目录）
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 
+import coin  # 直接导入 coin.py 的模块
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import coin  # 直接导入 coin.py 的模块
 
 app = FastAPI(
     title="Bounty Plaza - 自助兑换系统",

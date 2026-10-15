@@ -24,7 +24,7 @@ import tempfile
 import urllib.request
 
 
-def api(method: str, path: str, data: dict = None) -> dict:
+def api(method: str, path: str, data: dict | None = None) -> dict:
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
     if not token:
         print("FATAL: 设置 GH_TOKEN 环境变量", file=sys.stderr)
@@ -97,7 +97,7 @@ def apply_and_pr(fork: str, upstream: str, branch: str, code_file: str, message:
         "title": message,
         "head": f"{fork.split('/')[0]}:{branch}",
         "base": "main",
-        "body": f"🤖 由 bounty-plaza 自动提交\n\n此修复由 bounty-plaza 贡献者完成，已通过自动评分（≥90 分）。",
+        "body": "🤖 由 bounty-plaza 自动提交\n\n此修复由 bounty-plaza 贡献者完成，已通过自动评分（≥90 分）。",
     })
     print(f"  PR 已创建: {pr.get('html_url', '?')}")
     return pr.get("number")
@@ -113,22 +113,22 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="仅打印将执行的操作")
     args = parser.parse_args()
 
-    print(f"🚀 自动代提交流程")
+    print("🚀 自动代提交流程")
     print(f"   上游: {args.upstream}")
     print(f"   代码: {args.code}")
 
     if args.dry_run:
-        print(f"   将执行:")
+        print("   将执行:")
         print(f"     1. fork {args.upstream}")
         print(f"     2. 创建分支 {args.branch}")
         print(f"     3. 应用代码到 {args.target}")
-        print(f"     4. push + 提 PR")
+        print("     4. push + 提 PR")
         return 0
 
     fork = ensure_fork(args.upstream)
     apply_and_pr(fork, args.upstream, args.branch, args.code, args.message, args.target)
 
-    print(f"✅ 完成")
+    print("✅ 完成")
     return 0
 
 

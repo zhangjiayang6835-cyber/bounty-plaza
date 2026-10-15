@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """hunt_bounties.py — 自动搜索 GitHub 真实赏金任务并发布到 bounty-plaza"""
 
-import json, os, re, sys, urllib.request
-from datetime import datetime, timezone
+import json
+import os
+import re
+import sys
+import urllib.request
+from datetime import UTC, datetime
 
 GH_TOKEN = os.environ.get("GH_TOKEN", "")
 REPO = "zhangjiayang6835-cyber/bounty-plaza"
@@ -11,7 +15,7 @@ SEARCH_QUERY = "label:bounty state:open is:issue sort:created -user:zhangjiayang
 # 真实货币正则
 REAL_MONEY = re.compile(r"""\$\s?[\d,]+(?:\.\d{1,2})?|
     \d+[\s,]*(?:USDT|USDC|DAI|ETH|BTC|USD|BUSD)|
-    bounty\s*(?::|of)?\s*\$\s*\d+""", re.I | re.X)
+    bounty\s*(?::|of)?\s*\$\s*\d+""", re.IGNORECASE | re.VERBOSE)
 
 def extract_amounts(text):
     """从文本中提取所有符合条件的最低金额"""
@@ -21,12 +25,12 @@ def extract_amounts(text):
             amounts.append(int(m.group(1).replace(',', '')))
         except ValueError:
             pass
-    for m in re.finditer(r'(\d+)\s*(USDT|USDC|DAI|ETH|BTC|USD|BUSD)', text, re.I):
+    for m in re.finditer(r'(\d+)\s*(USDT|USDC|DAI|ETH|BTC|USD|BUSD)', text, re.IGNORECASE):
         try:
             amounts.append(int(m.group(1)))
         except ValueError:
             pass
-    for m in re.finditer(r'bounty\s*(?::|of)?\s*\$\s*(\d[\d,]*)', text, re.I):
+    for m in re.finditer(r'bounty\s*(?::|of)?\s*\$\s*(\d[\d,]*)', text, re.IGNORECASE):
         try:
             amounts.append(int(m.group(1).replace(',', '')))
         except ValueError:
@@ -34,11 +38,11 @@ def extract_amounts(text):
     return amounts
 
 # 虚拟代币关键词 — 匹配标题+正文后 150 字内无真实金额则排除
-VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|badge|achievement", re.I)
+VIRTUAL_KEYWORDS = re.compile(r"token|point|credit|xp\b|reputation|rank|level\b|badge|achievement", re.IGNORECASE)
 
 def search_github():
     """搜索最近 30 天的 bounty Issue"""
-    since = (datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    (datetime.now(UTC).strftime("%Y-%m-%d"))
     q = f"{SEARCH_QUERY} created:>2026-05-20"
     url = f"https://api.github.com/search/issues?q={urllib.request.quote(q)}&sort=created&order=desc&per_page=50"
     req = urllib.request.Request(url, headers={"Authorization": f"token {GH_TOKEN}"})
@@ -67,7 +71,7 @@ def get_existing_sources():
     sources = set()
     for issue in data:
         body = issue.get("body", "")
-        m = re.search(r"(?:原始链接|source.?url)[:\s]+(https?://[^\s\n]+)", body, re.I)
+        m = re.search(r"(?:原始链接|source.?url)[:\s]+(https?://[^\s\n]+)", body, re.IGNORECASE)
         if m:
             sources.add(m.group(1).rstrip("/"))
     return sources

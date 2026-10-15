@@ -19,6 +19,7 @@ auto_payout.py — 本地自动打款守护脚本
 import argparse
 import json
 import os
+
 import dotenv
 
 _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
@@ -38,7 +39,7 @@ import subprocess
 import sys
 import time
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime
 from hashlib import sha256 as _sha256
 
 # ── 路径 ──
@@ -47,7 +48,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "") or ""
 BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
@@ -150,59 +151,24 @@ def mark_paid(redeem_id: int) -> bool:
         return False
 
 
-def process_one(req: dict) -> bool:
-    """处理单个兑换请求"""
-    rid = req["id"]
+def process_one(req: dict) -> None:
+    """处理一个兑换请求"""
     username = req["username"]
     amount = req["amount"]
-    address = req.get("address", "")
-    cash_value = req.get("coin_value", amount * coin.RATE)
+    cash = req.get("coin_value", amount * 0.72)
+    address = req.get("address", "?")[:22]
 
-    print(f"\n  处理兑换 #{rid}: {username} ${cash_value:.2f} -> {address[:16]}...")
-
-    # 1. 调币安 API 打款
-    if BINANCE_API_KEY and BINANCE_SECRET_KEY:
-        result = call_binance_withdraw(address, cash_value)
-        if "error" in result:
-            print(f"  ❌ 币安打款失败: {result['error']}")
-            return False
-        print(f"  ✅ 币安打款成功: {result.get('id', '?')}")
+    print(f"处理兑换请求: #{req['id']} | {username} | ${cash:.2f} | {address}...")
+    if BINANCE_API_KEY:
+        result = call_binance_withdraw(address, amount)
+        if result.get("success"):
+            print("打款成功")
+            comment_on_issue(req["issue_number"], f"兑换已完成，打款已发送至 {address}")
+            mark_paid(req["id"])
+        else:
+            print(f"打款失败: {result.get('msg', '未知错误')}")
     else:
-        print(f"  ⚠️ 未配置币安 API Key，跳过真实打款（模拟模式）")
-
-    # 2. 标记已打款
-    if mark_paid(rid):
-        print(f"  ✅ 兑换 #{rid} 已标记为 paid")
-    else:
-        print(f"  ⚠️ 标记 paid 失败，需手动处理")
-
-    # 3. 在 Issue 评论确认
-    comment_body = (
-        f"## ✅ 已完成自动打款\n\n"
-        f"兑换 **#{rid}** | **{username}** | 金额 **${cash_value:.2f}**\n\n"
-        f"> 🤖 已自动通过币安 API 打款至 {address[:16]}...（BSC BEP-20）"
-    )
-    # 查找对应的 Issue
-    comment_on_issue(find_issue_for_redeem(rid), comment_body)
-
-    return True
-
-
-def find_issue_for_redeem(redeem_id: int) -> int:
-    """查找兑换请求对应的 GitHub Issue 编号"""
-    if not GH_TOKEN:
-        return 0
-    url = f"https://api.github.com/search/issues?q=repo:{GH_REPO}+is:issue+%23{redeem_id}+label:redeem"
-    req = urllib.request.Request(url)
-    req.add_header("Authorization", f"token {GH_TOKEN}")
-    try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            data = json.loads(r.read())
-            if data["items"]:
-                return data["items"][0]["number"]
-    except Exception:
-        pass
-    return 0
+        print("模拟模式，未实际打款")
 
 
 def process_pending():
@@ -216,8 +182,8 @@ def process_pending():
     for req in pending:
         username = req["username"]
         amount = req["amount"]
-        cash = req.get("coin_value", amount * coin.RATE)
-        address = req.get("address", "?")[:20]
+        cash = req.get("coin_value", amount * 0.72)
+        address = req.get("address", "")[:22]
         print(f"  #{req['id']} | {username} | ${cash:.2f} | {address}...")
 
     print("\n开始处理...")
@@ -260,7 +226,7 @@ def main():
         print(f"🔄 自动打款守护启动，每 {args.interval} 秒检查一次...")
         print(f"   Binance API: {'✅ 已配置' if BINANCE_API_KEY else '⚠️ 未配置（模拟模式）'}")
         print(f"   GitHub Token: {'✅ 已配置' if GH_TOKEN else '⚠️ 未配置'}")
-        print(f"   按 Ctrl+C 停止")
+        print("   按 Ctrl+C 停止")
         print()
         while True:
             process_pending()

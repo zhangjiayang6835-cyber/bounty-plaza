@@ -14,6 +14,7 @@ import argparse
 import os
 import sqlite3
 import sys
+from datetime import UTC
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(HERE)
@@ -74,7 +75,7 @@ def get_current_version(conn) -> int:
         return 0
 
 
-def run_migrations(conn, target: int = None):
+def run_migrations(conn, target: int | None = None):
     current = get_current_version(conn)
     if target is None:
         target = len(MIGRATIONS)
@@ -83,10 +84,10 @@ def run_migrations(conn, target: int = None):
         version = i + 1
         print(f"  Applying migration v{version}...")
         conn.executescript(MIGRATIONS[i])
-        from datetime import datetime, timezone
+        from datetime import datetime
         conn.execute(
             "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
-            (version, datetime.now(timezone.utc).isoformat()),
+            (version, datetime.now(UTC).isoformat()),
         )
         conn.commit()
         print(f"  ✅ v{version} applied")

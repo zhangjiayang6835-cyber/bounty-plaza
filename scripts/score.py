@@ -25,13 +25,11 @@ import argparse
 import ast
 import json
 import os
+import re
 import subprocess
 import sys
-import re
-import tempfile
 import time
 from pathlib import Path
-
 
 # ── 评分配置 ─────────────────────────────────────────────────────
 
@@ -111,7 +109,7 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
         return violations
     for f in Path(test_dir).glob("test_*.py"):
         content = f.read_text()
-        current_hash = __import__("hashlib").md5(content.encode()).hexdigest()[:16]
+        __import__("hashlib").md5(content.encode()).hexdigest()[:16]
         # 简单校验：文件行数
         with open(f) as fh:
             lines = len(fh.readlines())
@@ -175,7 +173,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     """性能评分，执行时间对比基线"""
     try:
         start = time.time()
-        result = subprocess.run(
+        subprocess.run(
             ["python", "-c", code],
             capture_output=True, text=True, timeout=30
         )
@@ -192,7 +190,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
 
 # ── 主流程 ────────────────────────────────────────────────────────
 
-def evaluate(code_file: str, test_dir: str = None) -> dict:
+def evaluate(code_file: str, test_dir: str | None = None) -> dict:
     """完整评测流程，返回评分结果"""
     # 防路径遍历
     real_path = os.path.realpath(code_file)
@@ -205,7 +203,6 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
         code = f.read(10_000_000)  # 限制 10MB
 
     # 使用内存中的代码进行分析和执行，避免文件被替换
-    code_file_in_mem = real_path
 
     result = {
         "score": 0,

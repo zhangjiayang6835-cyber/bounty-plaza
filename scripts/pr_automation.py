@@ -8,6 +8,7 @@ import json
 import os
 import re
 from datetime import datetime
+
 from github import Github
 from github.GithubException import GithubException
 
@@ -128,8 +129,8 @@ def auto_close_duplicates(repo, dry_run=True):
                     processed += 1
                     
             except GithubException as e:
-                errors.append(f"#{dup_pr_num}: {str(e)}")
-                print(f"      ❌ #{dup_pr_num} - 错误: {str(e)}")
+                errors.append(f"#{dup_pr_num}: {e!s}")
+                print(f"      ❌ #{dup_pr_num} - 错误: {e!s}")
         
         print()
     
@@ -268,7 +269,7 @@ def batch_label_prs(repo, limit=None, dry_run=True):
                     print(f"   已标记: {labeled_count} PR")
                     
             except GithubException as e:
-                errors.append(f"#{pr.number}: {str(e)}")
+                errors.append(f"#{pr.number}: {e!s}")
                 skipped_count += 1
     
     if dry_run and pulls.totalCount > 10:
@@ -355,7 +356,7 @@ def main():
         print(f"   开放PR数: {repo.open_issues_count}")
         
     except GithubException as e:
-        print(f"❌ 连接失败: {str(e)}")
+        print(f"❌ 连接失败: {e!s}")
         return
     
     # DRY-RUN 模式
@@ -413,7 +414,7 @@ def main():
         json.dump(report, f, indent=2, ensure_ascii=False)
     
     print("\n" + "=" * 60)
-    print(f"✅ 处理完成!")
+    print("✅ 处理完成!")
     print(f"   • 已关闭重复PR: {dup_results['processed']}")
     print(f"   • 已标记PR: {label_results['labeled']}")
     print(f"   • 优先级报告: {output_file}")

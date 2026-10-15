@@ -16,11 +16,9 @@
 
 import argparse
 import hashlib
-import json
 import os
 import sqlite3
 import sys
-from datetime import datetime, timezone
 
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 DB_PATH = os.path.join(DB_DIR, "coins.db")
@@ -87,7 +85,7 @@ def init_db():
 
 
 def compute_hash(row: dict) -> str:
-    raw = f"{str(row.get('prev_hash') or '')}|{str(row.get('tx_type') or '')}|{str(row.get('from_user') or '')}|{str(row.get('to_user') or '')}|{row.get('amount',0)}|{str(row.get('reason') or '')}"
+    raw = f"{row.get('prev_hash') or ''!s}|{row.get('tx_type') or ''!s}|{row.get('from_user') or ''!s}|{row.get('to_user') or ''!s}|{row.get('amount',0)}|{row.get('reason') or ''!s}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
@@ -178,7 +176,7 @@ def cmd_redeem(args):
             print(f"ERROR: {args.user} 余额不足（{balance} < {args.amount}）")
             return 1
         if args.amount < 1:  # 无最低限制
-            print(f"ERROR: 金额必须大于 0")
+            print("ERROR: 金额必须大于 0")
             return 1
 
         cash_value = args.amount * RATE

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """binance_withdraw.py — 调币安 API 提现 USDT（BSC BEP-20）"""
 
-import hmac
 import hashlib
+import hmac
 import json
 import os
 import sys

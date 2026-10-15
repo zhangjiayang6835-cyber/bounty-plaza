@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """seed.py — Initialize coin database with admin and seed users."""
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import coin
 
