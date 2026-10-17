@@ -47,8 +47,8 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
-BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "")
+BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "")
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
 # ── GitHub 配置 ──
@@ -61,7 +61,6 @@ GH_REPO = "zhangjiayang6835-cyber/bounty-plaza"
 # - IP 白名单锁你的本机 IP
 # - 设置每日提现限额
 # - 永远不要把这个 Key 提交到 GitHub
-
 
 def get_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
