@@ -1,0 +1,1 @@
+请修改英雄动画文件，以确保其在 `prefers-reduced-motion: reduce` 下不运行。
