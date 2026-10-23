@@ -1,0 +1,3 @@
+{
+  "buildCommand": "cd ../.. && pnpm build && cd demos/wallet-transfer-demo && pnpm run build"
+}
