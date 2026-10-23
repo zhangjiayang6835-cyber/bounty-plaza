@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parabola: the developer platform for the Arc⇄Stellar USDC corridor</title>
+    <meta name="description" content="Parabola moves native USDC between Circle's Arc network and Stellar via CCTP V2. The developer platform for one corridor, done properly." />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/favicon.svg" />
+    <link rel="preload" href="/src/assets/fonts/unbounded-extrabold.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="top">
+      <div class="wrap" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div class="brand">
+          <svg viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M3 30C3 30 15 4 30 4C45 4 57 30 57 30" stroke="var(--mint)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="3" cy="30" r="3.5" fill="var(--burn)"/>
+            <circle cx="57" cy="30" r="3.5" fill="var(--mint)"/>
+          </svg>
+          Parabola
+        </div>
+        <nav class="top-links" aria-label="Primary">
+          <a href="#how-it-works">How it works</a>
+          <a class="cta" href="https://github.com/ASCTP/parabola" target="_blank" rel="noreferrer">GitHub <span class="sr-only">(opens in a new tab)</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="hero-visual" aria-label="Overview">
+        <canvas id="crossing" aria-hidden="true"></canvas>
+        <div class="hero-scrim" aria-hidden="true"></div>
+        <div class="wrap hero-copy">
+          <h1>
+            <span class="line-mask"><span class="line hero-anim-line">The developer</span></span>
+            <span class="line-mask"><span class="line hero-anim-line">platform for</span></span>
+            <span class="line-mask"><span class="line hero-anim-line"><span class="accent-burn">Arc</span> <span aria-label="to and from">&harr;</span> <span class="accent-mint">Stellar</span></span></span>
+          </h1>
+          <div class="cta-row hero-anim">
+            <a class="btn primary" href="https://github.com/ASCTP/parabola" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">&rarr;</span><span class="sr-only"> (opens in a new tab)</span></a>
+            <a class="btn ghost" href="https://github.com/ASCTP/parabola/blob/main/INTEGRATION.md" target="_blank" rel="noreferrer">Integration guide<span class="sr-only"> (opens in a new tab)</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section id="problem" class="block" aria-labelledby="problem-heading">
+        <div class="wrap">
+          <div class="section-head with-eyebrow">
+            <div class="eyebrow">The problem</div>
+            <h2 id="problem-heading">Stellar is the odd one out in Circle's CCTP ecosystem</h2>
+          </div>
+          <div class="problem-row">
+            <div class="problem-item">
+              <span class="num" aria-hidden="true">01</span>
+              <h3>No direct mint</h3>
+              <p>Inbound transfers must route through Circle's <code class="mono">CctpForwarder</code> contract. Direct minting to a Stellar address isn't supported by the protocol.</p>
+            </div>
+            <div class="problem-item">
+              <span class="num" aria-hidden="true">02</span>
+              <h3>Different addresses</h3>
+              <p>Stellar uses <code class="mono">G...</code>/<code class="mono">C...</code> strkeys, not hex. Every recipient needs translating into the 32-byte format CCTP expects.</p>
+            </div>
+            <div class="problem-item">
+              <span class="num" aria-hidden="true">03</span>
+              <h3>Different precision</h3>
+              <p>USDC is 7 decimals on Stellar, 6 on Arc. Get the conversion wrong and you truncate or overpay.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" class="block" aria-labelledby="how-it-works-heading">
+        <div class="wrap">
+          <div class="section-head with-eyebrow">
+            <div class="eyebrow">How it works</div>
+            <h2 id="how-it-works-heading">Burn, attest, mint &mdash; behind one function</h2>
+          </div>
+          <div class="flow-strip">
+            <div class="flow-progress" aria-hidden="true"><div class="flow-progress-fill"></div></div>
+            <div class="flow-node burn">
+              <div class="flow-dot" aria-hidden="true"></div>
+              <h3 class="stage-label">Burn</h3>
+              <span class="fn mono">depositForBurn(WithHook)</span>
+              <p>Locks USDC on the source chain. The Stellar-bound path encodes a forward-recipient hook.</p>
+            </div>
+            <div class="flow-node attest">
+              <div class="flow-dot" aria-hidden="true"></div>
+              <h3 class="stage-label">Attest</h3>
+              <span class="fn mono">Iris polling</span>
+              <p>Circle's Iris service signs an attestation once source-chain finality is reached.</p>
+            </div>
+            <div class="flow-node mint">
+              <div class="flow-dot" aria-hidden="true"></div>
+              <h3 class="stage-label">Mint</h3>
+              <span class="fn mono">receiveMessage / mint_and_forward</span>
+              <p>Submits on the destination chain. Stellar routes through <code class="mono">CctpForwarder</code>.</p>
+            </div>
+          </div>
+          <pre class="code-block" tabindex="0" role="region" aria-label="Parabola transfer code example"><span class="code-line"><span class="c">// one function, either direction</span></span><span class="code-line"><span class="k">const</span> result = <span class="k">await</span> transfer({</span><span class="code-line">  from: <span class="s">"arc"</span>,</span><span class="code-line">  to: <span class="s">"stellar"</span>,</span><span class="code-line">  amount: <span class="s">"10.50"</span>,</span><span class="code-line">  recipient: <span class="s">"GBZXN7PIRZ...QRXFDNMADI"</span>,</span><span class="code-line">  speed: <span class="s">"fast"</span>,</span><span class="code-line">  signer: arcSigner,</span><span class="code-line">  options: { maxFee: <span class="s">"0.05"</span>, destinationSigner },</span><span class="code-line">});</span></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p class="position-line footer-line">
+          <span class="pos-word">One corridor.</span>
+          <span class="pos-word fade">Built like infrastructure.</span>
+          <span class="pos-word accent">Arc to Stellar, and back,</span>
+          <span class="pos-word">done right.</span>
+        </p>
+        <div class="footer-meta">
+          <span class="foot-brand">PARABOLA &middot; MIT LICENSED</span>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
