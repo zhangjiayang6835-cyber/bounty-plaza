@@ -1,0 +1,76 @@
+{
+  "name": "@asctp/parabola",
+  "version": "0.4.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "TypeScript SDK for moving native USDC between Circle's Arc network and Stellar via CCTP V2",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ASCTP/parabola.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ASCTP/parabola/issues"
+  },
+  "homepage": "https://github.com/ASCTP/parabola#readme",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.9.0",
+  "scripts": {
+    "build": "node api.js && tsup",
+    "dev": "node api.js && tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "publint": "publint --strict",
+    "verify:addresses": "node scripts/verify-contract-addresses.mjs",
+    "smoke": "node scripts/testnet-smoke.mjs",
+    "dev:wallet-transfer-demo": "pnpm --filter wallet-transfer-demo dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [
+    "usdc",
+    "cctp",
+    "arc",
+    "stellar",
+    "circle",
+    "cross-chain"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^16.2.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.71.2",
+    "@typescript-eslint/parser": "^8.71.2",
+    "eslint": "^9.39.5",
+    "publint": "^0.3.25",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
