@@ -1,0 +1,12 @@
+# Snakemake workflow for ChIP-seq & Methylation PACE Pipeline
+# Links SIRT6 histone deacetylation marks (H3K9ac, H3K56ac) to DunedinPACE biological aging pace
+
+rule all:
+    input:
+        "results/manifest.json"
+
+rule run_pace_pipeline:
+    output:
+        "results/manifest.json"
+    shell:
+        "python scripts/bounty1_chipseq_pace.py"
