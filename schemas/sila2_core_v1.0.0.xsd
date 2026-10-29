@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://www.sila-standard.org"
+    targetNamespace="http://www.sila-standard.org">
+  <xs:include schemaLocation="DataTypes.xsd"/>
+  <xs:element name="Feature">
+    <xs:complexType>
+      <!-- Feature Content -->
+      <xs:sequence>
+        <xs:element type="tns:IdentifierType" name="Identifier" />
+        <xs:element type="tns:DisplayNameType" name="DisplayName" />
+        <xs:element type="xs:string" name="Description" />
+        <!-- @Note: xs:all can not be used here, as it doesn't allow unbounded occurences -->
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="Command" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element type="tns:IdentifierType" name="Identifier" />
+                <xs:element type="tns:DisplayNameType" name="DisplayName" />
+                <xs:element type="xs:string" name="Description" />
+                <xs:element name="Observable">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                      <xs:enumeration value="Yes" />
+                      <xs:enumeration value="No" />
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:element>
+                <xs:element type="tns:SiLAElement" name="Parameter" maxOccurs="unbounded" minOccurs="0" />
+                <xs:element type="tns:SiLAElement" name="Response" maxOccurs="unbounded" minOccurs="0" />
+                <xs:element type="tns:SiLAElement" name="IntermediateResponse" maxOccurs="unbounded" minOccurs="0" />
+                <xs:element type="tns:DefinedExecutionErrorList" name="DefinedExecutionErrors" maxOccurs="1" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="Property" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element type="tns:IdentifierType" name="Identifier" />
+                <xs:element type="tns:DisplayNameType" name="DisplayName" />
+                <xs:element type="xs:string" name="Description" />
+                <xs:element name="Observable">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                      <xs:enumeration value="Yes" />
+                      <xs:enumeration value="No" />
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:element>
+                <xs:element type="tns:DataTypeType" name="DataType" />
+                <xs:element type="tns:DefinedExecutionErrorList" name="DefinedExecutionErrors" maxOccurs="1" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="Metadata" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element type="tns:IdentifierType" name="Identifier" />
+                <xs:element type="tns:DisplayNameType" name="DisplayName" />
+                <xs:element type="xs:string" name="Description" />
+                <xs:element type="tns:DataTypeType" name="DataType" />
+                <xs:element type="tns:DefinedExecutionErrorList" name="DefinedExecutionErrors" maxOccurs="1" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="DefinedExecutionError" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element type="tns:IdentifierType" name="Identifier" />
+                <xs:element type="tns:DisplayNameType" name="DisplayName" />
+                <xs:element type="xs:string" name="Description" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element type="tns:SiLAElement" name="DataTypeDefinition" maxOccurs="unbounded" minOccurs="0" />
+        </xs:choice>
+      </xs:sequence>
+
+      <!-- Attributes -->
+      <xs:attribute type="xs:string" name="Locale" use="optional" default="en-us" />
+      <xs:attribute name="SiLA2Version" use="required">
+        <xs:simpleType>
+          <xs:restriction base ="xs:string">
+            <xs:pattern value="\d+\.\d+" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="FeatureVersion" use="required">
+        <xs:simpleType>
+          <xs:restriction base ="xs:string">
+            <xs:pattern value="\d+\.\d+" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="MaturityLevel" use="optional" default="Draft">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Draft" />
+            <xs:enumeration value="Verified" />
+            <xs:enumeration value="Normative" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="Originator" use="required">
+        <xs:simpleType>
+          <xs:restriction base ="xs:string">
+            <xs:pattern value="[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*" />
+            <xs:maxLength value="255"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="Category" use="optional" default="none">
+        <xs:simpleType>
+          <xs:restriction base ="xs:string">
+            <xs:pattern value="[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)*" />
+            <xs:maxLength value="255"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="DefinedExecutionErrorList">
+    <xs:sequence>
+      <xs:element type="tns:IdentifierType" name="Identifier" maxOccurs="unbounded" minOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

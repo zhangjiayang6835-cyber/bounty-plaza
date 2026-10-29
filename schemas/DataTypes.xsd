@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://www.sila-standard.org"
+    targetNamespace="http://www.sila-standard.org">
+  <xs:include schemaLocation="Constraints.xsd"/>
+  <xs:complexType name="DataTypeType">
+    <xs:choice>
+      <xs:element type="tns:BasicType" name="Basic"/>
+      <xs:element type="tns:ListType" name="List"/>
+      <xs:element type="tns:StructureType" name="Structure"/>
+      <xs:element type="tns:ConstrainedType" name="Constrained"/>
+      <xs:element type="tns:IdentifierType" name="DataTypeIdentifier"/>
+    </xs:choice>
+  </xs:complexType>
+  <!-- XSD Internal Types -->
+  <xs:simpleType name="IdentifierType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Z][a-zA-Z0-9]*"/>
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DisplayNameType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="SiLAElement">
+    <xs:sequence>
+      <xs:element type="tns:IdentifierType" name="Identifier"/>
+      <xs:element type="tns:DisplayNameType" name="DisplayName"/>
+      <xs:element type="xs:string" name="Description"/>
+      <xs:element type="tns:DataTypeType" name="DataType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="BasicType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="String"/>
+      <xs:enumeration value="Integer"/>
+      <xs:enumeration value="Real"/>
+      <xs:enumeration value="Boolean"/>
+      <xs:enumeration value="Binary"/>
+      <xs:enumeration value="Date"/>
+      <xs:enumeration value="Time"/>
+      <xs:enumeration value="Timestamp"/>
+      <xs:enumeration value="Any"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ListType">
+    <xs:sequence>
+      <xs:element type="tns:DataTypeType" name="DataType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="StructureType">
+    <xs:sequence>
+      <xs:element type="tns:SiLAElement" name="Element" maxOccurs="unbounded" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ConstrainedType">
+    <xs:sequence>
+      <xs:element type="tns:DataTypeType" name="DataType"/>
+      <xs:element type="tns:Constraints" name="Constraints"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

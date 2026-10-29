@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package org.silastandard.instruments.hamiltonstarletcontroller.v1;
+
+service HamiltonSTARletController {
+    rpc ExecuteAspirateDispense (ExecuteAspirateDispense_Parameters) returns (ExecuteAspirateDispense_Responses);
+    rpc Get_DeviceStatus (Get_DeviceStatus_Parameters) returns (Get_DeviceStatus_Responses);
+}
+
+message ExecuteAspirateDispense_Parameters {
+    int32 ChannelNumber = 1;
+    double VolumeMicroliters = 2;
+    string OperationId = 3;
+}
+
+message ExecuteAspirateDispense_Responses {
+    bool Success = 1;
+    double ExecutionDurationMs = 2;
+    string TimestampUtc = 3;
+}
+
+message Get_DeviceStatus_Parameters {}
+
+message Get_DeviceStatus_Responses {
+    string DeviceStatus = 1;
+    double ClockFrequencyHz = 2;
+    double PtpOffsetMs = 3;
+}

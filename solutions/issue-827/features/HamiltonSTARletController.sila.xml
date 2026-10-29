@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Feature xmlns="http://www.sila-standard.org"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.sila-standard.org schemas/sila2_core_v1.0.0.xsd"
+         SiLA2Version="1.0"
+         FeatureVersion="1.0"
+         MaturityLevel="Draft"
+         Originator="org.silastandard"
+         Category="instruments">
+    <Identifier>HamiltonSTARletController</Identifier>
+    <DisplayName>Hamilton Microlab STARlet Controller</DisplayName>
+    <Description>SiLA 2 Feature for controlling Hamilton Microlab STARlet liquid handler with DryLab4 HPLC modeling integration and ICH Q14 audit logging.</Description>
+    
+    <Command>
+        <Identifier>ExecuteAspirateDispense</Identifier>
+        <DisplayName>Execute Aspirate and Dispense</DisplayName>
+        <Description>Executes high-precision liquid handling transfer on Hamilton STARlet with 432 Hz synchronized clock timestamps.</Description>
+        <Observable>No</Observable>
+        <Parameter>
+            <Identifier>ChannelNumber</Identifier>
+            <DisplayName>Channel Number</DisplayName>
+            <Description>Index of the pipetting channel (1 to 8).</Description>
+            <DataType>
+                <Basic>Integer</Basic>
+            </DataType>
+        </Parameter>
+        <Parameter>
+            <Identifier>VolumeMicroliters</Identifier>
+            <DisplayName>Volume in Microliters</DisplayName>
+            <Description>Liquid volume to aspirate and dispense in microliters.</Description>
+            <DataType>
+                <Basic>Real</Basic>
+            </DataType>
+        </Parameter>
+        <Response>
+            <Identifier>Success</Identifier>
+            <DisplayName>Success Flag</DisplayName>
+            <Description>Indicates whether liquid transfer completed successfully.</Description>
+            <DataType>
+                <Basic>Boolean</Basic>
+            </DataType>
+        </Response>
+    </Command>
+
+    <Property>
+        <Identifier>DeviceStatus</Identifier>
+        <DisplayName>Device Status</DisplayName>
+        <Description>Current operating state of the Hamilton STARlet robotic platform.</Description>
+        <Observable>No</Observable>
+        <DataType>
+            <Basic>String</Basic>
+        </DataType>
+    </Property>
+</Feature>
