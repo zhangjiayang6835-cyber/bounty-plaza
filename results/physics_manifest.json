@@ -1,0 +1,54 @@
+{
+  "hg201": {
+    "transition_keV": 1564.8154,
+    "theoretical_model": "QED-perturbed sub-barrier screening",
+    "cross_section_barn": 0.42
+  },
+  "d0_cluster": {
+    "bond_length_pm": 2.2962,
+    "phase_s1_bond_length_pm": 0.561,
+    "state": "ultra-dense Rydberg deuterium D(0)"
+  },
+  "spin_transfer": [
+    {
+      "kappa_ps": 12.0,
+      "st_efficiency": 0.65
+    },
+    {
+      "kappa_ps": 14.5,
+      "st_efficiency": 0.65
+    },
+    {
+      "kappa_ps": 16.6,
+      "st_efficiency": 0.945
+    },
+    {
+      "kappa_ps": 18.0,
+      "st_efficiency": 0.7415
+    },
+    {
+      "kappa_ps": 20.5,
+      "st_efficiency": 0.65
+    },
+    {
+      "kappa_ps": 22.0,
+      "st_efficiency": 0.65
+    },
+    {
+      "kappa_ps": 24.0,
+      "st_efficiency": 0.65
+    }
+  ],
+  "gamma_511": {
+    "relative_intensity": 1.0005,
+    "karabut_1995_reference": 1.0,
+    "positron_lifetime_us": 2.1983
+  },
+  "simulation_seed": 42,
+  "run_command": [
+    "C:\\Python314\\python.exe",
+    "karabut_fcqc_simulator.py"
+  ],
+  "benchmark_runtime_hours": 0.12,
+  "arxiv_preprint_id": "2409.18274"
+}
