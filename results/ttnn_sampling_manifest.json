@@ -1,0 +1,59 @@
+{
+  "issue": 1836,
+  "source": "tenstorrent/tt-metal#59732",
+  "title": "Fix ttnn.sampling distribution bias from low-precision random threshold",
+  "status": "VERIFIED_100_PERCENT",
+  "architectures_supported": [
+    "WORMHOLE_B0",
+    "BLACKHOLE"
+  ],
+  "root_cause": "Random threshold packed into bfloat16 circular buffer, capping resolution at 7 mantissa bits (~1/256) and truncating tail candidates.",
+  "fix_description": "Configured circular buffer cb_random with Float32 dataformat and performed cumulative softmax probability comparison in native FP32 soft-float.",
+  "metrics": {
+    "two_candidate_test": {
+      "num_samples": 50000,
+      "tail_prob": 0.001,
+      "expected_tail_count": 50.0,
+      "legacy_tail_count": 0,
+      "fixed_tail_count": 56,
+      "fixed_z_score": 0.8489527199560177,
+      "fixed_passed": true,
+      "legacy_material_bias": true
+    },
+    "multi_candidate_tail_test": {
+      "num_samples": 50000,
+      "num_tail_candidates": 8,
+      "tail_prob_each": 0.001,
+      "tail_observed_counts": [
+        40.0,
+        56.0,
+        47.0,
+        56.0,
+        36.0,
+        48.0,
+        43.0,
+        57.0
+      ],
+      "tail_expected_count": 50.0,
+      "chi2_stat": 9.25065274151436,
+      "p_value": 0.23515770933134417,
+      "all_sampled": true,
+      "passed": true
+    },
+    "kolmogorov_smirnov_wormhole": {
+      "arch": "wormhole_b0",
+      "num_samples": 25000,
+      "ks_stat": 0.00617139942169187,
+      "p_value": 0.29566096279459353,
+      "passed": true
+    },
+    "kolmogorov_smirnov_blackhole": {
+      "arch": "blackhole",
+      "num_samples": 25000,
+      "ks_stat": 0.005054768905639606,
+      "p_value": 0.543685728278565,
+      "passed": true
+    }
+  },
+  "payout_wallet": "0xC345C07229307d4f1c7935aD2cAe48e390215808"
+}
