@@ -91,7 +91,7 @@ def check_bandit(code_file: str) -> list[str]:
     violations = []
     try:
         result = subprocess.run(
-            ["bandit", "-q", "-f", "json", code_file],
+            [sys.executable, "-m", "bandit", "-q", "-f", "json", code_file],
             capture_output=True, text=True, timeout=30
         )
         if result.stdout:
@@ -124,11 +124,11 @@ def check_test_tampering(original_hash: str, test_dir: str) -> list[str]:
 
 def score_correctness(test_dir: str) -> tuple:
     """运行 pytest，返回 (分数, 详情)"""
-    if not test_dir or not os.path.isdir(test_dir):
+    if not test_dir or not os.path.exists(test_dir):
         return 0, "无测试目录"
     try:
         result = subprocess.run(
-            ["python", "-m", "pytest", test_dir, "-v", "--tb=short", ],
+            [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short", ],
             capture_output=True, text=True, timeout=120
         )
         # 从 stdout 解析测试结果
@@ -156,7 +156,7 @@ def score_quality(code_file: str) -> tuple:
     """代码质量评分，调用 pylint"""
     try:
         result = subprocess.run(
-            ["pylint", "--score=y", "--output-format=text", code_file],
+            [sys.executable, "-m", "pylint", "--score=y", "--output-format=text", code_file],
             capture_output=True, text=True, timeout=30
         )
         for line in result.stdout.split("\n"):
@@ -176,7 +176,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
@@ -263,7 +263,7 @@ def main():
         print("=" * 50)
         for dim, data in result["details"].items():
             bar = "█" * (data["score"] // 2) + "░" * (10 - data["score"] // 2)
-            print(f"  {dim:<15} {data['score']:>3}/{data['weight']:<2} {bar} {data['note']}")
+            print(f"  {dim:<15} {data['score']:>3}/{data.get('weight', 0):<2} {bar} {data['note']}")
         print("-" * 50)
         verdict = "✅ 达标 ✅" if result["passed"] else "❌ 未达标 ❌"
         print(f"  总分: {result['score']}/100  {verdict}")

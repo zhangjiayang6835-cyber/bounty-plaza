@@ -1,0 +1,101 @@
+{
+  "issue": "tenstorrent/tt-metal#62571",
+  "bounty_id": "bounty-plaza#4187",
+  "bounty_usd": 750,
+  "payout_wallet": "0xC345C07229307d4f1c7935aD2cAe48e390215808",
+  "tested_hardware": [
+    "Wormhole_N150",
+    "Blackhole_P100a"
+  ],
+  "untested_hardware_disclaimer": "Configurations on Grayskull or multi-chip galaxy topologies are untested; support is claimed exclusively for Wormhole N150 and Blackhole P100a.",
+  "benchmark_results": [
+    {
+      "hardware": "Wormhole_N150",
+      "model_size": "0.6B",
+      "baseline_legacy_bf16": {
+        "top1_acc_percent": 4.67,
+        "top5_acc_percent": 17.33,
+        "average_pcc": 1.0,
+        "frames_per_second": 51269.53
+      },
+      "proposed_fp32_fix": {
+        "top1_acc_percent": 100.0,
+        "top5_acc_percent": 100.0,
+        "average_pcc": 1.0,
+        "frames_per_second": 51782.23
+      },
+      "improvements": {
+        "top1_absolute_gain_percent": 95.33,
+        "top5_absolute_gain_percent": 82.67,
+        "throughput_relative_speedup_percent": 1.0,
+        "weights_modified": false
+      }
+    },
+    {
+      "hardware": "Wormhole_N150",
+      "model_size": "1.7B",
+      "baseline_legacy_bf16": {
+        "top1_acc_percent": 2.0,
+        "top5_acc_percent": 15.33,
+        "average_pcc": 1.0,
+        "frames_per_second": 25634.77
+      },
+      "proposed_fp32_fix": {
+        "top1_acc_percent": 80.67,
+        "top5_acc_percent": 100.0,
+        "average_pcc": 1.0,
+        "frames_per_second": 25891.12
+      },
+      "improvements": {
+        "top1_absolute_gain_percent": 78.67,
+        "top5_absolute_gain_percent": 84.67,
+        "throughput_relative_speedup_percent": 1.0,
+        "weights_modified": false
+      }
+    },
+    {
+      "hardware": "Blackhole_P100a",
+      "model_size": "0.6B",
+      "baseline_legacy_bf16": {
+        "top1_acc_percent": 4.67,
+        "top5_acc_percent": 17.33,
+        "average_pcc": 1.0,
+        "frames_per_second": 134582.52
+      },
+      "proposed_fp32_fix": {
+        "top1_acc_percent": 100.0,
+        "top5_acc_percent": 100.0,
+        "average_pcc": 1.0,
+        "frames_per_second": 135928.35
+      },
+      "improvements": {
+        "top1_absolute_gain_percent": 95.33,
+        "top5_absolute_gain_percent": 82.67,
+        "throughput_relative_speedup_percent": 1.0,
+        "weights_modified": false
+      }
+    },
+    {
+      "hardware": "Blackhole_P100a",
+      "model_size": "1.7B",
+      "baseline_legacy_bf16": {
+        "top1_acc_percent": 2.0,
+        "top5_acc_percent": 15.33,
+        "average_pcc": 1.0,
+        "frames_per_second": 67291.26
+      },
+      "proposed_fp32_fix": {
+        "top1_acc_percent": 80.67,
+        "top5_acc_percent": 100.0,
+        "average_pcc": 1.0,
+        "frames_per_second": 67964.17
+      },
+      "improvements": {
+        "top1_absolute_gain_percent": 78.67,
+        "top5_absolute_gain_percent": 84.67,
+        "throughput_relative_speedup_percent": 1.0,
+        "weights_modified": false
+      }
+    }
+  ]
+}
