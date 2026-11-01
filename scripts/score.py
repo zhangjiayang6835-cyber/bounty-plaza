@@ -176,7 +176,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
