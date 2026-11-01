@@ -91,7 +91,7 @@ def check_bandit(code_file: str) -> list[str]:
     violations = []
     try:
         result = subprocess.run(
-            ["bandit", "-q", "-f", "json", code_file],
+            [sys.executable, "-m", "bandit", "-q", "-f", "json", code_file],
             capture_output=True, text=True, timeout=30
         )
         if result.stdout:
@@ -176,7 +176,7 @@ def score_performance(code_file: str, baseline_sec: float = 1.0) -> tuple:
     try:
         start = time.time()
         result = subprocess.run(
-            ["python", "-c", code],
+            [sys.executable, code_file],
             capture_output=True, text=True, timeout=30
         )
         elapsed = time.time() - start
@@ -223,7 +223,7 @@ def evaluate(code_file: str, test_dir: str = None) -> dict:
     if all_violations:
         result["cheating_detected"] = True
         result["violations"] = all_violations
-        result["details"]["security"] = {"score": 0, "note": "一票否决: 检测到作弊行为"}
+        result["details"]["security"] = {"score": 0, "note": "一票否决: 检测到作弊行为", "weight": 35}
         result["score"] = 0
         return result
 
