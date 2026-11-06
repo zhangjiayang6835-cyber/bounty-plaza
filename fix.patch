@@ -1,0 +1,459 @@
+diff --git a/src/chains/arc.ts b/src/chains/arc.ts
+index 63d089b..6ca7baf 100644
+--- a/src/chains/arc.ts
++++ b/src/chains/arc.ts
+@@ -1,9 +1,9 @@
+-import { createPublicClient, http, defineChain, type Hex } from "viem";
++import { createPublicClient, http, defineChain, type Chain, type Hex } from "viem";
+ import { ARC_TESTNET, ARC_MAINNET, arcConfig } from "../constants.js";
+ import type { ArcSigner, Network } from "../types.js";
+ import { SubmissionTimeoutError } from "../errors.js";
+ 
+-export const arcTestnetChain = defineChain({
++export const arcTestnetChain: Chain = defineChain({
+   id: ARC_TESTNET.chainId,
+   name: "Arc Testnet",
+   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+@@ -16,7 +16,7 @@ export const arcTestnetChain = defineChain({
+   testnet: true,
+ });
+ 
+-export const arcMainnetChain = defineChain({
++export const arcMainnetChain: Chain = defineChain({
+   id: ARC_MAINNET.chainId,
+   name: "Arc",
+   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+@@ -145,27 +145,6 @@ async function writeAndWait(
+   return hash;
+ }
+ 
+-/**
+- * Reads the current USDC allowance granted by `owner` to TokenMessengerV2 on Arc.
+- * Returns 0n if the read fails so callers fail closed and still submit the exact-amount approve.
+- */
+-export async function getUsdcAllowanceOnArc(
+-  owner: Hex,
+-  network: Network,
+-  rpcUrl?: string,
+-): Promise<bigint> {
+-  const arc = arcConfig(network);
+-  try {
+-    return await publicClient(network, rpcUrl).readContract({
+-      address: arc.usdc as Hex,
+-      abi: erc20Abi,
+-      functionName: "allowance",
+-      args: [owner, arc.tokenMessengerV2 as Hex],
+-    });
+-  } catch {
+-    return 0n;
+-  }
+-}
+ 
+ /**
+  * Approves the TokenMessengerV2 contract to spend USDC on the signer's behalf,
+@@ -216,12 +195,17 @@ export async function getUsdcAllowanceOnArc(
+     owner = account.address;
+   }
+   const arc = arcConfig(network);
+-  return publicClient(network, rpcUrl).readContract({
+-    address: arc.usdc as Hex,
+-    abi: erc20Abi,
+-    functionName: "allowance",
+-    args: [owner, arc.tokenMessengerV2 as Hex],
+-  });
++  try {
++    return await publicClient(network, rpcUrl).readContract({
++      address: arc.usdc as Hex,
++      abi: erc20Abi,
++      functionName: "allowance",
++      args: [owner, arc.tokenMessengerV2 as Hex],
++    });
++  } catch {
++    // fail closed: a failed read must not skip the exact-amount approve
++    return 0n;
++  }
+ }
+ 
+ /** Burns USDC on Arc via TokenMessengerV2.depositForBurn for a plain (non-Stellar) destination. */
+diff --git a/src/chains/stellar.ts b/src/chains/stellar.ts
+index 77d6299..ffb2cbe 100644
+--- a/src/chains/stellar.ts
++++ b/src/chains/stellar.ts
+@@ -11,10 +11,6 @@ import { stellarConfig, STELLAR_TX_TIMEOUT_SECONDS, STELLAR_CONFIRMATION_TIMEOUT
+ import type { StellarSigner, Network } from "../types.js";
+ import { SubmissionTimeoutError } from "../errors.js";
+ 
+-export interface StellarRetryOptions {
+-  attempts?: number;
+-  delayMs?: number;
+-}
+ 
+ function getServer(network: Network, rpcUrl?: string): rpc.Server {
+   return new rpc.Server(rpcUrl ?? stellarConfig(network).sorobanRpcUrl);
+@@ -176,6 +172,20 @@ export interface StellarRetryOptions {
+   delayMs?: number;
+ }
+ 
++const ALLOWANCE_WAIT_DEFAULTS = { attempts: 6, delayMs: 1500 };
++const RPC_LAG_RETRY_DEFAULTS = { attempts: 3, delayMs: 2000 };
++
++/** Merges caller-supplied retry options over a defaults object. */
++function resolveRetry(
++  retry: StellarRetryOptions | undefined,
++  defaults: { attempts: number; delayMs: number },
++): { attempts: number; delayMs: number } {
++  return {
++    attempts: retry?.attempts ?? defaults.attempts,
++    delayMs: retry?.delayMs ?? defaults.delayMs,
++  };
++}
++
+ function resolveRetryConfig(
+   retry: StellarRetryOptions | undefined,
+   defaultAttempts: number,
+@@ -233,7 +243,7 @@ export async function approveUsdcOnStellar(
+   // becoming queryable for simulation. Poll the on-chain allowance until it reflects
+   // the approval (or fail with a clear error) before returning, so the two calls do not
+   // proceed on disagreeing views of state.
+-  await waitForAllowance(signer.publicKey, stellar.tokenMessengerMinter, amountRaw, network, rpcUrl, retryConfig, signal);
++  await waitForAllowance(signer.publicKey, stellar.tokenMessengerMinter, amountRaw, network, attempts, delayMs, rpcUrl, retryConfig, signal);
+ 
+   return approveTxHash;
+ }
+@@ -355,18 +365,18 @@ async function waitForAllowance(
+   retryConfig?: { attempts: number; delayMs: number },
+   signal?: AbortSignal,
+ ): Promise<void> {
+-  const attempts = retryConfig?.attempts ?? 6;
+-  const delayMs = retryConfig?.delayMs ?? 1500;
+-  for (let i = 0; i < attempts; i++) {
++  const tries = retryConfig?.attempts ?? attempts;
++  const waitMs = retryConfig?.delayMs ?? delayMs;
++  for (let i = 0; i < tries; i++) {
+     if (signal?.aborted) {
+       throw signal.reason ?? new DOMException("The operation was aborted", "AbortError");
+     }
+     const allowance = await getUsdcAllowance(owner, spender, network, rpcUrl);
+     if (allowance >= minimum) return;
+-    await sleep(delayMs, signal);
++    await sleep(waitMs, signal);
+   }
+   throw new Error(
+-    `Approved USDC allowance for ${spender} did not reach ${minimum} after ${(attempts * delayMs) / 1000}s of polling; the approval transaction confirmed but the network hasn't reflected it yet`,
++    `Approved USDC allowance for ${spender} did not reach ${minimum} after ${(tries * waitMs) / 1000}s of polling; the approval transaction confirmed but the network hasn't reflected it yet`,
+   );
+ }
+ 
+@@ -389,9 +399,8 @@ export async function burnUsdcOnStellar(params: {
+   if (params.signal?.aborted) {
+     throw params.signal.reason ?? new DOMException("The operation was aborted", "AbortError");
+   }
+-  const retryConfig = resolveRetryConfig(params.retry, 3, 2000);
++  const retryConfig = resolveRetryConfig(params.retry, RPC_LAG_RETRY_DEFAULTS.attempts, RPC_LAG_RETRY_DEFAULTS.delayMs);
+   const stellar = stellarConfig(params.network);
+-  const { attempts, delayMs } = resolveRetry(params.retry, RPC_LAG_RETRY_DEFAULTS);
+   const recipientBytes = Buffer.from(params.mintRecipientBytes32.slice(2), "hex");
+ 
+   // Argument order per the deployed contract's interface (stellar contract info
+@@ -433,9 +442,9 @@ async function retryOnTransientRpcLag(
+   retryConfig?: { attempts: number; delayMs: number },
+   signal?: AbortSignal,
+ ): Promise<string> {
+-  const attempts = retryConfig?.attempts ?? 3;
+-  const delayMs = retryConfig?.delayMs ?? 2000;
+-  for (let i = 0; i < attempts; i++) {
++  const tries = retryConfig?.attempts ?? 3;
++  const waitMs = retryConfig?.delayMs ?? 2000;
++  for (let i = 0; i < tries; i++) {
+     if (signal?.aborted) {
+       throw signal.reason ?? new DOMException("The operation was aborted", "AbortError");
+     }
+@@ -446,11 +455,11 @@ async function retryOnTransientRpcLag(
+         throw signal.reason ?? new DOMException("The operation was aborted", "AbortError");
+       }
+       const message = err instanceof Error ? err.message : String(err);
+-      const isLastAttempt = i === attempts - 1;
++      const isLastAttempt = i === tries - 1;
+       if (!isTransientRpcLagError(message) || isLastAttempt) {
+         throw err;
+       }
+-      await sleep(delayMs, signal);
++      await sleep(waitMs, signal);
+     }
+   }
+   throw new Error("unreachable");
+diff --git a/src/errors.ts b/src/errors.ts
+index d63bf13..5ff02a0 100644
+--- a/src/errors.ts
++++ b/src/errors.ts
+@@ -1,5 +1,3 @@
+-import type { ChainId } from "./types.js";
+-
+ /**
+  * Thrown by transfer() for any failure that happens after the source-chain burn has
+  * already succeeded: attestation polling (timeout or otherwise), or the destination-chain
+@@ -114,29 +112,3 @@ export class SubmissionTimeoutError extends Error {
+   }
+ }
+ 
+-/**
+- * Thrown before any approve or burn when the requested transfer amount carries more
+- * significant decimal places than the destination chain's USDC supports.
+- */
+-export class AmountPrecisionError extends Error {
+-  readonly amount: string;
+-  readonly precision: number;
+-  readonly supportedDecimals: number;
+-  readonly destination: ChainId;
+-
+-  constructor(
+-    amount: string,
+-    precision: number,
+-    supportedDecimals: number,
+-    destination: ChainId,
+-  ) {
+-    super(
+-      `Amount ${amount} has ${precision} significant decimal places, exceeding the ${supportedDecimals} decimal places supported on ${destination}`,
+-    );
+-    this.name = "AmountPrecisionError";
+-    this.amount = amount;
+-    this.precision = precision;
+-    this.supportedDecimals = supportedDecimals;
+-    this.destination = destination;
+-  }
+-}
+diff --git a/src/index.ts b/src/index.ts
+index 46b6b28..7dbfe49 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -47,7 +47,6 @@ export type {
+   ResolvedBurn,
+   CctpBurnMessage,
+   TransferProgressStage,
+-  TransferProgressEvent,
+   RecipientCheckProgressEvent,
+   ApproveProgressEvent,
+   BurnSubmittedProgressEvent,
+diff --git a/src/transfer.ts b/src/transfer.ts
+index 74c0955..fcf2777 100644
+--- a/src/transfer.ts
++++ b/src/transfer.ts
+@@ -93,10 +93,7 @@ export async function transfer(params: TransferParams): Promise<TransferResult>
+   const network: Network = params.network ?? "mainnet";
+   const useSandbox = network === "testnet";
+   const stellarRpcUrl = options.stellarRpcUrl;
+-  const stellarRetry = {
+-    attempts: options.stellarRetryAttempts,
+-    delayMs: options.stellarRetryDelayMs,
+-  };
++  const stellarRetry = getStellarRetryOptions(options);
+   const arcRpcUrl = options.arcRpcUrl;
+   const pollInterval = options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS;
+   const pollTimeout = options.pollTimeout ?? DEFAULT_POLL_TIMEOUT_MS;
+@@ -153,16 +150,15 @@ export async function transfer(params: TransferParams): Promise<TransferResult>
+     signal,
+   });
+ 
+-  emitProgress(onProgress, { stage: "burn-confirmed", burnTxHash, timestamp: Date.now() });
++  safeEmit(onProgress, { stage: "burn-confirmed", burnTxHash, timestamp: Date.now() });
+ 
+   // Everything past this point runs after the source-chain burn has already happened.
+   // Any failure here (attestation timeout, a mint-step error) must not lose burnTxHash;
+   // the caller still needs it to recover via completeMint(), so it's rethrown attached to
+   // a TransferError rather than left to vanish with a bare Error.
+-  safeEmit(onProgress, { stage: "attestation", burnTxHash, timestamp: Date.now() });
+   let attestationHash: string | undefined;
+   try {
+-    emitProgress(onProgress, { stage: "attestation", burnTxHash, timestamp: Date.now() });
++    safeEmit(onProgress, { stage: "attestation", burnTxHash, timestamp: Date.now() });
+     const attestation = await pollForAttestation({
+       sourceDomain: domainFor(params.from),
+       transactionHash: burnTxHash,
+@@ -194,7 +190,6 @@ export async function transfer(params: TransferParams): Promise<TransferResult>
+         arcRpcUrl,
+         signal,
+       });
+-      emitProgress(onProgress, { stage: "mint-confirmed", burnTxHash, mintTxHash, timestamp: Date.now() });
+       status = "success";
+       safeEmit(onProgress, {
+         stage: "mint-confirmed",
+@@ -229,16 +224,6 @@ export async function transfer(params: TransferParams): Promise<TransferResult>
+   }
+ }
+ 
+-/** Rejects precision that the destination chain would silently truncate. */
+-function assertDestinationPrecision(amount: string, destination: ChainId): void {
+-  const fraction = amount.split(".")[1] ?? "";
+-  const precision = fraction.replace(/0+$/, "").length;
+-  const supportedDecimals = decimalsForChain(destination);
+-  if (precision > supportedDecimals) {
+-    throw new AmountPrecisionError(amount, precision, supportedDecimals, destination);
+-  }
+-}
+-
+ async function burn(args: {
+   params: TransferParams;
+   network: Network;
+@@ -305,19 +290,12 @@ async function burn(args: {
+       },
+     );
+     safeEmit(onProgress, { stage: "burn-submitted", burnTxHash, timestamp: Date.now() });
+-    safeEmit(onProgress, { stage: "burn-confirmed", burnTxHash, timestamp: Date.now() });
+     return burnTxHash;
+   }
+ 
+   const signer = params.signer;
+   const mintRecipientBytes32 = evmAddressToBytes32(params.recipient);
+-  const stellarRetry =
+-    params.options?.stellarRetryAttempts !== undefined || params.options?.stellarRetryDelayMs !== undefined
+-      ? {
+-          attempts: params.options?.stellarRetryAttempts,
+-          delayMs: params.options?.stellarRetryDelayMs,
+-        }
+-      : undefined;
++  const stellarRetry = getStellarRetryOptions(params.options);
+ 
+   throwIfAborted(signal);
+   safeEmit(onProgress, { stage: "approve", timestamp: Date.now() });
+@@ -347,11 +325,12 @@ async function burn(args: {
+     },
+   );
+   safeEmit(onProgress, { stage: "burn-submitted", burnTxHash, timestamp: Date.now() });
+-  safeEmit(onProgress, { stage: "burn-confirmed", burnTxHash, timestamp: Date.now() });
+   return burnTxHash;
+ }
+ 
+-function getStellarRetryOptions(options: TransferOptions | undefined): StellarRetryOptions | undefined {
++function getStellarRetryOptions(
++  options: { stellarRetryAttempts?: number; stellarRetryDelayMs?: number } | undefined,
++): StellarRetryOptions | undefined {
+   if (options?.stellarRetryAttempts === undefined && options?.stellarRetryDelayMs === undefined) {
+     return undefined;
+   }
+diff --git a/src/types.ts b/src/types.ts
+index 803e498..74e520b 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -138,10 +138,6 @@ export interface TransferOptionsBase {
+   pollInterval?: number;
+   /** Milliseconds before polling gives up. Default 300000. */
+   pollTimeout?: number;
+-  /** Number of attempts for Stellar allowance/RPC retry loops. Defaults to 6 for allowance polling and 3 for burn submission. */
+-  stellarRetryAttempts?: number;
+-  /** Delay between Stellar allowance/RPC retry attempts in milliseconds. Defaults to 1500ms and 2000ms respectively. */
+-  stellarRetryDelayMs?: number;
+   /**
+    * Overrides the Stellar Soroban RPC URL. The mainnet default endpoint is
+    * rate-limited; supply your own provider for real usage. No effect on Arc.
+diff --git a/tests/amount.test.ts b/tests/amount.test.ts
+index 97c46ab..c992a5a 100644
+--- a/tests/amount.test.ts
++++ b/tests/amount.test.ts
+@@ -7,6 +7,7 @@ import {
+   significantDecimals,
+   assertDestinationPrecision,
+ } from "../src/utils/amount.js";
++import { convertPrecision } from "../src/utils/encoding.js";
+ import { ARC_TESTNET, STELLAR_TESTNET } from "../src/constants.js";
+ 
+ describe("decimalsForChain", () => {
+@@ -89,3 +90,60 @@ describe("significantDecimals and assertDestinationPrecision", () => {
+     expect(() => assertDestinationPrecision("1.1234567", "stellar")).not.toThrow();
+   });
+ });
++
++// Round trips through the public helpers. `convertPrecision` sits between the two
++// chains' scales, so an amount that survives arc -> stellar -> arc must come back
++// byte-identical, and the one direction that loses information (7 -> 6) must
++// truncate rather than round.
++describe("cross-chain decimal round trips", () => {
++  it("survives up-scale then down-scale without drift", () => {
++    for (const amount of ["0", "1", "10.5", "0.000001", "1234.567891"]) {
++      const arcRaw = toRawAmount(amount, "arc");
++      const stellarRaw = convertPrecision(arcRaw, 6, 7);
++      const backToArc = convertPrecision(stellarRaw, 7, 6);
++      expect(backToArc).toBe(arcRaw);
++      expect(fromRawAmount(backToArc, "arc")).toBe(amount);
++    }
++  });
++
++  it("keeps the extra digit when landing on stellar", () => {
++    const arcRaw = toRawAmount("10.50", "arc");
++    const stellarRaw = convertPrecision(arcRaw, 6, 7);
++    expect(stellarRaw).toBe(105_000_000n);
++    expect(fromRawAmount(stellarRaw, "stellar")).toBe("10.5");
++  });
++
++  it("truncates the seventh decimal when coming back to arc", () => {
++    // 1.1234567 USDC exists on Stellar's scale but not on Arc's
++    const stellarRaw = toRawAmount("1.1234567", "stellar");
++    expect(stellarRaw).toBe(11_234_567n);
++    const arcRaw = convertPrecision(stellarRaw, 7, 6);
++    expect(arcRaw).toBe(11_234_567n / 10n);
++    expect(fromRawAmount(arcRaw, "arc")).toBe("1.123456");
++  });
++
++  it("truncates toward zero for sub-unit remainders", () => {
++    expect(convertPrecision(9n, 7, 6)).toBe(0n);
++    expect(fromRawAmount(0n, "arc")).toBe("0");
++  });
++
++  it("round-trips zero in both directions", () => {
++    expect(convertPrecision(convertPrecision(0n, 6, 7), 7, 6)).toBe(0n);
++    expect(fromRawAmount(toRawAmount("0.000000", "arc"), "arc")).toBe("0");
++  });
++
++  it("round-trips the maximum arc precision exactly", () => {
++    const max = "0.999999";
++    expect(fromRawAmount(toRawAmount(max, "arc"), "arc")).toBe(max);
++  });
++
++  it("round-trips the maximum stellar precision through stellar", () => {
++    const max = "0.9999999";
++    expect(fromRawAmount(toRawAmount(max, "stellar"), "stellar")).toBe(max);
++  });
++
++  it("is a no-op when both decimal scales match", () => {
++    const raw = toRawAmount("42.42", "arc");
++    expect(convertPrecision(raw, 6, 6)).toBe(raw);
++  });
++});
+diff --git a/tests/progress.test.ts b/tests/progress.test.ts
+index 1538141..8e2e96d 100644
+--- a/tests/progress.test.ts
++++ b/tests/progress.test.ts
+@@ -3,7 +3,6 @@ import type { TransferProgressEvent } from "../src/index.js";
+ 
+ const getUsdcAllowanceOnArc = vi.fn();
+ const approveUsdcOnArc = vi.fn();
+-const getUsdcAllowanceOnArc = vi.fn();
+ const burnUsdcOnArcWithStellarForward = vi.fn();
+ const receiveMessageOnArc = vi.fn();
+ const approveUsdcOnStellar = vi.fn();
+@@ -17,7 +16,6 @@ const getAttestation = vi.fn();
+ vi.mock("../src/chains/arc.js", () => ({
+   getUsdcAllowanceOnArc: (...args: unknown[]) => getUsdcAllowanceOnArc(...args),
+   approveUsdcOnArc: (...args: unknown[]) => approveUsdcOnArc(...args),
+-  getUsdcAllowanceOnArc: (...args: unknown[]) => getUsdcAllowanceOnArc(...args),
+   burnUsdcOnArcWithStellarForward: (...args: unknown[]) => burnUsdcOnArcWithStellarForward(...args),
+   receiveMessageOnArc: (...args: unknown[]) => receiveMessageOnArc(...args),
+ }));
+diff --git a/tests/transfer.test.ts b/tests/transfer.test.ts
+index e5daacb..7943e33 100644
+--- a/tests/transfer.test.ts
++++ b/tests/transfer.test.ts
+@@ -121,7 +121,13 @@ describe("transfer (Arc -> Stellar)", () => {
+     });
+ 
+     expect(result.status).toBe("pending");
+-    expect(approveUsdcOnStellar).toHaveBeenCalledWith(11_230_000n, stellarSigner, "mainnet", undefined);
++    expect(approveUsdcOnStellar).toHaveBeenCalledWith(
++      11_230_000n,
++      stellarSigner,
++      "mainnet",
++      undefined,
++      undefined,
++    );
+     expect(burnUsdcOnStellar).toHaveBeenCalledTimes(1);
+   });
+ 
