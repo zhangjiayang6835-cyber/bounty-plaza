@@ -8,7 +8,7 @@ body:
     attributes:
       label: 赏金平台
       description: 任务来自哪个平台？
-      placeholder: e.g. Immunefi / Code4rena / HackerOne
+      placeholder: e.g. GitHub
     validations:
       required: true
   - type: input
@@ -16,7 +16,7 @@ body:
     attributes:
       label: 原始链接
       description: 赏金任务的原始 URL
-      placeholder: https://immunefi.com/...
+      placeholder: https://github.com/...
     validations:
       required: true
   - type: textarea
