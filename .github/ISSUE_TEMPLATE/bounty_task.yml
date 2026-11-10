@@ -16,7 +16,7 @@ body:
     attributes:
       label: 原始链接
       description: 赏金任务的原始 URL
-      placeholder: https://immunefi.com/...
+      placeholder: https://github.com/...
     validations:
       required: true
   - type: textarea
