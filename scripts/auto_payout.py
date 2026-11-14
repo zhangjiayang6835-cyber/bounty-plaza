@@ -47,7 +47,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "") or ""
 BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
