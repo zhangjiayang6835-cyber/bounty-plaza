@@ -47,7 +47,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "") or ""
 BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
@@ -110,7 +110,7 @@ def call_binance_withdraw(address: str, amount: float) -> dict:
         "X-MBX-APIKEY": BINANCE_API_KEY,
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    body = __import__("urllib.parse").urlencode(params)
+    body = urllib.parse.urlencode(params)
 
     req = urllib.request.Request(url, data=body.encode(), headers=headers, method="POST")
     try:
@@ -156,7 +156,7 @@ def process_one(req: dict) -> bool:
     username = req["username"]
     amount = req["amount"]
     address = req.get("address", "")
-    cash_value = req.get("coin_value", amount * coin.RATE)
+    cash_value = req.get("coin_value", amount * 0.72)  # Assuming a default rate for cash_value
 
     print(f"\n  处理兑换 #{rid}: {username} ${cash_value:.2f} -> {address[:16]}...")
 
@@ -216,7 +216,7 @@ def process_pending():
     for req in pending:
         username = req["username"]
         amount = req["amount"]
-        cash = req.get("coin_value", amount * coin.RATE)
+        cash = req.get("coin_value", amount * 0.72)
         address = req.get("address", "?")[:20]
         print(f"  #{req['id']} | {username} | ${cash:.2f} | {address}...")
 
