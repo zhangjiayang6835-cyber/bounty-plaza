@@ -1,0 +1,4 @@
+web3==6.11.1
+requests==2.31.0
+pytest==7.4.3
+eth-abi==4.2.1
