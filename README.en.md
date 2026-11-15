@@ -1,62 +1,105 @@
-🌐 [English](README.en.md) | [中文](README.md)
+# 🏆 Bounty Plaza (Bounty-Plaza)
 
-# 🏆 Bounty Plaza
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
-> Real bug bounty aggregation and distribution platform.
-> Find bounties on GitHub, distribute to contributors, earn together.
+**Bounty Plaza** is an automated aggregator and management platform for real-world GitHub bounties. It bridges the gap between open-source issues and developers by providing a transparent scoring system, automated reward distribution, and a gamified leaderboard.
 
----
+## 🌟 Key Features
 
-## How It Works
-
-```
-① Admin finds a real GitHub bounty → creates Issue
-② AI generates initial fix → submits PR (locks the bounty)
-③ Task is released for competition on bounty-plaza
-④ Contributors submit fixes → auto scored (≥90 to win)
-⑤ First to pass wins → code replaces the PR
-⑥ Upstream merges → bounty paid → coins issued to winner
-⑦ Winners redeem coins for cash anytime
-```
-
-**Key principle**: Quality first, speed as tiebreaker. Best code wins.
-
-## Token System
-
-| Item | Value |
-|------|:-----:|
-| Listing Rate | **1 USD = 1.25 coins** |
-| Platform Fee | **10%** |
-| Cash-out Rate | **1 coin = 0.72 USD** (derived: 0.9/1.25) |
-| Min Bounty | **$25** |
-
-See [REWARD_POLICY.en.md](REWARD_POLICY.en.md) for full details.
-
-## Rules
-
-See [RULES.en.md](RULES.en.md) for:
-- Task lifecycle
-- Submission rules
-- Scoring criteria (≥90 to pass)
-- Pricing tiers
-- Prohibited behavior
-
-## Quick Start for Contributors
-
-1. Browse open Issues with `bounty` label
-2. Read the task description and reward
-3. Write fix code → submit PR to bounty-plaza
-4. Admin triggers scoring
-5. If your score ≥90 and you're first to pass → you win
-6. Winner code gets submitted upstream
-7. When paid → coins credited to your account
-8. Redeem coins for cash anytime
-
-## Languages
-
-- [中文](README.md)
-- [English](README.en.md)
+- **Automated Hunting**: Scans GitHub for issues with active bounties using `hunt_bounties.py`.
+- **Coin System**: Converts USD rewards into internal "Coins" for flexible redemption.
+- **Automated Scoring**: Uses AST (Abstract Syntax Tree) analysis and `pytest` to evaluate PR quality.
+- **Web Dashboard**: A Flask-based interface to track the leaderboard and task status.
+- **Secure Payouts**: Integrated scripts for Binance and automated reward processing.
 
 ---
 
-> ⚠️ All bounties come from third-party platforms. Contributors must comply with each platform's rules.
+## 🏗 Architecture
+
+The system operates through three main layers:
+1.  **Automation Layer**: GitHub Actions trigger scripts in `scripts/` to hunt for tasks and update the leaderboard.
+2.  **Data Layer**: A SQLite database (`data/coins.db`) tracks user balances and task history.
+3.  **Presentation Layer**: A Flask web application (`web/`) provides a public view of the ecosystem.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.9+
+- Docker & Docker Compose
+- GitHub Personal Access Token (for hunting/automation)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/zhangjiayang6835-cyber/bounty-plaza.git
+   cd bounty-plaza
+   ```
+
+2. **Environment Setup**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your GitHub Token and API keys
+   ```
+
+3. **Run with Docker**:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Initialize Database**:
+   ```bash
+   python scripts/migrate.py
+   python scripts/seed.py
+   ```
+
+---
+
+## 🪙 Reward Economics
+
+We use a transparent formula to ensure sustainability and cover platform costs.
+
+**Calculation Formula:**
+`Your Cash (USD) = Bounty(USD) × 1.25 × R × 0.72`
+
+| Bounty Range | R (Your Share) | Effective Payout |
+|--------------|:--------------:|:----------------:|
+| $25 - $50    | **95%**        | ≈ 85.5%          |
+| $50 - $200   | **92%**        | ≈ 82.8%          |
+| $200 - $500  | **90%**        | ≈ 81.0%          |
+
+*For a full breakdown, see [REWARD_POLICY.en.md](REWARD_POLICY.en.md).*
+
+---
+
+## ❓ FAQ
+
+### 1. Why did my PR receive a score of 0?
+The system uses an "Absolute Veto" policy. Your score drops to 0 if:
+- You use forbidden modules (e.g., `eval`, `exec`, `subprocess.Popen`).
+- You hardcode expected outputs (detected via AST analysis).
+- You delete or modify existing test cases to pass checks.
+
+### 2. How do I claim a task?
+Comment `/claim` on the specific issue. This locks the task for you for 24 hours.
+
+### 3. What is the conversion rate?
+**1 Coin = 0.72 USD**. This rate is fixed and accounts for platform service fees and exchange overhead.
+
+### 4. When are payouts processed?
+Payouts are triggered automatically via `auto_payout.py` once a PR is merged and the redeem request is approved.
+
+---
+
+## 🛠 Development & Contribution
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
