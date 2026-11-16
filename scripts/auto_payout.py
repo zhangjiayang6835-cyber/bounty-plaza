@@ -47,7 +47,7 @@ REPO_ROOT = os.path.dirname(HERE)
 DB_PATH = os.path.join(REPO_ROOT, "data", "coins.db")
 
 # ── Binance API ──
-BINANCE_API_KEY = os.e*******get("BINANCE_API_KEY", "") or ""
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "") or ""
 BINANCE_SECRET_KEY = os.environ.get("BINANCE_SECRET_KEY", "") or ""
 GH_TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 
@@ -88,6 +88,10 @@ def call_binance_withdraw(address: str, amount: float) -> dict:
     """
     import hmac
     import time as _time
+
+    # Ensure amount is within 64-bit integer boundary
+    if amount <= 0 or amount >= 2**63:
+        return {"error": "Amount must be a positive number and less than 2^63."}
 
     timestamp = int(_time.time() * 1000)
     params = {
